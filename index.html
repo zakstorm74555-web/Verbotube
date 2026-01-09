@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paravideo - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- THEME --- */
+        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 20px; overflow-x: hidden; }
+        
+        /* LOGIN */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .logo { font-size: 40px; font-weight: bold; color: #fff; letter-spacing: 2px; }
+        .logo span { color: #00e5ff; } /* Cyan Theme */
+        .login-btn { background: white; color: black; padding: 12px 30px; border-radius: 30px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+
+        /* HEADER */
+        header { background: rgba(0,0,0,0.9); padding: 10px 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; }
+        .nav-icon { font-size: 24px; color: #00e5ff; cursor: pointer; }
+        .search-box input { width: 100%; background: #222; border: none; padding: 10px; border-radius: 20px; color: white; margin-top: 10px; outline: none; }
+
+        /* FEED */
+        .feed-container { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 10px 0; }
+        .video-card { background: #000; width: 100%; aspect-ratio: 9/16; position: relative; border-bottom: 1px solid #222; }
+        @media (min-width: 500px) { .video-card { border-radius: 15px; border: 1px solid #333; } }
+        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+
+        /* OVERLAYS */
+        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
+        .action-btn { font-size: 26px; cursor: pointer; text-align: center; }
+        .action-btn span { display: block; font-size: 12px; font-weight: bold; margin-top: 2px; }
+        
+        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, black); pointer-events: none; }
+        .uploader-info { display: flex; align-items: center; gap: 10px; pointer-events: auto; margin-bottom: 5px; }
+        .music-bar { font-size: 12px; color: #00e5ff; display: flex; align-items: center; gap: 5px; margin-top: 5px; pointer-events: auto; cursor: pointer; }
+
+        /* UPLOAD MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; justify-content: center; align-items: center; flex-direction: column; }
+        .upload-box { width: 90%; max-width: 400px; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #00e5ff; text-align: center; max-height: 90vh; overflow-y: auto; }
+        
+        /* Camera UI */
+        #camera-preview { width: 100%; height: 250px; background: black; object-fit: cover; border-radius: 10px; display: none; }
+        .rec-btn { width: 50px; height: 50px; background: red; border-radius: 50%; border: 3px solid white; margin: 10px auto; cursor: pointer; display: none; }
+        .rec-active { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .tab-btns { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; }
+        .active-tab { background: #00e5ff; color: black; font-weight: bold; }
+
+        input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
+        .upload-submit { width: 100%; background: #00e5ff; border: none; padding: 12px; border-radius: 25px; color: black; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen">
+        <div class="logo">PARA<span>VIDEO</span></div>
+        <button class="login-btn" id="loginBtn"><i class="fab fa-google"></i> Login to Continue</button>
+    </div>
+
+    <div id="appScreen" style="display:none;">
+        <header>
+            <div class="top-nav">
+                <div class="logo" style="font-size: 20px;">PARA<span>VIDEO</span></div>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <i class="fas fa-plus-square nav-icon" onclick="openUploadModal()"></i>
+                    <img src="" id="myPic" onclick="goToMyProfile()" style="width:30px; height:30px; border-radius:50%; border:1px solid #00e5ff;">
+                </div>
+            </div>
+            <div class="search-box"><input type="text" id="search" placeholder="Search..." onkeyup="filterFeed()"></div>
+        </header>
+
+        <div class="feed-container" id="feed">
+            <p style="text-align:center; color:#555; margin-top:50px;">Loading Feed...</p>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="upload-box">
+            <div style="text-align:right;"><i class="fas fa-times" onclick="closeUpload()" style="font-size:20px; cursor:pointer;"></i></div>
+            <h3 style="color:#00e5ff; margin-top:0;">Create Video</h3>
+
+            <div class="tab-btns">
+                <button class="tab-btn active-tab" onclick="switchTab('gallery')">Gallery</button>
+                <button class="tab-btn" onclick="switchTab('camera')">Camera</button>
+            </div>
+
+            <div id="gallery-section">
+                <input type="file" id="videoFile" accept="video/*" onchange="fileSelected(this)">
+            </div>
+
+            <div id="camera-section" style="display:none;">
+                <video id="camera-preview" autoplay muted playsinline></video>
+                <div id="recBtn" class="rec-btn" onclick="toggleRecording()"></div>
+                <p id="rec-status" style="font-size:12px; color:red; display:none;">Recording...</p>
+            </div>
+
+            <h4 style="text-align:left; margin-bottom:5px;">Add Music</h4>
+            <input type="text" id="ytLink" placeholder="Paste YouTube Link (e.g. Song URL)">
+            <input type="number" id="startTime" placeholder="Start at (seconds) e.g. 30">
+
+            <input type="text" id="caption" placeholder="Caption / Hashtags..." style="margin-top:10px;">
+            
+            <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; width:0%; background:#00e5ff;"></div></div>
+            <p id="statusText" style="font-size:12px; color:#00e5ff;"></p>
+
+            <button class="upload-submit" id="postBtn" onclick="uploadVideo()">POST VIDEO</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- NEW CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
+            authDomain: "paravideo-1ac3b.firebaseapp.com",
+            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com",
+            projectId: "paravideo-1ac3b",
+            storageBucket: "paravideo-1ac3b.firebasestorage.app",
+            messagingSenderId: "384549024202",
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33",
+            measurementId: "G-QNFHZ1CDLY"
+        };
+
+        const CLOUD_NAME = "paravideo";
+        const UPLOAD_PRESET = "eec004c4-7381-4470-ac52-2350e1b469c2"; 
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        let currentUser = null;
+        let selectedFile = null;
+        let allVideos = [];
+
+        // --- LOGIN ---
+        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                document.getElementById('myPic').src = user.photoURL;
+                
+                // Save User Info
+                const userRef = ref(db, 'users/' + user.uid);
+                const snap = await get(userRef);
+                if (!snap.exists()) {
+                    set(userRef, { username: user.displayName, photo: user.photoURL, bio: "Hi there!", uid: user.uid });
+                }
+                loadFeed();
+            }
+        });
+
+        // --- FEED ---
+        function loadFeed() {
+            onValue(ref(db, 'videos'), (snap) => {
+                const feed = document.getElementById('feed');
+                feed.innerHTML = "";
+                const data = snap.val();
+                if (!data) { feed.innerHTML = "<p style='text-align:center;color:#555;'>No videos yet.</p>"; return; }
+
+                allVideos = Object.entries(data).map(([k, v]) => ({ key: k, ...v })).reverse();
+                
+                allVideos.forEach(vid => {
+                    const div = document.createElement('div');
+                    div.className = "video-card";
+                    
+                    // Sound Logic (Open YT)
+                    const musicHtml = vid.musicLink ? `<div class="music-bar" onclick="window.open('${vid.musicLink}&t=${vid.startTime || 0}s', '_blank')"><i class="fas fa-music"></i> Play Music</div>` : '';
+
+                    div.innerHTML = `
+                        <video src="${vid.videoUrl}" loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>
+                        <div class="sidebar">
+                            <div class="action-btn" onclick="likeVideo('${vid.key}')"><i class="fas fa-heart" style="color:${vid.likes && vid.likes[currentUser.uid] ? '#00e5ff' : 'white'}"></i><span>${vid.likes ? Object.keys(vid.likes).length : 0}</span></div>
+                            <div class="action-btn"><i class="fas fa-eye"></i><span>${vid.views ? Object.keys(vid.views).length : 0}</span></div>
+                        </div>
+                        <div class="video-info">
+                            <div class="uploader-info" onclick="window.location.href='profile.html?uid=${vid.uid}'">
+                                <b style="color:white;">@${vid.uploader}</b>
+                            </div>
+                            <div style="font-size:14px; color:#ddd;">${vid.caption}</div>
+                            ${musicHtml}
+                        </div>
+                    `;
+                    feed.appendChild(div);
+                    
+                    // View Counter
+                    const videoEl = div.querySelector('video');
+                    videoEl.onplay = () => {
+                        set(ref(db, `videos/${vid.key}/views/${currentUser.uid}`), true);
+                    };
+                });
+            });
+        }
+
+        window.likeVideo = (key) => {
+            const r = ref(db, `videos/${key}/likes/${currentUser.uid}`);
+            get(r).then(s => s.exists() ? remove(r) : set(r, true));
+        }
+
+        window.filterFeed = () => {
+            // Simple filter logic can be added here
+        }
+
+        window.goToMyProfile = () => { window.location.href = `profile.html?uid=${currentUser.uid}`; }
+
+        // --- UPLOAD LOGIC ---
+        window.openUploadModal = () => document.getElementById('uploadModal').style.display = 'flex';
+        window.closeUpload = () => {
+            document.getElementById('uploadModal').style.display = 'none';
+            stopCamera();
+        };
+
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+            event.target.classList.add('active-tab');
+            if (tab === 'gallery') {
+                document.getElementById('gallery-section').style.display = 'block';
+                document.getElementById('camera-section').style.display = 'none';
+                stopCamera();
+            } else {
+                document.getElementById('gallery-section').style.display = 'none';
+                document.getElementById('camera-section').style.display = 'block';
+                startCamera();
+            }
+        };
+
+        window.fileSelected = (input) => {
+            if (input.files[0]) selectedFile = input.files[0];
+        };
+
+        // CAMERA LOGIC
+        let mediaRecorder, chunks = [], stream;
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const vid = document.getElementById('camera-preview');
+                vid.srcObject = stream;
+                vid.style.display = 'block';
+                document.getElementById('recBtn').style.display = 'block';
+                
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'video/webm' });
+                    selectedFile = new File([blob], "camera_rec.webm", { type: 'video/webm' });
+                    document.getElementById('statusText').innerText = "Video Recorded!";
+                    chunks = [];
+                };
+            } catch (e) { alert("Camera not allowed!"); }
+        }
+
+        function stopCamera() {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+        }
+
+        window.toggleRecording = () => {
+            const btn = document.getElementById('recBtn');
+            const txt = document.getElementById('rec-status');
+            if (mediaRecorder.state === "inactive") {
+                mediaRecorder.start();
+                btn.classList.add('rec-active');
+                txt.style.display = 'block';
+            } else {
+                mediaRecorder.stop();
+                btn.classList.remove('rec-active');
+                txt.style.display = 'none';
+                stopCamera(); // Stop preview after recording
+            }
+        };
+
+        // UPLOAD FUNCTION
+        window.uploadVideo = async () => {
+            if (!selectedFile) return alert("Please select or record a video");
+            
+            const btn = document.getElementById('postBtn');
+            btn.disabled = true; btn.innerText = "Uploading...";
+            document.getElementById('progress').style.display = 'block';
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            formData.append("upload_preset", UPLOAD_PRESET);
+
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+                xhr.upload.onprogress = e => { 
+                    if(e.lengthComputable) document.getElementById('bar').style.width = Math.floor((e.loaded/e.total)*100) + '%'; 
+                };
+                xhr.onload = async () => {
+                    if (xhr.status === 200) {
+                        const url = JSON.parse(xhr.responseText).secure_url;
+                        const yt = document.getElementById('ytLink').value;
+                        const start = document.getElementById('startTime').value;
+                        
+                        await push(ref(db, 'videos'), {
+                            videoUrl: url,
+                            caption: document.getElementById('caption').value,
+                            musicLink: yt,
+                            startTime: start,
+                            uploader: currentUser.displayName,
+                            uid: currentUser.uid,
+                            timestamp: Date.now()
+                        });
+                        alert("Uploaded!"); location.reload();
+                    } else { alert("Cloudinary Error. Check Console."); btn.disabled = false; }
+                };
+                xhr.send(formData);
+            } catch (e) { alert("Error"); btn.disabled = false; }
+        };
+    </script>
+</body>
+</html>
