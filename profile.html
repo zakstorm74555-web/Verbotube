@@ -2,176 +2,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Paravideo - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Paravideo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- THEME & RESET --- */
-        * { box-sizing: border-box; }
-        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; /* No Body Scroll */ }
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
         
-        /* LOGIN SCREEN */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .logo { font-size: 40px; font-weight: bold; color: #fff; letter-spacing: 2px; }
-        .logo span { color: #8a2be2; }
-        .login-btn { background: white; color: black; padding: 12px 30px; border-radius: 30px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-
-        /* HEADER (Floating) */
-        header { position: fixed; top: 0; left: 0; width: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); padding: 10px 15px; z-index: 100; border: none; }
-        .top-nav { display: flex; justify-content: space-between; align-items: center; }
-        .nav-icon { font-size: 24px; color: #fff; cursor: pointer; text-shadow: 0 0 5px #000; }
-        .search-box input { width: 100%; background: rgba(255,255,255,0.2); border: none; padding: 8px; border-radius: 20px; color: white; margin-top: 10px; outline: none; backdrop-filter: blur(5px); }
-        .search-box input::placeholder { color: #ddd; }
-
-        /* FEED (Full Screen Scroll Snap) */
-        .feed-container { 
-            width: 100%; 
-            height: 100vh; 
-            overflow-y: scroll; 
-            scroll-snap-type: y mandatory; /* Magic Line for TikTok Scroll */
-            scroll-behavior: smooth;
-        }
-
-        .video-card { 
-            width: 100%; 
-            height: 100vh; /* Full Height */
-            position: relative; 
-            scroll-snap-align: start; 
-            background: #000;
-            overflow: hidden;
-        }
-
-        /* Video Styling */
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; /* Fits screen properly */
-            display: block;
-        }
-
-        /* SIDEBAR (Right Icons) */
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
-        .action-btn { font-size: 30px; cursor: pointer; text-align: center; color: white; transition: transform 0.1s; }
-        .action-btn:active { transform: scale(0.9); }
-        .action-btn span { display: block; font-size: 13px; font-weight: bold; margin-top: 5px; }
-
-        /* VIDEO INFO (Bottom Text) */
-        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); pointer-events: none; padding-bottom: 40px; }
-        .uploader-info { display: flex; align-items: center; gap: 10px; pointer-events: auto; margin-bottom: 8px; cursor: pointer; }
-        .music-bar { font-size: 13px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.9; }
-        .music-spin { animation: spin 3s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* UPLOAD MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; justify-content: center; align-items: center; flex-direction: column; }
-        .upload-box { width: 90%; max-width: 400px; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #8a2be2; text-align: center; max-height: 90vh; overflow-y: auto; }
+        .header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .pic { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #8a2be2; object-fit: cover; }
+        .info { flex: 1; }
+        .name { font-size: 22px; font-weight: bold; }
+        .bio { color: #aaa; font-size: 14px; margin-top: 5px; }
         
-        /* COMMENTS MODAL (New) */
-        .comments-modal {
-            position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; 
-            background: #111; z-index: 500; border-radius: 20px 20px 0 0; 
-            transition: bottom 0.3s ease-in-out; display: flex; flex-direction: column;
-            border-top: 1px solid #333;
-        }
-        .comments-modal.active { bottom: 0; }
-        .comments-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        .comments-list { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .single-comment { display: flex; gap: 10px; font-size: 14px; }
-        .single-comment img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
-        .comment-input-area { padding: 10px; display: flex; gap: 10px; border-top: 1px solid #333; background: #000; }
-        .comment-input-area input { flex: 1; background: #222; border: none; padding: 12px; color: white; border-radius: 20px; outline: none; }
-        .comment-input-area button { background: #8a2be2; color: white; border: none; padding: 0 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .stats { display: flex; gap: 20px; margin: 15px 0; border-top: 1px solid #333; border-bottom: 1px solid #333; padding: 15px 0; }
+        .stat-box { text-align: center; flex: 1; }
+        .stat-num { font-size: 18px; font-weight: bold; color: white; display: block; }
+        .stat-label { font-size: 12px; color: #8a2be2; }
 
-        /* Camera UI */
-        #camera-preview { width: 100%; height: 250px; background: black; object-fit: cover; border-radius: 10px; display: none; }
-        .rec-btn { width: 60px; height: 60px; background: red; border-radius: 50%; border: 4px solid white; margin: 15px auto; cursor: pointer; display: none; }
-        .rec-active { animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .btn { width: 100%; padding: 8px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .btn-edit { background: #333; color: white; border: 1px solid #555; }
+        .btn-follow { background: #8a2be2; color: white; }
 
-        .tab-btns { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; }
-        .active-tab { background: #8a2be2; color: white; font-weight: bold; }
-        input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
-        .upload-submit { width: 100%; background: #8a2be2; border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        /* VIDEO GRID */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; }
+        .thumb video { width: 100%; height: 100%; object-fit: cover; }
+        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: red; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index:10; }
 
+        /* EDIT MODAL */
+        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        .modal-box { background: #222; padding: 20px; border: 1px solid #8a2be2; width: 300px; border-radius: 10px; }
+        input { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: white; margin-bottom: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="loginScreen">
-        <div class="logo">PARA<span>VIDEO</span></div>
-        <p style="color:#aaa;">Short Video Platform</p>
-        <button class="login-btn" id="loginBtn"><i class="fab fa-google"></i> Login with Google</button>
-    </div>
+    <div class="container">
+        <a href="index.html" style="color:#aaa; text-decoration:none; font-size: 18px;">← Back</a>
+        <br><br>
 
-    <div id="appScreen" style="display:none;">
-        <header>
-            <div class="top-nav">
-                <div class="logo" style="font-size: 20px; text-shadow: 0 0 5px rgba(0,0,0,0.5);">PARA<span>VIDEO</span></div>
-                <div style="display:flex; gap:20px; align-items:center;">
-                    <i class="fas fa-plus-square nav-icon" onclick="openUploadModal()"></i>
-                    <img src="" id="myPic" onclick="goToMyProfile()" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
-                </div>
+        <div class="header">
+            <img src="" id="pPic" class="pic">
+            <div class="info">
+                <div class="name" id="pName">Loading...</div>
+                <div class="bio" id="pBio">...</div>
             </div>
-            <div class="search-box"><input type="text" id="search" placeholder="Search..." onkeyup="filterFeed()"></div>
-        </header>
-
-        <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading Videos...</p>
         </div>
-        
-        <div class="comments-modal" id="commentsModal">
-            <div class="comments-header">
-                <span id="commentCountHeader">Comments</span>
-                <i class="fas fa-times" onclick="closeComments()" style="cursor:pointer; font-size: 20px;"></i>
-            </div>
-            <div class="comments-list" id="commentsList">
-                </div>
-            <div class="comment-input-area">
-                <input type="text" id="commentInput" placeholder="Say something nice...">
-                <button onclick="postComment()">Post</button>
-            </div>
+
+        <button id="actionBtn" class="btn btn-edit">Loading...</button>
+
+        <div class="stats">
+            <div class="stat-box"><span class="stat-num" id="sFollowers">0</span><span class="stat-label">Followers</span></div>
+            <div class="stat-box"><span class="stat-num" id="sFollowing">0</span><span class="stat-label">Following</span></div>
+            <div class="stat-box"><span class="stat-num" id="sVideos">0</span><span class="stat-label">Videos</span></div>
+        </div>
+
+        <h3 style="border-bottom: 1px solid #8a2be2; display: inline-block; padding-bottom: 5px;">Videos</h3>
+        <div class="grid" id="videoGrid">
+            <p style="color:#555; grid-column: span 3; text-align: center;">No videos.</p>
         </div>
     </div>
 
-    <div id="uploadModal" class="modal">
-        <div class="upload-box">
-            <div style="text-align:right;"><i class="fas fa-times" onclick="closeUpload()" style="font-size:20px; cursor:pointer;"></i></div>
-            <h3 style="color:#8a2be2; margin-top:0;">Create Video</h3>
-
-            <div class="tab-btns">
-                <button class="tab-btn active-tab" onclick="switchTab('gallery', this)">Gallery</button>
-                <button class="tab-btn" onclick="switchTab('camera', this)">Camera</button>
-            </div>
-
-            <div id="gallery-section">
-                <input type="file" id="videoFile" accept="video/*" onchange="fileSelected(this)" style="padding: 20px; border: 2px dashed #555;">
-            </div>
-
-            <div id="camera-section" style="display:none;">
-                <video id="camera-preview" autoplay muted playsinline></video>
-                <div id="recBtn" class="rec-btn" onclick="toggleRecording()"></div>
-                <p id="rec-status" style="font-size:12px; color:red; display:none;">Recording...</p>
-            </div>
-
-            <h4 style="text-align:left; margin-bottom:5px; margin-top:20px;">Details</h4>
-            <input type="text" id="ytLink" placeholder="Music Link (YouTube) - Optional">
-            <input type="number" id="startTime" placeholder="Music Start Time (sec)">
-            <input type="text" id="caption" placeholder="Caption..." style="margin-top:10px;">
-            
-            <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
-            <p id="statusText" style="font-size:12px; color:#8a2be2;"></p>
-
-            <button class="upload-submit" id="postBtn" onclick="uploadVideo()">POST VIDEO</button>
+    <div id="editModal">
+        <div class="modal-box">
+            <h3 style="color:#8a2be2; margin-top:0;">Edit Profile</h3>
+            <input type="text" id="eName" placeholder="Name">
+            <input type="text" id="eBio" placeholder="Bio">
+            <input type="text" id="ePic" placeholder="Photo URL (Paste Link)">
+            <button class="btn btn-follow" onclick="saveProfile()">SAVE</button>
+            <button class="btn btn-edit" onclick="document.getElementById('editModal').style.display='none'">CANCEL</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, get, update, remove, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // FIREBASE CONFIG
+        // --- NEW CONFIG (SAME AS INDEX) ---
         const firebaseConfig = {
             apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
             authDomain: "paravideo-1ac3b.firebaseapp.com",
@@ -183,281 +92,110 @@
             measurementId: "G-QNFHZ1CDLY"
         };
 
-        const CLOUD_NAME = "dusj0vpsi";
-        const UPLOAD_PRESET = "paravideo";
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        let currentUser = null;
-        let selectedFile = null;
-        let allVideos = [];
-        let currentVideoKeyForComments = null;
 
-        // --- LOGIN ---
-        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+        let myUID = null;
+        let profileUID = null;
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'block';
-                document.getElementById('myPic').src = user.photoURL;
-                
-                const userRef = ref(db, 'users/' + user.uid);
-                const snap = await get(userRef);
-                if (!snap.exists()) {
-                    set(userRef, { username: user.displayName, photo: user.photoURL, bio: "Hi!", uid: user.uid });
-                }
-                loadFeed();
+                myUID = user.uid;
+                const params = new URLSearchParams(window.location.search);
+                profileUID = params.get('uid') || user.uid;
+                loadProfile();
+            } else {
+                window.location.href = 'index.html';
             }
         });
 
-        // --- FEED & SCROLL LOGIC ---
-        function loadFeed() {
-            onValue(ref(db, 'videos'), (snap) => {
-                const feed = document.getElementById('feed');
-                feed.innerHTML = "";
-                const data = snap.val();
-                if (!data) { feed.innerHTML = "<p style='text-align:center;color:#555;margin-top:50vh'>No videos yet.</p>"; return; }
-
-                allVideos = Object.entries(data).map(([k, v]) => ({ key: k, ...v })).reverse();
+        async function loadProfile() {
+            // User Info
+            onValue(ref(db, 'users/' + profileUID), (snap) => {
+                const u = snap.val() || {};
+                document.getElementById('pName').innerText = u.username || "User";
+                document.getElementById('pBio').innerText = u.bio || "No bio";
+                document.getElementById('pPic').src = u.photo || "https://via.placeholder.com/150";
                 
-                allVideos.forEach(vid => {
-                    const div = document.createElement('div');
-                    div.className = "video-card";
-                    
-                    const musicHtml = vid.musicLink ? 
-                        `<div class="music-bar" onclick="window.open('${vid.musicLink}&t=${vid.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> ${vid.caption.substring(0,10)}... Sound</div>` : '';
-
-                    div.innerHTML = `
-                        <video src="${vid.videoUrl}" loop playsinline class="video-player"></video>
-                        
-                        <div class="sidebar">
-                            <div class="action-btn" onclick="likeVideo('${vid.key}')">
-                                <i class="fas fa-heart" style="color:${vid.likes && vid.likes[currentUser.uid] ? '#8a2be2' : 'white'}"></i>
-                                <span>${vid.likes ? Object.keys(vid.likes).length : 0}</span>
-                            </div>
-                            <div class="action-btn" onclick="openComments('${vid.key}')">
-                                <i class="fas fa-comment-dots"></i>
-                                <span>Wait...</span>
-                            </div>
-                            <div class="action-btn">
-                                <i class="fas fa-share"></i>
-                                <span>Share</span>
-                            </div>
-                        </div>
-
-                        <div class="video-info">
-                            <div class="uploader-info" onclick="window.location.href='profile.html?uid=${vid.uid}'">
-                                <b style="color:white; font-size: 16px;">@${vid.uploader}</b>
-                            </div>
-                            <div style="font-size:14px; color:#eee; line-height:1.4;">${vid.caption}</div>
-                            ${musicHtml}
-                        </div>
-                    `;
-                    feed.appendChild(div);
-
-                    // Comment Count Logic
-                    onValue(ref(db, `comments/${vid.key}`), (cSnap) => {
-                        const count = cSnap.exists() ? Object.keys(cSnap.val()).length : 0;
-                        const badge = div.querySelectorAll('.action-btn span')[1]; // 2nd span is comments
-                        if(badge) badge.innerText = count;
-                    });
-                });
-
-                // --- 1. SETUP INTERSECTION OBSERVER (AUTOPLAY) ---
-                setupObserver();
-            });
-        }
-
-        function setupObserver() {
-            const videos = document.querySelectorAll('video');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const video = entry.target;
-                    if (entry.isIntersecting) {
-                        video.play().catch(e => console.log("Autoplay prevented by browser, interact first"));
-                        // Count view logic here if needed
-                    } else {
-                        video.pause();
-                        video.currentTime = 0; // Reset video when scrolled away
-                    }
-                });
-            }, { threshold: 0.6 }); // Play when 60% visible
-
-            videos.forEach(video => {
-                observer.observe(video);
-                // Tap to Pause/Play
-                video.addEventListener('click', () => {
-                    if(video.paused) video.play();
-                    else video.pause();
-                });
-            });
-        }
-
-        // --- LIKES ---
-        window.likeVideo = (key) => {
-            const r = ref(db, `videos/${key}/likes/${currentUser.uid}`);
-            get(r).then(s => s.exists() ? remove(r) : set(r, true));
-        }
-
-        // --- COMMENTS LOGIC ---
-        window.openComments = (key) => {
-            currentVideoKeyForComments = key;
-            document.getElementById('commentsModal').classList.add('active');
-            
-            // Load comments
-            const list = document.getElementById('commentsList');
-            list.innerHTML = "<p style='text-align:center; color:#555'>Loading...</p>";
-            
-            onValue(ref(db, `comments/${key}`), (snap) => {
-                list.innerHTML = "";
-                if(!snap.exists()) {
-                    list.innerHTML = "<p style='text-align:center; color:#555'>No comments yet. Be the first!</p>";
-                    return;
+                if(myUID === profileUID) {
+                    document.getElementById('eName').value = u.username || "";
+                    document.getElementById('eBio').value = u.bio || "";
+                    document.getElementById('ePic').value = u.photo || "";
                 }
+            });
+
+            // Stats
+            onValue(ref(db, `users/${profileUID}/followers`), s => document.getElementById('sFollowers').innerText = s.exists() ? Object.keys(s.val()).length : 0);
+            onValue(ref(db, `users/${profileUID}/following`), s => document.getElementById('sFollowing').innerText = s.exists() ? Object.keys(s.val()).length : 0);
+
+            // Button Logic
+            const btn = document.getElementById('actionBtn');
+            if (myUID === profileUID) {
+                btn.innerText = "EDIT PROFILE";
+                btn.className = "btn btn-edit";
+                btn.onclick = () => document.getElementById('editModal').style.display = 'flex';
+            } else {
+                checkFollow(btn);
+            }
+
+            // Videos
+            onValue(ref(db, 'videos'), snap => {
+                const grid = document.getElementById('videoGrid');
+                grid.innerHTML = "";
                 const data = snap.val();
-                Object.values(data).forEach(c => {
-                    const item = document.createElement('div');
-                    item.className = "single-comment";
-                    item.innerHTML = `
-                        <img src="${c.photo}" alt="user">
-                        <div>
-                            <div style="color:#aaa; font-size:12px; margin-bottom:2px;">${c.username}</div>
-                            <div style="color:white;">${c.text}</div>
-                        </div>
-                    `;
-                    list.appendChild(item);
-                });
+                if(data) {
+                    const myVids = Object.entries(data).filter(([k,v]) => v.uid === profileUID).reverse();
+                    document.getElementById('sVideos').innerText = myVids.length;
+                    
+                    if(myVids.length === 0) { grid.innerHTML = "<p style='color:#555; grid-column: span 3; text-align: center;'>No videos.</p>"; return; }
+
+                    myVids.forEach(([k, vid]) => {
+                        const div = document.createElement('div');
+                        div.className = 'thumb';
+                        // Show delete button ONLY if it's MY profile
+                        const delBtn = (myUID === profileUID) ? `<div class="del-btn" onclick="deleteVideo('${k}')"><i class="fas fa-trash"></i></div>` : '';
+                        
+                        div.innerHTML = `
+                            <video src="${vid.videoUrl}"></video>
+                            ${delBtn}
+                        `;
+                        grid.appendChild(div);
+                    });
+                }
             });
         }
 
-        window.closeComments = () => {
-            document.getElementById('commentsModal').classList.remove('active');
-            currentVideoKeyForComments = null;
-        }
-
-        window.postComment = () => {
-            const txt = document.getElementById('commentInput').value;
-            if(!txt.trim() || !currentVideoKeyForComments) return;
-            
-            push(ref(db, `comments/${currentVideoKeyForComments}`), {
-                text: txt,
-                username: currentUser.displayName,
-                photo: currentUser.photoURL,
-                uid: currentUser.uid,
-                timestamp: Date.now()
-            });
-            document.getElementById('commentInput').value = ""; // Clear
-        }
-
-        // --- OTHER UTILS ---
-        window.filterFeed = () => {
-            const q = document.getElementById('search').value.toLowerCase();
-            const cards = document.querySelectorAll('.video-card');
-            allVideos.forEach((vid, index) => {
-                const match = vid.caption.toLowerCase().includes(q) || vid.uploader.toLowerCase().includes(q);
-                cards[index].style.display = match ? 'block' : 'none';
+        // Follow Logic
+        async function checkFollow(btn) {
+            const r = ref(db, `users/${profileUID}/followers/${myUID}`);
+            onValue(r, s => {
+                if (s.exists()) {
+                    btn.innerText = "FOLLOWING";
+                    btn.className = "btn btn-edit";
+                    btn.onclick = () => { remove(ref(db, `users/${profileUID}/followers/${myUID}`)); remove(ref(db, `users/${myUID}/following/${profileUID}`)); };
+                } else {
+                    btn.innerText = "FOLLOW";
+                    btn.className = "btn btn-follow";
+                    btn.onclick = () => { set(ref(db, `users/${profileUID}/followers/${myUID}`), true); set(ref(db, `users/${myUID}/following/${profileUID}`), true); };
+                }
             });
         }
-        window.goToMyProfile = () => { window.location.href = `profile.html?uid=${currentUser.uid}`; }
-        window.openUploadModal = () => document.getElementById('uploadModal').style.display = 'flex';
-        window.closeUpload = () => {
-            document.getElementById('uploadModal').style.display = 'none';
-            stopCamera();
-        };
 
-        // --- UPLOAD & CAMERA (Same as before) ---
-        window.switchTab = (tab, btn) => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-            btn.classList.add('active-tab');
-            if (tab === 'gallery') {
-                document.getElementById('gallery-section').style.display = 'block';
-                document.getElementById('camera-section').style.display = 'none';
-                stopCamera();
-            } else {
-                document.getElementById('gallery-section').style.display = 'none';
-                document.getElementById('camera-section').style.display = 'block';
-                startCamera();
+        window.saveProfile = async () => {
+            await update(ref(db, 'users/' + myUID), {
+                username: document.getElementById('eName').value,
+                bio: document.getElementById('eBio').value,
+                photo: document.getElementById('ePic').value
+            });
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        window.deleteVideo = async (key) => {
+            if(confirm("Delete video?")) {
+                await remove(ref(db, `videos/${key}`));
             }
-        };
-
-        window.fileSelected = (input) => { if (input.files[0]) selectedFile = input.files[0]; };
-
-        let mediaRecorder, chunks = [], stream;
-        async function startCamera() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                const vid = document.getElementById('camera-preview');
-                vid.srcObject = stream;
-                vid.style.display = 'block';
-                document.getElementById('recBtn').style.display = 'block';
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'video/webm' });
-                    selectedFile = new File([blob], "camera_rec.webm", { type: 'video/webm' });
-                    document.getElementById('statusText').innerText = "Video Recorded!";
-                    chunks = [];
-                };
-            } catch (e) { alert("Camera Permission Denied!"); }
         }
-
-        function stopCamera() { if (stream) stream.getTracks().forEach(t => t.stop()); }
-        
-        window.toggleRecording = () => {
-            const btn = document.getElementById('recBtn');
-            const txt = document.getElementById('rec-status');
-            if (mediaRecorder.state === "inactive") {
-                mediaRecorder.start();
-                btn.classList.add('rec-active');
-                txt.style.display = 'block';
-            } else {
-                mediaRecorder.stop();
-                btn.classList.remove('rec-active');
-                txt.style.display = 'none';
-                stopCamera(); 
-            }
-        };
-
-        window.uploadVideo = async () => {
-            if (!selectedFile) return alert("Please select or record a video");
-            const btn = document.getElementById('postBtn');
-            btn.disabled = true; btn.innerText = "Uploading...";
-            document.getElementById('progress').style.display = 'block';
-
-            const formData = new FormData();
-            formData.append("file", selectedFile);
-            formData.append("upload_preset", UPLOAD_PRESET);
-
-            try {
-                const xhr = new XMLHttpRequest();
-                xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
-                xhr.upload.onprogress = e => { 
-                    if(e.lengthComputable) document.getElementById('bar').style.width = Math.floor((e.loaded/e.total)*100) + '%'; 
-                };
-                xhr.onload = async () => {
-                    if (xhr.status === 200) {
-                        const url = JSON.parse(xhr.responseText).secure_url;
-                        await push(ref(db, 'videos'), {
-                            videoUrl: url,
-                            caption: document.getElementById('caption').value,
-                            musicLink: document.getElementById('ytLink').value,
-                            startTime: document.getElementById('startTime').value,
-                            uploader: currentUser.displayName,
-                            uid: currentUser.uid,
-                            timestamp: Date.now()
-                        });
-                        alert("Uploaded!"); location.reload();
-                    } else { 
-                        alert("Cloudinary Error"); 
-                        btn.disabled = false; btn.innerText = "TRY AGAIN";
-                    }
-                };
-                xhr.send(formData);
-            } catch (e) { alert("Error"); btn.disabled = false; }
-        };
     </script>
 </body>
 </html>
