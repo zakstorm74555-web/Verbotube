@@ -2,198 +2,202 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Paravideo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Shorts App</title>
     <style>
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; }
+        /* 1. DEVICE ADJUSTMENT (Responsiveness) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #000; font-family: sans-serif; overflow: hidden; }
+
+        /* Container jo scroll snap karega (TikTok jaisa feel) */
+        .app-container {
+            height: 100vh; /* Puri screen height */
+            width: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory; /* Ye magic line hai snap ke liye */
+        }
+
+        /* Har Video ka section */
+        .video-wrapper {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start; /* Har video start par rukegi */
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #111;
+        }
+
+        /* Video Styling - Puri screen cover karegi */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Video kat ke adjust hogi, stretch nahi hogi */
+        }
+
+        /* Right Side Icons (Like, Comment) */
+        .sidebar {
+            position: absolute;
+            right: 10px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .icon-btn {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+        }
         
-        .header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .pic { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #8a2be2; object-fit: cover; }
-        .info { flex: 1; }
-        .name { font-size: 22px; font-weight: bold; }
-        .bio { color: #aaa; font-size: 14px; margin-top: 5px; }
+        .icon-btn span { font-size: 30px; display: block; margin-bottom: 5px; }
+
+        /* 2. COMMENT SYSTEM (Pop-up/Modal) */
+        .comments-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%; /* Aadhi screen */
+            background: white;
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%); /* Pehle chupa hua hoga */
+            transition: transform 0.3s ease-in-out;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .comments-sheet.active {
+            transform: translateY(0); /* Upar aa jayega */
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            color: #333;
+        }
         
-        .stats { display: flex; gap: 20px; margin: 15px 0; border-top: 1px solid #333; border-bottom: 1px solid #333; padding: 15px 0; }
-        .stat-box { text-align: center; flex: 1; }
-        .stat-num { font-size: 18px; font-weight: bold; color: white; display: block; }
-        .stat-label { font-size: 12px; color: #8a2be2; }
+        .single-comment { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 
-        .btn { width: 100%; padding: 8px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
-        .btn-edit { background: #333; color: white; border: 1px solid #555; }
-        .btn-follow { background: #8a2be2; color: white; }
+        .comment-input-area { display: flex; gap: 10px; }
+        
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
+        button { padding: 10px 20px; background: #ff0050; color: white; border: none; border-radius: 20px; cursor: pointer; }
 
-        /* VIDEO GRID */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; }
-        .thumb video { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: red; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index:10; }
-
-        /* EDIT MODAL */
-        #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        .modal-box { background: #222; padding: 20px; border: 1px solid #8a2be2; width: 300px; border-radius: 10px; }
-        input { width: 100%; padding: 10px; background: #111; border: 1px solid #444; color: white; margin-bottom: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <a href="index.html" style="color:#aaa; text-decoration:none; font-size: 18px;">← Back</a>
-        <br><br>
+    <div class="app-container" id="scrollContainer">
+        
+        <div class="video-wrapper">
+            <video class="short-video" src="https://www.w3schools.com/html/mov_bbb.mp4" loop muted playsinline></video>
+            
+            <div class="sidebar">
+                <div class="icon-btn"><span>❤️</span> 1.2k</div>
+                <div class="icon-btn" onclick="toggleComments(1)"><span>💬</span> Comments</div>
+                <div class="icon-btn"><span>↪️</span> Share</div>
+            </div>
 
-        <div class="header">
-            <img src="" id="pPic" class="pic">
-            <div class="info">
-                <div class="name" id="pName">Loading...</div>
-                <div class="bio" id="pBio">...</div>
+            <div class="comments-sheet" id="comment-sheet-1">
+                <div class="comment-header">
+                    <span>Comments</span>
+                    <span onclick="toggleComments(1)">✖️</span>
+                </div>
+                <div class="comments-list" id="list-1">
+                    <div class="single-comment"><b>Ali:</b> Nice video bhai!</div>
+                </div>
+                <div class="comment-input-area">
+                    <input type="text" id="input-1" placeholder="Add a comment...">
+                    <button onclick="addComment(1)">Post</button>
+                </div>
             </div>
         </div>
 
-        <button id="actionBtn" class="btn btn-edit">Loading...</button>
+        <div class="video-wrapper">
+            <video class="short-video" src="https://www.w3schools.com/html/movie.mp4" loop muted playsinline></video>
+            
+            <div class="sidebar">
+                <div class="icon-btn"><span>❤️</span> 850</div>
+                <div class="icon-btn" onclick="toggleComments(2)"><span>💬</span> Comments</div>
+            </div>
 
-        <div class="stats">
-            <div class="stat-box"><span class="stat-num" id="sFollowers">0</span><span class="stat-label">Followers</span></div>
-            <div class="stat-box"><span class="stat-num" id="sFollowing">0</span><span class="stat-label">Following</span></div>
-            <div class="stat-box"><span class="stat-num" id="sVideos">0</span><span class="stat-label">Videos</span></div>
+            <div class="comments-sheet" id="comment-sheet-2">
+                <div class="comment-header"><span>Comments</span><span onclick="toggleComments(2)">✖️</span></div>
+                <div class="comments-list" id="list-2"></div>
+                <div class="comment-input-area">
+                    <input type="text" id="input-2" placeholder="Bhai ke liye comment...">
+                    <button onclick="addComment(2)">Post</button>
+                </div>
+            </div>
         </div>
 
-        <h3 style="border-bottom: 1px solid #8a2be2; display: inline-block; padding-bottom: 5px;">Videos</h3>
-        <div class="grid" id="videoGrid">
-            <p style="color:#555; grid-column: span 3; text-align: center;">No videos.</p>
-        </div>
     </div>
 
-    <div id="editModal">
-        <div class="modal-box">
-            <h3 style="color:#8a2be2; margin-top:0;">Edit Profile</h3>
-            <input type="text" id="eName" placeholder="Name">
-            <input type="text" id="eBio" placeholder="Bio">
-            <input type="text" id="ePic" placeholder="Photo URL (Paste Link)">
-            <button class="btn btn-follow" onclick="saveProfile()">SAVE</button>
-            <button class="btn btn-edit" onclick="document.getElementById('editModal').style.display='none'">CANCEL</button>
-        </div>
-    </div>
+    <script>
+        // --- 1. AUTOPLAY & SCROLL LOGIC ---
+        const videos = document.querySelectorAll('.short-video');
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, get, update, remove, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // Ye system check karega ke kaunsi video screen par hai
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                
+                if (entry.isIntersecting) {
+                    // Video screen par aayi -> Play karo
+                    video.currentTime = 0; // Shuru se start kare
+                    video.play();
+                } else {
+                    // Video screen se gayi -> Pause karo
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.6 }); // Jab 60% video dikhe tabhi play ho
 
-        // --- NEW CONFIG (SAME AS INDEX) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
-            authDomain: "paravideo-1ac3b.firebaseapp.com",
-            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com",
-            projectId: "paravideo-1ac3b",
-            storageBucket: "paravideo-1ac3b.firebasestorage.app",
-            messagingSenderId: "384549024202",
-            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33",
-            measurementId: "G-QNFHZ1CDLY"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-
-        let myUID = null;
-        let profileUID = null;
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                myUID = user.uid;
-                const params = new URLSearchParams(window.location.search);
-                profileUID = params.get('uid') || user.uid;
-                loadProfile();
-            } else {
-                window.location.href = 'index.html';
-            }
+        // Har video par observer lagao
+        videos.forEach(video => {
+            observer.observe(video);
+            
+            // Mobile par tap karne se Sound On/Off ho
+            video.addEventListener('click', () => {
+                video.muted = !video.muted;
+                alert(video.muted ? "Muted" : "Sound On");
+            });
         });
 
-        async function loadProfile() {
-            // User Info
-            onValue(ref(db, 'users/' + profileUID), (snap) => {
-                const u = snap.val() || {};
-                document.getElementById('pName').innerText = u.username || "User";
-                document.getElementById('pBio').innerText = u.bio || "No bio";
-                document.getElementById('pPic').src = u.photo || "https://via.placeholder.com/150";
-                
-                if(myUID === profileUID) {
-                    document.getElementById('eName').value = u.username || "";
-                    document.getElementById('eBio').value = u.bio || "";
-                    document.getElementById('ePic').value = u.photo || "";
-                }
-            });
 
-            // Stats
-            onValue(ref(db, `users/${profileUID}/followers`), s => document.getElementById('sFollowers').innerText = s.exists() ? Object.keys(s.val()).length : 0);
-            onValue(ref(db, `users/${profileUID}/following`), s => document.getElementById('sFollowing').innerText = s.exists() ? Object.keys(s.val()).length : 0);
-
-            // Button Logic
-            const btn = document.getElementById('actionBtn');
-            if (myUID === profileUID) {
-                btn.innerText = "EDIT PROFILE";
-                btn.className = "btn btn-edit";
-                btn.onclick = () => document.getElementById('editModal').style.display = 'flex';
-            } else {
-                checkFollow(btn);
-            }
-
-            // Videos
-            onValue(ref(db, 'videos'), snap => {
-                const grid = document.getElementById('videoGrid');
-                grid.innerHTML = "";
-                const data = snap.val();
-                if(data) {
-                    const myVids = Object.entries(data).filter(([k,v]) => v.uid === profileUID).reverse();
-                    document.getElementById('sVideos').innerText = myVids.length;
-                    
-                    if(myVids.length === 0) { grid.innerHTML = "<p style='color:#555; grid-column: span 3; text-align: center;'>No videos.</p>"; return; }
-
-                    myVids.forEach(([k, vid]) => {
-                        const div = document.createElement('div');
-                        div.className = 'thumb';
-                        // Show delete button ONLY if it's MY profile
-                        const delBtn = (myUID === profileUID) ? `<div class="del-btn" onclick="deleteVideo('${k}')"><i class="fas fa-trash"></i></div>` : '';
-                        
-                        div.innerHTML = `
-                            <video src="${vid.videoUrl}"></video>
-                            ${delBtn}
-                        `;
-                        grid.appendChild(div);
-                    });
-                }
-            });
+        // --- 2. COMMENTS LOGIC ---
+        function toggleComments(id) {
+            const sheet = document.getElementById(`comment-sheet-${id}`);
+            sheet.classList.toggle('active');
         }
 
-        // Follow Logic
-        async function checkFollow(btn) {
-            const r = ref(db, `users/${profileUID}/followers/${myUID}`);
-            onValue(r, s => {
-                if (s.exists()) {
-                    btn.innerText = "FOLLOWING";
-                    btn.className = "btn btn-edit";
-                    btn.onclick = () => { remove(ref(db, `users/${profileUID}/followers/${myUID}`)); remove(ref(db, `users/${myUID}/following/${profileUID}`)); };
-                } else {
-                    btn.innerText = "FOLLOW";
-                    btn.className = "btn btn-follow";
-                    btn.onclick = () => { set(ref(db, `users/${profileUID}/followers/${myUID}`), true); set(ref(db, `users/${myUID}/following/${profileUID}`), true); };
-                }
-            });
-        }
+        function addComment(id) {
+            const input = document.getElementById(`input-${id}`);
+            const list = document.getElementById(`list-${id}`);
+            const text = input.value;
 
-        window.saveProfile = async () => {
-            await update(ref(db, 'users/' + myUID), {
-                username: document.getElementById('eName').value,
-                bio: document.getElementById('eBio').value,
-                photo: document.getElementById('ePic').value
-            });
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        window.deleteVideo = async (key) => {
-            if(confirm("Delete video?")) {
-                await remove(ref(db, `videos/${key}`));
+            if (text.trim() !== "") {
+                const newDiv = document.createElement("div");
+                newDiv.className = "single-comment";
+                newDiv.innerHTML = `<b>You:</b> ${text}`;
+                list.appendChild(newDiv);
+                input.value = ""; // Clear input
             }
         }
     </script>
