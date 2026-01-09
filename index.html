@@ -12,13 +12,13 @@
         /* LOGIN */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .logo { font-size: 40px; font-weight: bold; color: #fff; letter-spacing: 2px; }
-        .logo span { color: #00e5ff; } /* Cyan Theme */
+        .logo span { color: #8a2be2; } /* Purple Theme */
         .login-btn { background: white; color: black; padding: 12px 30px; border-radius: 30px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
 
         /* HEADER */
         header { background: rgba(0,0,0,0.9); padding: 10px 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; }
-        .nav-icon { font-size: 24px; color: #00e5ff; cursor: pointer; }
+        .nav-icon { font-size: 24px; color: #8a2be2; cursor: pointer; }
         .search-box input { width: 100%; background: #222; border: none; padding: 10px; border-radius: 20px; color: white; margin-top: 10px; outline: none; }
 
         /* FEED */
@@ -33,12 +33,12 @@
         .action-btn span { display: block; font-size: 12px; font-weight: bold; margin-top: 2px; }
         
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, black); pointer-events: none; }
-        .uploader-info { display: flex; align-items: center; gap: 10px; pointer-events: auto; margin-bottom: 5px; }
-        .music-bar { font-size: 12px; color: #00e5ff; display: flex; align-items: center; gap: 5px; margin-top: 5px; pointer-events: auto; cursor: pointer; }
+        .uploader-info { display: flex; align-items: center; gap: 10px; pointer-events: auto; margin-bottom: 5px; cursor: pointer; }
+        .music-bar { font-size: 12px; color: #8a2be2; display: flex; align-items: center; gap: 5px; margin-top: 5px; pointer-events: auto; cursor: pointer; }
 
         /* UPLOAD MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; justify-content: center; align-items: center; flex-direction: column; }
-        .upload-box { width: 90%; max-width: 400px; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #00e5ff; text-align: center; max-height: 90vh; overflow-y: auto; }
+        .upload-box { width: 90%; max-width: 400px; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #8a2be2; text-align: center; max-height: 90vh; overflow-y: auto; }
         
         /* Camera UI */
         #camera-preview { width: 100%; height: 250px; background: black; object-fit: cover; border-radius: 10px; display: none; }
@@ -48,10 +48,10 @@
 
         .tab-btns { display: flex; gap: 10px; margin-bottom: 15px; }
         .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; }
-        .active-tab { background: #00e5ff; color: black; font-weight: bold; }
+        .active-tab { background: #8a2be2; color: white; font-weight: bold; }
 
         input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; box-sizing: border-box; }
-        .upload-submit { width: 100%; background: #00e5ff; border: none; padding: 12px; border-radius: 25px; color: black; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .upload-submit { width: 100%; background: #8a2be2; border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; margin-top: 10px; cursor: pointer; }
 
     </style>
 </head>
@@ -59,7 +59,8 @@
 
     <div id="loginScreen">
         <div class="logo">PARA<span>VIDEO</span></div>
-        <button class="login-btn" id="loginBtn"><i class="fab fa-google"></i> Login to Continue</button>
+        <p style="color:#aaa;">Short Video Platform</p>
+        <button class="login-btn" id="loginBtn"><i class="fab fa-google"></i> Login with Google</button>
     </div>
 
     <div id="appScreen" style="display:none;">
@@ -68,10 +69,10 @@
                 <div class="logo" style="font-size: 20px;">PARA<span>VIDEO</span></div>
                 <div style="display:flex; gap:15px; align-items:center;">
                     <i class="fas fa-plus-square nav-icon" onclick="openUploadModal()"></i>
-                    <img src="" id="myPic" onclick="goToMyProfile()" style="width:30px; height:30px; border-radius:50%; border:1px solid #00e5ff;">
+                    <img src="" id="myPic" onclick="goToMyProfile()" style="width:30px; height:30px; border-radius:50%; border:1px solid #8a2be2; cursor:pointer;">
                 </div>
             </div>
-            <div class="search-box"><input type="text" id="search" placeholder="Search..." onkeyup="filterFeed()"></div>
+            <div class="search-box"><input type="text" id="search" placeholder="Search videos or users..." onkeyup="filterFeed()"></div>
         </header>
 
         <div class="feed-container" id="feed">
@@ -82,15 +83,15 @@
     <div id="uploadModal" class="modal">
         <div class="upload-box">
             <div style="text-align:right;"><i class="fas fa-times" onclick="closeUpload()" style="font-size:20px; cursor:pointer;"></i></div>
-            <h3 style="color:#00e5ff; margin-top:0;">Create Video</h3>
+            <h3 style="color:#8a2be2; margin-top:0;">Create Video</h3>
 
             <div class="tab-btns">
-                <button class="tab-btn active-tab" onclick="switchTab('gallery')">Gallery</button>
-                <button class="tab-btn" onclick="switchTab('camera')">Camera</button>
+                <button class="tab-btn active-tab" onclick="switchTab('gallery', this)">Gallery</button>
+                <button class="tab-btn" onclick="switchTab('camera', this)">Camera</button>
             </div>
 
             <div id="gallery-section">
-                <input type="file" id="videoFile" accept="video/*" onchange="fileSelected(this)">
+                <input type="file" id="videoFile" accept="video/*" onchange="fileSelected(this)" style="padding: 20px; border: 2px dashed #555;">
             </div>
 
             <div id="camera-section" style="display:none;">
@@ -99,14 +100,14 @@
                 <p id="rec-status" style="font-size:12px; color:red; display:none;">Recording...</p>
             </div>
 
-            <h4 style="text-align:left; margin-bottom:5px;">Add Music</h4>
-            <input type="text" id="ytLink" placeholder="Paste YouTube Link (e.g. Song URL)">
-            <input type="number" id="startTime" placeholder="Start at (seconds) e.g. 30">
+            <h4 style="text-align:left; margin-bottom:5px; margin-top:20px;">Add Music (Optional)</h4>
+            <input type="text" id="ytLink" placeholder="Paste YouTube Song Link here...">
+            <input type="number" id="startTime" placeholder="Start at (e.g. 30 seconds)">
 
-            <input type="text" id="caption" placeholder="Caption / Hashtags..." style="margin-top:10px;">
+            <input type="text" id="caption" placeholder="Write a caption..." style="margin-top:10px;">
             
-            <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; width:0%; background:#00e5ff;"></div></div>
-            <p id="statusText" style="font-size:12px; color:#00e5ff;"></p>
+            <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
+            <p id="statusText" style="font-size:12px; color:#8a2be2;"></p>
 
             <button class="upload-submit" id="postBtn" onclick="uploadVideo()">POST VIDEO</button>
         </div>
@@ -117,7 +118,7 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // --- NEW CONFIG ---
+        // --- APKI NAYI FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
             authDomain: "paravideo-1ac3b.firebaseapp.com",
@@ -129,8 +130,9 @@
             measurementId: "G-QNFHZ1CDLY"
         };
 
-        const CLOUD_NAME = "paravideo";
-        const UPLOAD_PRESET = "eec004c4-7381-4470-ac52-2350e1b469c2"; 
+        // --- APKA SAHI CLOUDINARY DATA ---
+        const CLOUD_NAME = "dusj0vpsi";
+        const UPLOAD_PRESET = "paravideo"; // Screenshot wala naam
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -149,7 +151,7 @@
                 document.getElementById('appScreen').style.display = 'block';
                 document.getElementById('myPic').src = user.photoURL;
                 
-                // Save User Info
+                // Save User Profile
                 const userRef = ref(db, 'users/' + user.uid);
                 const snap = await get(userRef);
                 if (!snap.exists()) {
@@ -159,7 +161,7 @@
             }
         });
 
-        // --- FEED ---
+        // --- FEED LOGIC ---
         function loadFeed() {
             onValue(ref(db, 'videos'), (snap) => {
                 const feed = document.getElementById('feed');
@@ -173,14 +175,20 @@
                     const div = document.createElement('div');
                     div.className = "video-card";
                     
-                    // Sound Logic (Open YT)
+                    // Music Link Logic
                     const musicHtml = vid.musicLink ? `<div class="music-bar" onclick="window.open('${vid.musicLink}&t=${vid.startTime || 0}s', '_blank')"><i class="fas fa-music"></i> Play Music</div>` : '';
 
                     div.innerHTML = `
                         <video src="${vid.videoUrl}" loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>
                         <div class="sidebar">
-                            <div class="action-btn" onclick="likeVideo('${vid.key}')"><i class="fas fa-heart" style="color:${vid.likes && vid.likes[currentUser.uid] ? '#00e5ff' : 'white'}"></i><span>${vid.likes ? Object.keys(vid.likes).length : 0}</span></div>
-                            <div class="action-btn"><i class="fas fa-eye"></i><span>${vid.views ? Object.keys(vid.views).length : 0}</span></div>
+                            <div class="action-btn" onclick="likeVideo('${vid.key}')">
+                                <i class="fas fa-heart" style="color:${vid.likes && vid.likes[currentUser.uid] ? '#8a2be2' : 'white'}"></i>
+                                <span>${vid.likes ? Object.keys(vid.likes).length : 0}</span>
+                            </div>
+                            <div class="action-btn" style="cursor: default;">
+                                <i class="fas fa-eye"></i>
+                                <span>${vid.views ? Object.keys(vid.views).length : 0}</span>
+                            </div>
                         </div>
                         <div class="video-info">
                             <div class="uploader-info" onclick="window.location.href='profile.html?uid=${vid.uid}'">
@@ -192,7 +200,7 @@
                     `;
                     feed.appendChild(div);
                     
-                    // View Counter
+                    // Auto View Counter
                     const videoEl = div.querySelector('video');
                     videoEl.onplay = () => {
                         set(ref(db, `videos/${vid.key}/views/${currentUser.uid}`), true);
@@ -207,7 +215,12 @@
         }
 
         window.filterFeed = () => {
-            // Simple filter logic can be added here
+            const q = document.getElementById('search').value.toLowerCase();
+            const cards = document.querySelectorAll('.video-card');
+            allVideos.forEach((vid, index) => {
+                const match = vid.caption.toLowerCase().includes(q) || vid.uploader.toLowerCase().includes(q);
+                cards[index].style.display = match ? 'block' : 'none';
+            });
         }
 
         window.goToMyProfile = () => { window.location.href = `profile.html?uid=${currentUser.uid}`; }
@@ -219,9 +232,9 @@
             stopCamera();
         };
 
-        window.switchTab = (tab) => {
+        window.switchTab = (tab, btn) => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-            event.target.classList.add('active-tab');
+            btn.classList.add('active-tab');
             if (tab === 'gallery') {
                 document.getElementById('gallery-section').style.display = 'block';
                 document.getElementById('camera-section').style.display = 'none';
@@ -237,7 +250,7 @@
             if (input.files[0]) selectedFile = input.files[0];
         };
 
-        // CAMERA LOGIC
+        // CAMERA
         let mediaRecorder, chunks = [], stream;
         async function startCamera() {
             try {
@@ -255,7 +268,7 @@
                     document.getElementById('statusText').innerText = "Video Recorded!";
                     chunks = [];
                 };
-            } catch (e) { alert("Camera not allowed!"); }
+            } catch (e) { alert("Camera Permission Denied!"); }
         }
 
         function stopCamera() {
@@ -273,11 +286,11 @@
                 mediaRecorder.stop();
                 btn.classList.remove('rec-active');
                 txt.style.display = 'none';
-                stopCamera(); // Stop preview after recording
+                stopCamera(); 
             }
         };
 
-        // UPLOAD FUNCTION
+        // UPLOAD
         window.uploadVideo = async () => {
             if (!selectedFile) return alert("Please select or record a video");
             
@@ -287,7 +300,7 @@
 
             const formData = new FormData();
             formData.append("file", selectedFile);
-            formData.append("upload_preset", UPLOAD_PRESET);
+            formData.append("upload_preset", UPLOAD_PRESET); // 'paravideo'
 
             try {
                 const xhr = new XMLHttpRequest();
@@ -311,7 +324,10 @@
                             timestamp: Date.now()
                         });
                         alert("Uploaded!"); location.reload();
-                    } else { alert("Cloudinary Error. Check Console."); btn.disabled = false; }
+                    } else { 
+                        alert("Cloudinary Error: " + xhr.statusText); 
+                        btn.disabled = false; btn.innerText = "TRY AGAIN";
+                    }
                 };
                 xhr.send(formData);
             } catch (e) { alert("Error"); btn.disabled = false; }
