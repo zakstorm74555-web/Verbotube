@@ -106,7 +106,7 @@
                 const params = new URLSearchParams(window.location.search);
                 profileUID = params.get('uid') || user.uid;
                 
-                // Force Update Email
+                // Force Update Email for safety
                 update(ref(db, 'users/' + user.uid), { email: user.email });
                 loadProfile(user);
             } else {
@@ -118,7 +118,7 @@
             onValue(ref(db, 'users/' + profileUID), (snap) => {
                 const u = snap.val() || {};
                 
-                // Check if Owner
+                // Identify Owner (Admin)
                 let isMe = (myUID === profileUID);
                 let isOwner = false;
                 if (isMe) {
@@ -127,9 +127,11 @@
                     if(u.email && u.email.toLowerCase() === ADMIN_EMAIL) isOwner = true;
                 }
 
-                // Badges
+                // Badges Display
                 let badgesHTML = "";
+                // 1. Blue Tick (Sirf Admin/Owner ke liye)
                 if (isOwner) badgesHTML += `<i class="fas fa-check-circle blue-tick"></i>`;
+                // 2. Custom Badges (Jo Admin Panel se diye gaye hon)
                 if (u.customBadge) badgesHTML += `<span class="custom-badge">${u.customBadge}</span>`;
 
                 document.getElementById('pName').innerHTML = `${u.username || "User"} ${badgesHTML}`;
@@ -142,16 +144,18 @@
                     document.getElementById('ePic').value = u.photo || "";
                 }
 
-                // --- FOLLOWER HACK (STILL HERE) ---
+                // --- REAL FOLLOWER COUNT (NO HACK) ---
                 onValue(ref(db, `followers/${profileUID}`), s => {
+                    // Agar followers hain to count dikhao, warna 0. No fake numbers.
                     let count = s.exists() ? s.size : 0;
-                    if(isOwner) count += 125400; // Fake Followers Active
                     document.getElementById('sFollowers').innerText = formatNumber(count);
                 });
             });
 
+            // Following Stats
             onValue(ref(db, `users/${profileUID}/following`), s => document.getElementById('sFollowing').innerText = s.exists() ? Object.keys(s.val()).length : 0);
 
+            // Button Logic
             const btn = document.getElementById('actionBtn');
             if (myUID === profileUID) {
                 btn.innerText = "EDIT PROFILE";
@@ -165,6 +169,7 @@
                 checkFollow(btn);
             }
 
+            // Videos Grid
             onValue(ref(db, 'gameplay_clips'), snap => { 
                 const grid = document.getElementById('videoGrid'); grid.innerHTML = "";
                 const data = snap.val();
