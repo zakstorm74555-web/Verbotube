@@ -121,26 +121,42 @@
         let profileUID = null;
         const TARGET_EMAIL = "elitegamer859650@gmail.com";
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 myUID = user.uid;
                 const params = new URLSearchParams(window.location.search);
                 profileUID = params.get('uid') || user.uid;
-                loadProfile();
+                
+                // AUTO-FIX: Save Email to DB if missing
+                const uRef = ref(db, 'users/' + user.uid);
+                update(uRef, { email: user.email }); // Force update email
+
+                loadProfile(user); // Pass user object
             } else {
                 window.location.href = 'index.html';
             }
         });
 
-        async function loadProfile() {
+        async function loadProfile(currentUser) {
             // 1. User Info Fetch
             onValue(ref(db, 'users/' + profileUID), (snap) => {
                 const u = snap.val() || {};
                 
-                // --- SAFE EMAIL CHECK ---
-                // Ye check karega ke email exist karti hai ya nahi, aur lowercase mein convert karke match karega
-                let currentEmail = u.email ? u.email.toLowerCase().trim() : "";
-                let isOwner = (currentEmail === TARGET_EMAIL);
+                // --- SUPER FORCE CHECK ---
+                // Agar profile meri hai, to Direct Auth se email check karo (Database ka wait mat karo)
+                let isMe = (myUID === profileUID);
+                let myAuthEmail = currentUser.email.toLowerCase();
+                
+                // Check: Kya ye banda Admin hai?
+                let isOwner = false;
+                
+                if (isMe) {
+                    // Agar main apni profile dekh raha hoon, to meri Auth Email match honi chahiye
+                    if(myAuthEmail === TARGET_EMAIL) isOwner = true;
+                } else {
+                    // Agar main kisi aur ko dekh raha hoon, to Database ki email check karo
+                    if(u.email && u.email.toLowerCase() === TARGET_EMAIL) isOwner = true;
+                }
 
                 const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:16px;"></i>' : '';
                 
@@ -149,25 +165,25 @@
                 document.getElementById('pPic').src = u.photo || "https://via.placeholder.com/150";
                 
                 // Pre-fill Edit Modal
-                if(myUID === profileUID) {
+                if(isMe) {
                     document.getElementById('eName').value = u.username || "";
                     document.getElementById('eBio').value = u.bio || "";
                     document.getElementById('ePic').value = u.photo || "";
                 }
                 
-                // Render Monetization ONLY for Owner
-                if (isOwner && myUID === profileUID) {
+                // Render Monetization
+                if (isOwner && isMe) {
                     document.getElementById('monetizationSection').style.display = 'block';
                     renderMonetization(true);
                 } else {
                     document.getElementById('monetizationSection').style.display = 'none';
                 }
 
-                // --- FOLLOWER HACK LOGIC ---
+                // --- FOLLOWER LOGIC ---
                 onValue(ref(db, `followers/${profileUID}`), s => {
                     let count = s.exists() ? s.size : 0;
                     
-                    // Agar ye TUM ho (Match Email), to 125,400 add kardo
+                    // Agar Owner hai, to 125400 add kardo
                     if(isOwner) {
                         count += 125400; 
                     }
