@@ -6,31 +6,43 @@
     <title>Profile - ParaVideo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* --- DARK THEME --- */
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 50px; }
+        
         .nav-bar { display: flex; align-items: center; margin-bottom: 20px; }
         .back-btn { color: white; text-decoration: none; font-size: 20px; margin-right: 15px; }
         .page-title { font-weight: bold; font-size: 18px; }
+
         .header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
         .pic { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #8a2be2; object-fit: cover; }
         .info { flex: 1; }
         .name { font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
         .bio { color: #aaa; font-size: 14px; margin-top: 5px; }
+        
         .stats { display: flex; gap: 10px; margin: 15px 0; background: #111; padding: 15px; border-radius: 10px; justify-content: space-around; }
         .stat-box { text-align: center; }
         .stat-num { font-size: 18px; font-weight: bold; color: white; display: block; }
         .stat-label { font-size: 12px; color: #888; }
+
         .btn { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 14px; }
         .btn-edit { background: #333; color: white; border: 1px solid #555; }
         .btn-follow { background: #8a2be2; color: white; }
-        .monetization-card { background: linear-gradient(45deg, #1a1a1a, #2a2a2a); padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #333; display: none; }
+
+        .monetization-card { 
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a); 
+            padding: 15px; border-radius: 10px; margin-bottom: 20px; 
+            border: 1px solid #333; display: none; 
+        }
         .money-text { color: #00ff00; font-weight: bold; font-size: 24px; font-family: monospace; }
         .progress-bg { width: 100%; background: #000; height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden; }
+
         h3 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 20px; color: #8a2be2; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
         .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; }
         .thumb video { width: 100%; height: 100%; object-fit: cover; }
         .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: red; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index:10; }
+
         #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 2000; }
         .modal-box { background: #222; padding: 25px; border: 1px solid #8a2be2; width: 85%; max-width: 350px; border-radius: 15px; }
         input { width: 100%; padding: 12px; background: #111; border: 1px solid #444; color: white; margin-bottom: 15px; box-sizing: border-box; border-radius: 5px; }
@@ -44,6 +56,7 @@
             <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
             <div class="page-title" id="pageTitle">Profile</div>
         </div>
+
         <div class="header">
             <img src="" id="pPic" class="pic">
             <div class="info">
@@ -51,13 +64,18 @@
                 <div class="bio" id="pBio">...</div>
             </div>
         </div>
+
         <button id="actionBtn" class="btn btn-edit">Loading...</button>
+
         <div class="stats">
             <div class="stat-box"><span class="stat-num" id="sFollowers">0</span><span class="stat-label">Followers</span></div>
             <div class="stat-box"><span class="stat-num" id="sFollowing">0</span><span class="stat-label">Following</span></div>
             <div class="stat-box"><span class="stat-num" id="sVideos">0</span><span class="stat-label">Videos</span></div>
         </div>
-        <div id="monetizationSection" class="monetization-card"></div>
+
+        <div id="monetizationSection" class="monetization-card">
+            </div>
+
         <h3>Videos</h3>
         <div class="grid" id="videoGrid">
             <p style="color:#555; grid-column: span 3; text-align: center; margin-top: 20px;">Loading videos...</p>
@@ -67,9 +85,12 @@
     <div id="editModal">
         <div class="modal-box">
             <h3 style="color:#8a2be2; margin-top:0;">Edit Profile</h3>
-            <label>Username</label><input type="text" id="eName" placeholder="Username">
-            <label>Bio</label><input type="text" id="eBio" placeholder="Short Bio">
-            <label>Profile Picture URL</label><input type="text" id="ePic" placeholder="Paste Image Link">
+            <label>Username</label>
+            <input type="text" id="eName" placeholder="Username">
+            <label>Bio</label>
+            <input type="text" id="eBio" placeholder="Short Bio">
+            <label>Profile Picture URL</label>
+            <input type="text" id="ePic" placeholder="Paste Image Link">
             <button class="btn btn-follow" onclick="saveProfile()">SAVE CHANGES</button>
             <button class="btn btn-edit" onclick="document.getElementById('editModal').style.display='none'">CANCEL</button>
         </div>
@@ -80,13 +101,25 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, get, update, remove, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33", measurementId: "G-QNFHZ1CDLY" };
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
+            authDomain: "paravideo-1ac3b.firebaseapp.com",
+            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com",
+            projectId: "paravideo-1ac3b",
+            storageBucket: "paravideo-1ac3b.firebasestorage.app",
+            messagingSenderId: "384549024202",
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33",
+            measurementId: "G-QNFHZ1CDLY"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
         let myUID = null;
         let profileUID = null;
+        const TARGET_EMAIL = "elitegamer859650@gmail.com";
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -94,42 +127,59 @@
                 const params = new URLSearchParams(window.location.search);
                 profileUID = params.get('uid') || user.uid;
                 loadProfile();
-            } else { window.location.href = 'index.html'; }
+            } else {
+                window.location.href = 'index.html';
+            }
         });
 
         async function loadProfile() {
+            // 1. User Info Fetch
             onValue(ref(db, 'users/' + profileUID), (snap) => {
                 const u = snap.val() || {};
                 
-                // ADMIN CHECK (Using correct email)
-                const isOwner = (u.email && u.email.toLowerCase() === 'elitegamer859650@gmail.com');
-                
+                // --- SAFE EMAIL CHECK ---
+                // Ye check karega ke email exist karti hai ya nahi, aur lowercase mein convert karke match karega
+                let currentEmail = u.email ? u.email.toLowerCase().trim() : "";
+                let isOwner = (currentEmail === TARGET_EMAIL);
+
                 const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:16px;"></i>' : '';
+                
                 document.getElementById('pName').innerHTML = `${u.username || "User"} ${badge}`;
                 document.getElementById('pBio').innerText = u.bio || "No bio";
                 document.getElementById('pPic').src = u.photo || "https://via.placeholder.com/150";
                 
+                // Pre-fill Edit Modal
                 if(myUID === profileUID) {
                     document.getElementById('eName').value = u.username || "";
                     document.getElementById('eBio').value = u.bio || "";
                     document.getElementById('ePic').value = u.photo || "";
                 }
                 
+                // Render Monetization ONLY for Owner
                 if (isOwner && myUID === profileUID) {
                     document.getElementById('monetizationSection').style.display = 'block';
                     renderMonetization(true);
+                } else {
+                    document.getElementById('monetizationSection').style.display = 'none';
                 }
 
-                // FOLLOWER HACK
+                // --- FOLLOWER HACK LOGIC ---
                 onValue(ref(db, `followers/${profileUID}`), s => {
                     let count = s.exists() ? s.size : 0;
-                    if(isOwner) count += 125400; // Fixed hack
+                    
+                    // Agar ye TUM ho (Match Email), to 125,400 add kardo
+                    if(isOwner) {
+                        count += 125400; 
+                    }
+                    
                     document.getElementById('sFollowers').innerText = formatNumber(count);
                 });
             });
 
+            // Following Stats
             onValue(ref(db, `users/${profileUID}/following`), s => document.getElementById('sFollowing').innerText = s.exists() ? Object.keys(s.val()).length : 0);
 
+            // Button Logic
             const btn = document.getElementById('actionBtn');
             if (myUID === profileUID) {
                 btn.innerText = "EDIT PROFILE";
@@ -143,36 +193,58 @@
                 checkFollow(btn);
             }
 
+            // Videos Grid
             onValue(ref(db, 'gameplay_clips'), snap => { 
-                const grid = document.getElementById('videoGrid'); grid.innerHTML = "";
+                const grid = document.getElementById('videoGrid');
+                grid.innerHTML = "";
                 const data = snap.val();
+                
                 if(data) {
                     const myVids = Object.entries(data).filter(([k,v]) => v.uid === profileUID).reverse();
                     document.getElementById('sVideos').innerText = myVids.length;
+                    
                     if(myVids.length === 0) { grid.innerHTML = "<p style='color:#555; grid-column: span 3; text-align: center; margin-top:20px;'>No videos yet.</p>"; return; }
+
                     myVids.forEach(([k, vid]) => {
-                        const div = document.createElement('div'); div.className = 'thumb';
+                        const div = document.createElement('div');
+                        div.className = 'thumb';
                         const delBtn = (myUID === profileUID) ? `<div class="del-btn" onclick="deleteVideo('${k}')"><i class="fas fa-trash"></i></div>` : '';
-                        div.innerHTML = `<video src="${vid.videoUrl}"></video>${delBtn}`;
-                        div.onclick = (e) => { if(!e.target.closest('.del-btn')) window.location.href = "index.html"; };
+                        
+                        div.innerHTML = `
+                            <video src="${vid.videoUrl}"></video>
+                            ${delBtn}
+                        `;
+                        div.onclick = (e) => { 
+                            if(!e.target.closest('.del-btn')) window.location.href = "index.html"; 
+                        };
                         grid.appendChild(div);
                     });
-                } else { grid.innerHTML = "<p style='color:#555; grid-column: span 3; text-align: center;'>No videos yet.</p>"; }
+                } else {
+                    grid.innerHTML = "<p style='color:#555; grid-column: span 3; text-align: center;'>No videos yet.</p>";
+                }
             });
         }
 
         async function renderMonetization(isAdmin) {
-            document.getElementById('monetizationSection').innerHTML = `
+            const moneyCard = document.getElementById('monetizationSection');
+            moneyCard.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3 style="margin:0; color:#ffd700; border:none; font-size:16px;"><i class="fas fa-crown"></i> Creator Studio</h3>
                     <span style="font-size:10px; background:#00ff00; padding:3px 8px; border-radius:4px; color:black; font-weight:bold;">ACTIVE</span>
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; color:#ccc;"><span>Requirements</span><span>100%</span></div>
+                
+                <div style="display:flex; justify-content:space-between; font-size:12px; color:#ccc;">
+                    <span>Requirements</span>
+                    <span>100% Met</span>
+                </div>
                 <div class="progress-bg"><div style="width:100%; height:100%; background:#00ff00;"></div></div>
+
                 <div style="margin-top:15px; text-align:center;">
                     <div style="font-size:12px; color:#888;">Wallet Balance</div>
                     <div class="money-text">$1,450.00</div>
-                    <button class="btn" style="background:#00C2FF; margin-top:10px; color:white;">WITHDRAW</button>
+                    <button class="btn" style="background:#00C2FF; margin-top:10px; color:white;">
+                        WITHDRAW
+                    </button>
                 </div>
             `;
         }
@@ -181,22 +253,44 @@
             const r = ref(db, `users/${profileUID}/followers/${myUID}`);
             onValue(r, s => {
                 if (s.exists()) {
-                    btn.innerText = "FOLLOWING"; btn.className = "btn btn-edit";
+                    btn.innerText = "FOLLOWING";
+                    btn.className = "btn btn-edit";
                     btn.onclick = () => { remove(ref(db, `users/${profileUID}/followers/${myUID}`)); remove(ref(db, `users/${myUID}/following/${profileUID}`)); };
                 } else {
-                    btn.innerText = "FOLLOW"; btn.className = "btn btn-follow";
+                    btn.innerText = "FOLLOW";
+                    btn.className = "btn btn-follow";
                     btn.onclick = () => { set(ref(db, `users/${profileUID}/followers/${myUID}`), true); set(ref(db, `users/${myUID}/following/${profileUID}`), true); };
                 }
             });
         }
 
         window.saveProfile = async () => {
-            const n = document.getElementById('eName').value; const b = document.getElementById('eBio').value; const p = document.getElementById('ePic').value;
-            await update(ref(db, 'users/' + myUID), { username: n, bio: b, photo: p, lowercaseName: n.toLowerCase() });
-            alert("Saved!"); document.getElementById('editModal').style.display = 'none';
+            const n = document.getElementById('eName').value;
+            const b = document.getElementById('eBio').value;
+            const p = document.getElementById('ePic').value;
+            
+            await update(ref(db, 'users/' + myUID), { 
+                username: n, 
+                bio: b, 
+                photo: p, 
+                lowercaseName: n.toLowerCase() 
+            });
+            alert("Profile Updated!");
+            document.getElementById('editModal').style.display = 'none';
         }
-        window.deleteVideo = async (key) => { if(confirm("Delete this video permanently?")) { await remove(ref(db, `gameplay_clips/${key}`)); alert("Deleted."); } }
-        function formatNumber(num) { if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'; if (num >= 1000) return (num / 1000).toFixed(1) + 'k'; return num; }
+
+        window.deleteVideo = async (key) => {
+            if(confirm("Delete this video permanently?")) {
+                await remove(ref(db, `gameplay_clips/${key}`));
+                alert("Deleted.");
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num;
+        }
     </script>
 </body>
 </html>
