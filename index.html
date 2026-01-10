@@ -75,10 +75,11 @@
         video { 
             width: 100%; 
             height: 100%; 
-            object-fit: cover; /* Ensures full screen */
+            object-fit: cover; 
             cursor: pointer; 
             display: block; 
-            image-rendering: -webkit-optimize-contrast; /* Sharpness fix */
+            /* Enhances sharpness on screens */
+            image-rendering: -webkit-optimize-contrast; 
         }
 
         .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
@@ -140,7 +141,7 @@
         </header>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading HD Videos...</p>
+            <p style="text-align:center; color:#555; margin-top:50vh;">Loading Videos...</p>
         </div>
         
         <div class="comments-modal" id="commentsModal">
@@ -238,10 +239,13 @@
             }
         });
 
-        // --- HD URL HELPER ---
+        // --- NEW OPTIMIZED VIDEO URL ---
         function getHdUrl(originalUrl) {
-            // Inserts 'q_auto:best' into the Cloudinary URL to force High Definition
-            return originalUrl.replace("/upload/", "/upload/q_auto:best/");
+            // w_1080: 1080p Width
+            // q_auto: Automatic Quality (Smart compression)
+            // f_auto: Automatic Format (Best for browser)
+            // This combination gives HD quality WITHOUT buffering
+            return originalUrl.replace("/upload/", "/upload/w_1080,q_auto,f_auto/");
         }
 
         async function loadSmartFeed() {
@@ -279,7 +283,7 @@
                     const div = document.createElement('div');
                     div.className = "video-card";
 
-                    // --- HD URL CONVERSION ---
+                    // --- APPLY HD FIX ---
                     const finalVideoUrl = getHdUrl(item.videoUrl);
 
                     if (item.type === 'ad') {
@@ -337,14 +341,29 @@
         window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); const list = document.getElementById('commentsList'); list.innerHTML = "Loading..."; onValue(ref(db, `gameplay_comments/${key}`), (snap) => { list.innerHTML = ""; if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#555'>No comments.</p>"; return; } snap.forEach(c => { const val = c.val(); list.innerHTML += `<div style="margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;"><b style="color:#ddd">${val.u || 'User'}:</b> <span style="color:#fff">${val.t}</span></div>`; }); }); };
         window.postComment = () => { const t = document.getElementById('commentInput').value; if(t && currentVideoKeyForComments) { push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid, time: Date.now() }); document.getElementById('commentInput').value = ""; } };
         window.shareVideo = (title, url) => { if (navigator.share) { navigator.share({ title: 'ParaVideo', text: title, url: url }).catch(console.error); } else { navigator.clipboard.writeText(url).then(() => alert("Link copied!")); } };
-        window.toggleFollow = async (uid) => { if(uid === currentUser.uid) return; const r1 = ref(db, `followers/${uid}/${currentUser.uid}`); const r2 = ref(db, `following/${currentUser.uid}/${uid}`); const s = await get(r1); if(s.exists()) { await remove(r1); await remove(r2); } else { await set(r1, true); await set(r2, true); } };
+        
+        // --- CORRECT ROOT PATH FOLLOW LOGIC ---
+        window.toggleFollow = async (uid) => { 
+            if(uid === currentUser.uid) return; 
+            const r1 = ref(db, `followers/${uid}/${currentUser.uid}`); // Add me to THEIR followers list
+            const r2 = ref(db, `following/${currentUser.uid}/${uid}`); // Add them to MY following list
+            
+            const s = await get(r1); 
+            if(s.exists()) { 
+                await remove(r1); await remove(r2); 
+            } else { 
+                await set(r1, true); await set(r2, true); 
+            } 
+        };
         
         function checkLikeStatus(key) { onValue(ref(db, `gameplay_likes/${key}`), s => { document.getElementById(`like-count-${key}`).innerText = s.size; document.getElementById(`like-icon-${key}`).style.color = s.hasChild(currentUser.uid) ? '#ff0055' : 'white'; }); }
         function updateCommentCount(key) { onValue(ref(db, `gameplay_comments/${key}`), s => document.getElementById(`comment-count-${key}`).innerText = s.size); }
+        
+        // --- FOLLOW STATUS CHECK WITH ROOT PATH ---
         function checkFollowStatus(uid) { 
             if(uid === currentUser.uid) { document.querySelectorAll(`.js-follow-${uid}`).forEach(b => b.style.display='none'); return; } 
             
-            // Check in ROOT followers node
+            // Check ROOT followers
             onValue(ref(db, `followers/${uid}/${currentUser.uid}`), s => { 
                 document.querySelectorAll(`.js-follow-${uid}`).forEach(b => { 
                     b.innerText = s.exists() ? "Following" : "Follow"; 
