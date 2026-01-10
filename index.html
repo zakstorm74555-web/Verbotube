@@ -75,11 +75,7 @@
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; border-bottom: 1px solid #111; }
         
         video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            cursor: pointer; 
-            display: block; 
+            width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block; 
         }
 
         .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
@@ -89,12 +85,20 @@
 
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; }
         .user-row { display: flex; align-items: center; gap: 10px; pointer-events: auto; margin-bottom: 8px; }
-        .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; }
+        
+        /* --- NEW PROFILE PIC IN FEED --- */
+        .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
+        
+        .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
         .follow-btn { background: transparent; border: 1px solid white; color: white; font-size: 11px; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         .following { background: white; color: black; border: none; }
         
         .ad-badge { background: #ff0055; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; display: inline-block; margin-bottom: 5px; box-shadow: 0 0 10px #ff0055; }
         .ad-btn { background: white; color: black; border: none; padding: 12px 20px; width: 100%; border-radius: 30px; font-weight: bold; margin-top: 10px; cursor: pointer; pointer-events: auto; text-transform: uppercase; }
+
+        /* --- BADGE STYLES --- */
+        .badge-circle { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid white; display: inline-block; vertical-align: middle; }
+        .badge-text { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; display: inline-block; vertical-align: middle; margin-left: 5px; }
 
         .music-bar { font-size: 13px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.9; }
         .music-spin { animation: spin 3s linear infinite; }
@@ -246,6 +250,8 @@
             if(adSnap.exists()) {
                 adSnap.forEach(c => {
                     if(Date.now() < c.val().expiry) {
+                        // Note: Ads now rely on 'uid' stored in the ad object. 
+                        // If old ads don't have uid, we fallback gracefully.
                         activeAds.push({ type: 'ad', key: c.key, ...c.val() });
                     } else {
                         remove(ref(db, `ads/${c.key}`));
@@ -274,10 +280,18 @@
                     const div = document.createElement('div');
                     div.className = "video-card";
 
+                    // --- ADVERTISEMENT LOGIC ---
                     if (item.type === 'ad') {
+                        // Use Ad UID or fallback to current user (Just for visual, ideally Ad has uid)
+                        const adUid = item.uid || 'admin'; 
+                        
                         div.innerHTML = `
                             <video src="${item.videoUrl}" loop playsinline class="reel-video"></video>
                             <div class="video-info" style="padding-bottom:60px;">
+                                <div class="user-row" style="margin-bottom:10px;">
+                                    <img src="" id="ad-pic-${item.key}" class="feed-profile-pic">
+                                    <div class="uploader-name" id="ad-name-${item.key}">Loading...</div>
+                                </div>
                                 <div class="ad-badge">SPONSORED</div>
                                 <div style="font-size:18px; font-weight:bold; margin-bottom:5px;">${item.caption}</div>
                                 <button onclick="window.open('${item.link}', '_blank')" class="ad-btn">
@@ -285,9 +299,25 @@
                                 </button>
                             </div>
                         `;
-                    } else {
+                        
+                        // Fetch Ad Owner Info
+                        if(adUid === 'admin') {
+                             document.getElementById(`ad-pic-${item.key}`).src = "https://ibb.co/ZsDDGHQ"; // Default Logo
+                             document.getElementById(`ad-name-${item.key}`).innerText = "ParaVideo Team";
+                        } else {
+                            onValue(ref(db, 'users/' + adUid), (uSnap) => {
+                                if(uSnap.exists()) {
+                                    const u = uSnap.val();
+                                    document.getElementById(`ad-pic-${item.key}`).src = u.photo || "https://via.placeholder.com/40";
+                                    document.getElementById(`ad-name-${item.key}`).innerHTML = `${u.username} <i class="fas fa-check-circle" style="color:#00C2FF;"></i>`;
+                                }
+                            });
+                        }
+
+                    } 
+                    // --- NORMAL VIDEO LOGIC ---
+                    else {
                         const isOwner = (item.email === 'elitegamer859650@gmail.com');
-                        const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:12px; margin-left:5px;"></i>' : '';
                         const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> Sound</div>` : '';
 
                         div.innerHTML = `
@@ -299,7 +329,8 @@
                             </div>
                             <div class="video-info">
                                 <div class="user-row">
-                                    <div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader} ${badge}</div>
+                                    <img src="" id="pic-${item.key}" class="feed-profile-pic" onclick="window.location.href='profile.html?uid=${item.uid}'">
+                                    <div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader}</div>
                                     <button class="follow-btn js-follow-${item.uid}" onclick="window.toggleFollow('${item.uid}')">Follow</button>
                                 </div>
                                 <div style="font-size:14px; color:#eee;">${item.caption}</div>
@@ -310,9 +341,25 @@
                         onValue(ref(db, 'users/' + item.uid), (uSnap) => {
                             if(uSnap.exists()) {
                                 const u = uSnap.val();
-                                let liveBadge = u.email === 'elitegamer859650@gmail.com' ? '<i class="fas fa-check-circle" style="color:#00C2FF;"></i>' : '';
-                                if(u.customBadge) liveBadge += ` <span style="background:#ff0055; font-size:10px; padding:2px 5px; border-radius:3px; margin-left:5px;">${u.customBadge}</span>`;
-                                document.getElementById(`name-${item.key}`).innerHTML = `@${u.username} ${liveBadge}`;
+                                document.getElementById(`pic-${item.key}`).src = u.photo || "https://via.placeholder.com/40";
+                                
+                                // --- ADVANCED BADGE LOGIC ---
+                                let badgeHtml = '';
+                                if(u.email === 'elitegamer859650@gmail.com') badgeHtml += '<i class="fas fa-check-circle" style="color:#00C2FF; margin-left:5px;"></i>';
+                                
+                                if(u.customBadge) {
+                                    if(typeof u.customBadge === 'object' && u.customBadge.image) {
+                                        // Image Badge (Circle)
+                                        badgeHtml += `<img src="${u.customBadge.image}" class="badge-circle" style="border-color:${u.customBadge.color || 'white'}">`;
+                                    } else {
+                                        // Text Badge (Rectangle)
+                                        let txt = u.customBadge.text || u.customBadge;
+                                        let col = u.customBadge.color || '#ff0055';
+                                        badgeHtml += `<span class="badge-text" style="background:${col}">${txt}</span>`;
+                                    }
+                                }
+                                
+                                document.getElementById(`name-${item.key}`).innerHTML = `@${u.username} ${badgeHtml}`;
                             }
                         });
 
@@ -329,17 +376,7 @@
         window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); const list = document.getElementById('commentsList'); list.innerHTML = "Loading..."; onValue(ref(db, `gameplay_comments/${key}`), (snap) => { list.innerHTML = ""; if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#555'>No comments.</p>"; return; } snap.forEach(c => { const val = c.val(); list.innerHTML += `<div style="margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;"><b style="color:#ddd">${val.u || 'User'}:</b> <span style="color:#fff">${val.t}</span></div>`; }); }); };
         window.postComment = () => { const t = document.getElementById('commentInput').value; if(t && currentVideoKeyForComments) { push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid, time: Date.now() }); document.getElementById('commentInput').value = ""; } };
         window.shareVideo = (title, url) => { if (navigator.share) { navigator.share({ title: 'ParaVideo', text: title, url: url }).catch(console.error); } else { navigator.clipboard.writeText(url).then(() => alert("Link copied!")); } };
-        window.toggleFollow = async (uid) => { 
-            if(uid === currentUser.uid) return; 
-            const r1 = ref(db, `followers/${uid}/${currentUser.uid}`); 
-            const r2 = ref(db, `following/${currentUser.uid}/${uid}`); 
-            const s = await get(r1); 
-            if(s.exists()) { 
-                await remove(r1); await remove(r2); 
-            } else { 
-                await set(r1, true); await set(r2, true); 
-            } 
-        };
+        window.toggleFollow = async (uid) => { if(uid === currentUser.uid) return; const r1 = ref(db, `followers/${uid}/${currentUser.uid}`); const r2 = ref(db, `following/${currentUser.uid}/${uid}`); const s = await get(r1); if(s.exists()) { await remove(r1); await remove(r2); } else { await set(r1, true); await set(r2, true); } };
         
         function checkLikeStatus(key) { onValue(ref(db, `gameplay_likes/${key}`), s => { document.getElementById(`like-count-${key}`).innerText = s.size; document.getElementById(`like-icon-${key}`).style.color = s.hasChild(currentUser.uid) ? '#ff0055' : 'white'; }); }
         function updateCommentCount(key) { onValue(ref(db, `gameplay_comments/${key}`), s => document.getElementById(`comment-count-${key}`).innerText = s.size); }
