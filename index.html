@@ -50,6 +50,11 @@
         .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; }
         .follow-btn { background: transparent; border: 1px solid white; color: white; font-size: 11px; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         .following { background: white; color: black; border: none; }
+        
+        /* MUSIC BAR (Restored) */
+        .music-bar { font-size: 13px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.9; }
+        .music-spin { animation: spin 3s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* MODALS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; justify-content: center; align-items: center; flex-direction: column; }
@@ -131,8 +136,11 @@
                 <p id="rec-status" style="color:red; display:none;">Recording...</p>
             </div>
 
-            <h4 style="text-align:left; margin:20px 0 5px;">Caption</h4>
+            <h4 style="text-align:left; margin:20px 0 5px;">Details</h4>
             <input type="text" id="caption" placeholder="Write a caption...">
+            
+            <input type="text" id="ytLink" placeholder="YouTube Music Link (Optional)">
+            <input type="number" id="startTime" placeholder="Music Start Time (sec)">
             
             <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
             <button class="upload-submit" id="postBtn" onclick="uploadVideo()">POST VIDEO</button>
@@ -160,9 +168,8 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         
-        // --- CORRECT CLOUDINARY CONFIG ---
         const CLOUD_NAME = "dusj0vpsi"; 
-        const UPLOAD_PRESET = "paravideo"; // Tumhare kehne ke mutabiq preset ka naam ye hai
+        const UPLOAD_PRESET = "paravideo";
 
         let currentUser = null;
         let selectedFile = null;
@@ -217,8 +224,13 @@
                     const div = document.createElement('div');
                     div.className = "video-card";
                     
+                    // NEW ADMIN EMAIL
                     const isOwner = (vid.email === 'elitegamer859650@gmail.com');
                     const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:12px; margin-left:5px;"></i>' : '';
+
+                    // Music HTML Check
+                    const musicHtml = vid.musicLink ? 
+                        `<div class="music-bar" onclick="window.open('${vid.musicLink}&t=${vid.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> ${vid.caption.substring(0,10)}... Sound</div>` : '';
 
                     div.innerHTML = `
                         <video src="${vid.videoUrl}" loop playsinline class="reel-video" data-key="${vid.key}"></video>
@@ -242,6 +254,7 @@
                                 <button class="follow-btn js-follow-${vid.uid}" onclick="window.toggleFollow('${vid.uid}')">Follow</button>
                             </div>
                             <div style="font-size:14px; color:#eee;">${vid.caption}</div>
+                            ${musicHtml}
                         </div>
                     `;
                     feed.appendChild(div);
@@ -346,25 +359,21 @@
             } catch (e) { alert("Camera Error: " + e.message); }
         }
         function stopCamera() { if(stream) stream.getTracks().forEach(t => t.stop()); }
-        
-        // --- Toggle Recording Function (Fixed) ---
         window.toggleRecording = () => {
             const btn = document.getElementById('recBtn');
-            if(mediaRecorder.state === "inactive") {
-                mediaRecorder.start();
-                btn.style.borderRadius = "10px";
-                document.getElementById('rec-status').style.display='block';
-            } else {
-                mediaRecorder.stop();
-                btn.style.borderRadius = "50%";
-                stopCamera();
-                document.getElementById('rec-status').style.display='none';
-            }
+            if(mediaRecorder.state === "inactive") { mediaRecorder.start(); btn.style.borderRadius = "10px"; document.getElementById('rec-status').style.display='block'; } 
+            else { mediaRecorder.stop(); btn.style.borderRadius = "50%"; stopCamera(); document.getElementById('rec-status').style.display='none'; }
         };
 
         window.uploadVideo = () => {
             if(!selectedFile) return alert("Select video first");
-            const fd = new FormData(); fd.append("file", selectedFile); fd.append("upload_preset", UPLOAD_PRESET);
+            const btn = document.getElementById('postBtn');
+            btn.disabled = true; btn.innerText = "Uploading...";
+            
+            const fd = new FormData(); 
+            fd.append("file", selectedFile); 
+            fd.append("upload_preset", UPLOAD_PRESET);
+            
             const xhr = new XMLHttpRequest();
             xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
             xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
@@ -374,13 +383,20 @@
                     await push(ref(db, 'gameplay_clips'), {
                         videoUrl: url,
                         caption: document.getElementById('caption').value,
+                        // --- SAVING MUSIC DATA ---
+                        musicLink: document.getElementById('ytLink').value,
+                        startTime: document.getElementById('startTime').value,
+                        // -------------------------
                         uploader: currentUser.displayName,
                         uid: currentUser.uid,
                         email: currentUser.email,
                         timestamp: Date.now()
                     });
                     alert("Uploaded!"); location.reload();
-                } else { alert("Upload Failed: " + xhr.statusText); }
+                } else { 
+                    alert("Upload Failed: " + xhr.statusText); 
+                    btn.disabled = false; btn.innerText = "POST VIDEO";
+                }
             };
             xhr.send(fd);
         };
