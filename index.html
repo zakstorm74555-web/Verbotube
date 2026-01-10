@@ -8,7 +8,59 @@
     <style>
         /* --- THEME & RESET --- */
         * { box-sizing: border-box; }
-        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        body { 
+            background-color: #000; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+        }
+
+        /* --- DESKTOP VIEW FIX (Ye naya code hai) --- */
+        @media (min-width: 768px) {
+            body {
+                background: #111; /* PC background dark grey */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-image: radial-gradient(circle, #222 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            
+            /* App Container ko mobile size mein lock karna */
+            #appScreen, #loginScreen {
+                width: 100%;
+                max-width: 450px; /* Standard Mobile Width */
+                height: 100vh;
+                background: #000;
+                position: relative;
+                box-shadow: 0 0 50px rgba(0,0,0,0.5);
+                border-left: 1px solid #333;
+                border-right: 1px solid #333;
+                overflow: hidden;
+            }
+
+            /* Header ko bhi center mein rakhna */
+            header {
+                max-width: 450px;
+                left: 50% !important;
+                transform: translateX(-50%);
+            }
+
+            /* Modals ko bhi center rakhna */
+            .modal, .comments-modal {
+                max-width: 450px;
+                left: 50% !important;
+                transform: translateX(-50%);
+            }
+            
+            /* Scrollbar chupana PC par */
+            ::-webkit-scrollbar { width: 0px; }
+        }
+
+        /* --- MOBILE STYLES (Standard) --- */
         
         /* LOGIN SCREEN */
         #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -195,14 +247,14 @@
                         lowercaseName: user.displayName.toLowerCase()
                     });
                 }
-                loadSmartFeed(); // Load Ads + Videos
+                loadSmartFeed();
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('appScreen').style.display = 'none';
             }
         });
 
-        // --- SMART FEED (ADS ON TOP) ---
+        // --- SMART FEED ---
         async function loadSmartFeed() {
             // 1. Fetch ADS First
             const adSnap = await get(ref(db, 'ads'));
@@ -226,7 +278,7 @@
                 
                 if (snap.exists()) {
                     videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, type: 'video', ...v }));
-                    // Shuffle videos
+                    // Shuffle videos for freshness
                     videos.sort(() => Math.random() - 0.5);
                 }
 
@@ -243,7 +295,6 @@
                     div.className = "video-card";
 
                     if (item.type === 'ad') {
-                        // --- RENDER ADVERTISEMENT ---
                         div.innerHTML = `
                             <video src="${item.videoUrl}" loop playsinline class="reel-video"></video>
                             <div class="video-info" style="padding-bottom:60px;">
@@ -255,7 +306,6 @@
                             </div>
                         `;
                     } else {
-                        // --- RENDER NORMAL VIDEO ---
                         const isOwner = (item.email === 'elitegamer859650@gmail.com');
                         const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:12px; margin-left:5px;"></i>' : '';
                         const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> Sound</div>` : '';
@@ -277,7 +327,6 @@
                             </div>
                         `;
                         
-                        // Live Username Check (Important)
                         onValue(ref(db, 'users/' + item.uid), (uSnap) => {
                             if(uSnap.exists()) {
                                 const u = uSnap.val();
