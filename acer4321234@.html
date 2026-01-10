@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ParaVideo - Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
-        body { background: #111; color: white; font-family: monospace; margin: 0; padding: 20px; }
+        body { background: #111; color: white; font-family: 'Segoe UI', monospace; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
         
         .header { border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; }
-        .title { font-size: 24px; color: #ff0055; font-weight: bold; }
+        .title { font-size: 24px; color: #8a2be2; font-weight: bold; }
         
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 10px 20px; cursor: pointer; }
-        .tab-btn.active { background: #ff0055; color: white; border-color: #ff0055; font-weight: bold; }
+        .tab-btn.active { background: #8a2be2; color: white; border-color: #8a2be2; font-weight: bold; }
         
         .section { display: none; background: #1a1a1a; padding: 20px; border: 1px solid #333; }
         .section.active { display: block; }
@@ -23,40 +24,51 @@
         .user-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding: 12px 0; }
         .user-info { display: flex; gap: 10px; align-items: center; }
         .u-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #444; }
-        .badge-display { background: #ff0055; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+        
+        /* BADGE PREVIEW IN LIST */
+        .badge-preview { 
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%; 
+            font-size: 8px; color: white; font-weight: bold;
+            margin-left: 8px; border: 1px solid #fff;
+        }
+        .badge-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
         /* CONTROLS */
         input, select { background: #000; border: 1px solid #444; color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        .action-btn { background: #00C2FF; border: none; color: black; padding: 8px 15px; cursor: pointer; font-weight: bold; font-family: monospace; }
-        .btn-red { background: #ff0055; color: white; }
+        .action-btn { background: #8a2be2; border: none; color: white; padding: 8px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-del { background: #333; color: #ff4444; border: 1px solid #555; margin-left: 5px; }
         
-        /* SEARCH BAR */
-        #userSearch { margin-bottom: 20px; border-bottom: 2px solid #00C2FF; }
+        /* MODAL & CROPPER */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index: 2000; }
+        .modal-box { background:#222; padding:20px; width:90%; max-width: 400px; border-radius: 10px; border: 1px solid #8a2be2; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
+        .img-container { max-height: 300px; margin-bottom: 10px; overflow: hidden; }
+        #image-to-crop { max-width: 100%; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header">
-            <div class="title">ADMIN // CONTROL</div>
+            <div class="title">PARA<span style="color:white;">VIDEO</span> ADMIN</div>
             <div id="status" style="color:gray;">Checking...</div>
         </div>
 
         <div id="loginWarning" style="text-align:center; margin-top:50px; display:none;">
             <h2>ACCESS DENIED</h2>
-            <button onclick="login()" style="padding:10px 20px; cursor:pointer;">Login Admin</button>
+            <button onclick="login()" class="action-btn">Login Admin</button>
         </div>
 
         <div id="adminPanel" style="display:none;">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('users')">Users & Badges</button>
-                <button class="tab-btn" onclick="switchTab('ads')">Ads Manager</button>
+                <button class="tab-btn active" onclick="switchTab('users', this)">Users & Badges</button>
+                <button class="tab-btn" onclick="switchTab('ads', this)">Ads Manager</button>
             </div>
 
             <div id="users" class="section active">
                 <h3>Manage Users</h3>
-                <input type="text" id="userSearch" placeholder="Search User via Name..." onkeyup="filterUsers()">
+                <input type="text" id="userSearch" placeholder="Search User via Name..." onkeyup="filterUsers()" style="border-color: #8a2be2;">
                 <div id="userList">Loading users...</div>
             </div>
 
@@ -68,8 +80,8 @@
                 <input type="text" id="adLink" placeholder="Link URL (https://...)">
                 <input type="number" id="adTime" placeholder="Duration (Hours)" value="24">
                 
-                <div id="progress" style="width:0%; height:5px; background:red; margin-bottom:10px;"></div>
-                <button class="action-btn btn-red" style="width:100%;" onclick="postAd()">LAUNCH AD</button>
+                <div id="progress" style="width:0%; height:5px; background:#8a2be2; margin-bottom:10px;"></div>
+                <button class="action-btn" style="width:100%;" onclick="postAd()">LAUNCH AD</button>
                 
                 <h4 style="margin-top:20px;">Active Ads</h4>
                 <div id="activeAdsList"></div>
@@ -77,41 +89,70 @@
         </div>
     </div>
 
+    <div id="badgeModal" class="modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeBadgeModal()">&times;</span>
+            <h3 style="margin-top:0; color:#8a2be2;">Set Badge</h3>
+            <input type="hidden" id="targetUid">
+            
+            <label>Badge Type:</label>
+            <select id="badgeType" onchange="toggleBadgeInputs()">
+                <option value="text">Text Badge</option>
+                <option value="image">Image Badge</option>
+            </select>
+
+            <div id="textInputs">
+                <label>Text (e.g. 'V', 'PRO'):</label>
+                <input type="text" id="badgeText" maxlength="5" placeholder="Max 5 chars">
+            </div>
+
+            <div id="imageInputs" style="display:none;">
+                <label>Upload Image:</label>
+                <input type="file" id="badgeFile" accept="image/*" onchange="loadImageForCropping(event)">
+                <div class="img-container">
+                    <img id="image-to-crop" src="">
+                </div>
+            </div>
+
+            <label>Badge Color (Circle BG):</label>
+            <input type="color" id="badgeColor" value="#8a2be2" style="height:40px; padding:2px;">
+
+            <button id="saveBadgeBtn" onclick="saveBadge()" class="action-btn" style="width:100%; margin-top:15px;">SAVE BADGE</button>
+            <div id="uploadProgress" style="display:none; color:#8a2be2; text-align:center; margin-top:10px;">Uploading...</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, push, set, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIG
+        // CONFIG (ParaVideo)
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33", measurementId: "G-QNFHZ1CDLY" };
         
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
         
-        // ADMIN EMAIL & CLOUDINARY
         const ADMIN_EMAIL = "elitegamer859650@gmail.com";
         const CLOUD_NAME = "dusj0vpsi"; 
         const UPLOAD_PRESET = "paravideo";
 
         let allUsers = [];
-        let listenerAttached = false; // DUPLICATE FIX FLAG
+        let cropper;
 
         window.login = () => signInWithPopup(auth, new GoogleAuthProvider());
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL) {
-                document.getElementById('status').innerText = "COMMANDER ACTIVE";
+                document.getElementById('status').innerText = "ONLINE";
                 document.getElementById('status').style.color = "#00ff00";
                 document.getElementById('adminPanel').style.display = "block";
                 document.getElementById('loginWarning').style.display = "none";
-                
-                // Sirf tab load karo agar pehle se load nahi hua (Duplicate Fix)
-                if(!listenerAttached) {
-                    loadUsers();
-                    loadAds();
-                    listenerAttached = true;
-                }
+                loadUsers();
+                loadAds();
             } else {
                 document.getElementById('status').innerText = "Access Denied";
                 document.getElementById('loginWarning').style.display = "block";
@@ -123,21 +164,29 @@
         function loadUsers() {
             onValue(ref(db, 'users'), (snap) => {
                 const list = document.getElementById('userList');
-                list.innerHTML = ""; // Clear list completely before adding new items
+                list.innerHTML = "";
                 
-                if(!snap.exists()) {
-                    list.innerHTML = "<p>No users found.</p>";
-                    return;
-                }
+                if(!snap.exists()) { list.innerHTML = "<p>No users found.</p>"; return; }
                 
                 allUsers = [];
-                
                 snap.forEach(child => {
                     const u = child.val();
                     const uid = child.key;
                     
-                    // Badge Display Logic
-                    let badgeHtml = u.customBadge ? `<span class="badge-display">${u.customBadge}</span>` : '';
+                    // Display Badge Preview
+                    let badgeHtml = '';
+                    if(u.customBadge) {
+                        // Check if object (New Style) or string (Old Style)
+                        if(typeof u.customBadge === 'object') {
+                            if(u.customBadge.image) {
+                                badgeHtml = `<span class="badge-preview" style="background:${u.customBadge.color}"><img src="${u.customBadge.image}"></span>`;
+                            } else {
+                                badgeHtml = `<span class="badge-preview" style="background:${u.customBadge.color}">${u.customBadge.text}</span>`;
+                            }
+                        } else {
+                            badgeHtml = `<span class="badge-preview" style="background:#ff0055">${u.customBadge}</span>`;
+                        }
+                    }
                     
                     const div = document.createElement('div');
                     div.className = "user-item";
@@ -150,9 +199,8 @@
                             </div>
                         </div>
                         <div style="display:flex; align-items:center;">
-                            <input type="text" id="badge-${uid}" placeholder="Badge Name" style="width:100px; margin:0; padding:8px;">
-                            <button class="action-btn" onclick="giveBadge('${uid}')">SET</button>
-                            <button class="action-btn btn-del" onclick="removeBadge('${uid}')">REMOVE</button>
+                            <button class="action-btn" onclick="openBadgeModal('${uid}')">SET BADGE</button>
+                            <button class="action-btn btn-del" onclick="removeBadge('${uid}')">X</button>
                         </div>
                     `;
                     list.appendChild(div);
@@ -161,85 +209,131 @@
             });
         }
 
-        // Give Badge Function
-        window.giveBadge = (uid) => {
-            const text = document.getElementById(`badge-${uid}`).value;
-            if(!text) return alert("Write badge name first!");
-            update(ref(db, `users/${uid}`), { customBadge: text });
-            alert("Badge Given!");
+        window.filterUsers = () => {
+            const q = document.getElementById('userSearch').value.toLowerCase();
+            allUsers.forEach(u => u.el.style.display = u.name.includes(q) ? "flex" : "none");
         };
 
-        // Remove Badge Function (New)
         window.removeBadge = (uid) => {
-            if(confirm("Are you sure you want to remove the badge?")) {
-                update(ref(db, `users/${uid}`), { customBadge: null });
-                alert("Badge Removed.");
+            if(confirm("Remove Badge?")) update(ref(db, `users/${uid}`), { customBadge: null });
+        };
+
+        // --- BADGE MODAL LOGIC ---
+        window.openBadgeModal = (uid) => {
+            document.getElementById('targetUid').value = uid;
+            document.getElementById('badgeModal').style.display = 'flex';
+            document.getElementById('badgeType').value = 'text';
+            toggleBadgeInputs();
+            resetCropper();
+        };
+        window.closeBadgeModal = () => document.getElementById('badgeModal').style.display = 'none';
+
+        window.toggleBadgeInputs = () => {
+            const type = document.getElementById('badgeType').value;
+            document.getElementById('textInputs').style.display = type === 'text' ? 'block' : 'none';
+            document.getElementById('imageInputs').style.display = type === 'image' ? 'block' : 'none';
+        };
+
+        window.loadImageForCropping = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const image = document.getElementById('image-to-crop');
+                    image.src = e.target.result;
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1 });
+                };
+                reader.readAsDataURL(file);
             }
         };
 
-        window.filterUsers = () => {
-            const q = document.getElementById('userSearch').value.toLowerCase();
-            allUsers.forEach(u => {
-                u.el.style.display = u.name.includes(q) ? "flex" : "none";
-            });
+        function resetCropper() {
+            if(cropper) cropper.destroy();
+            document.getElementById('image-to-crop').src = "";
+            document.getElementById('badgeFile').value = "";
+            document.getElementById('badgeText').value = "";
+            document.getElementById('badgeColor').value = "#8a2be2";
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('saveBadgeBtn').disabled = false;
+        }
+
+        window.saveBadge = async () => {
+            const uid = document.getElementById('targetUid').value;
+            const type = document.getElementById('badgeType').value;
+            const color = document.getElementById('badgeColor').value;
+            const btn = document.getElementById('saveBadgeBtn');
+            
+            let badgeData = { color: color };
+
+            if (type === 'text') {
+                const text = document.getElementById('badgeText').value;
+                if (!text) return alert("Enter Text!");
+                badgeData.text = text;
+                update(ref(db, `users/${uid}`), { customBadge: badgeData });
+                closeBadgeModal();
+            } else {
+                if (!cropper) return alert("Crop Image First!");
+                btn.disabled = true;
+                document.getElementById('uploadProgress').style.display = 'block';
+
+                cropper.getCroppedCanvas({ width: 100, height: 100 }).toBlob(async (blob) => {
+                    const fd = new FormData();
+                    fd.append('file', blob);
+                    fd.append('upload_preset', UPLOAD_PRESET);
+
+                    try {
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+                        const data = await res.json();
+                        badgeData.image = data.secure_url;
+                        update(ref(db, `users/${uid}`), { customBadge: badgeData });
+                        closeBadgeModal();
+                    } catch (e) {
+                        alert("Upload Failed");
+                        btn.disabled = false;
+                    }
+                });
+            }
         };
 
-        // --- AD MANAGER ---
+        // --- ADS MANAGER (Same as before) ---
         window.postAd = () => {
             const file = document.getElementById('adFile').files[0];
-            if(!file) return alert("Select Video File");
-            
-            const btn = event.target;
-            btn.innerText = "Uploading...";
-            btn.disabled = true;
-
-            const fd = new FormData();
-            fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
-            
+            if(!file) return alert("Select Video");
+            const btn = event.target; btn.disabled = true;
+            const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
             const xhr = new XMLHttpRequest();
             xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
             xhr.upload.onprogress = e => document.getElementById('progress').style.width = (e.loaded/e.total)*100+"%";
             xhr.onload = async () => {
                 const url = JSON.parse(xhr.responseText).secure_url;
                 await push(ref(db, 'ads'), {
-                    videoUrl: url,
-                    caption: document.getElementById('adCaption').value,
+                    videoUrl: url, caption: document.getElementById('adCaption').value,
                     btnText: document.getElementById('adBtnText').value || "Visit",
                     link: document.getElementById('adLink').value,
-                    expiry: Date.now() + (document.getElementById('adTime').value * 3600000),
-                    timestamp: Date.now()
+                    expiry: Date.now() + (document.getElementById('adTime').value * 3600000)
                 });
-                alert("Ad Launched!");
-                location.reload();
+                alert("Ad Launched!"); location.reload();
             };
             xhr.send(fd);
         };
 
         function loadAds() {
             onValue(ref(db, 'ads'), snap => {
-                const div = document.getElementById('activeAdsList');
-                div.innerHTML = "";
+                const div = document.getElementById('activeAdsList'); div.innerHTML = "";
                 if(!snap.exists()) return;
                 snap.forEach(c => {
-                    if(Date.now() > c.val().expiry) {
-                        remove(ref(db, `ads/${c.key}`));
-                    } else {
-                        div.innerHTML += `
-                            <div class="user-item">
-                                <div>${c.val().caption}</div>
-                                <button class="action-btn btn-del" onclick="deleteAd('${c.key}')">STOP AD</button>
-                            </div>`;
-                    }
+                    if(Date.now() > c.val().expiry) remove(ref(db, `ads/${c.key}`));
+                    else div.innerHTML += `<div class="user-item"><div>${c.val().caption}</div><button class="action-btn btn-del" onclick="remove(ref(db, 'ads/${c.key}'))">STOP</button></div>`;
                 });
             });
         }
-        window.deleteAd = (k) => remove(ref(db, `ads/${k}`));
 
-        window.switchTab = (t) => {
+        window.switchTab = (t, btn) => {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(t).classList.add('active');
-            event.target.classList.add('active');
+            btn.classList.add('active');
         }
     </script>
 </body>
