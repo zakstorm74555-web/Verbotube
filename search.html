@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Search - ParaVideo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* --- DARK THEME --- */
+        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+
+        /* HEADER */
+        header { 
+            display: flex; align-items: center; gap: 10px; padding: 15px; 
+            border-bottom: 1px solid #222; position: sticky; top: 0; background: #000; z-index: 100;
+        }
+        .back-btn { color: white; font-size: 20px; text-decoration: none; }
+        .search-bar { flex: 1; position: relative; }
+        .search-bar input { 
+            width: 100%; background: #222; border: 1px solid #333; padding: 10px 15px; 
+            border-radius: 20px; color: white; outline: none; font-size: 16px; box-sizing: border-box;
+        }
+        .search-bar i { position: absolute; right: 15px; top: 12px; color: #777; }
+
+        /* RESULTS LIST */
+        .results-container { padding: 10px; }
+        .section-title { font-size: 14px; color: #777; margin: 10px 0 5px 5px; font-weight: bold; text-transform: uppercase; }
+
+        .user-card { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px; border-bottom: 1px solid #1a1a1a; 
+        }
+        .user-info-group { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
+        .user-pic { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 1px solid #333; }
+        .user-text h4 { margin: 0; font-size: 16px; color: white; }
+        .user-text p { margin: 2px 0 0; font-size: 13px; color: #aaa; }
+        
+        /* FOLLOW BUTTON */
+        .follow-btn { 
+            padding: 6px 18px; border-radius: 20px; border: 1px solid #ff0055; 
+            background: transparent; color: #ff0055; font-size: 13px; font-weight: bold; cursor: pointer; 
+        }
+        .follow-btn.following { background: #ff0055; color: white; border: none; }
+
+        /* PROFILE MODAL (Mini) */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: flex-end; }
+        .modal-content { background: #1a1a1a; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; box-sizing: border-box; max-height: 85vh; animation: slideUp 0.3s ease; position: relative; display: flex; flex-direction: column; align-items: center; }
+        @keyframes slideUp { from {transform: translateY(100%);} to {transform: translateY(0);} }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; }
+        
+        .p-pic { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #8a2be2; margin-bottom: 10px; object-fit: cover; }
+        .p-stats { display: flex; gap: 30px; margin: 15px 0; background: #222; padding: 10px 20px; border-radius: 10px; }
+        .stat { text-align: center; } .stat b { font-size: 18px; display: block; } .stat span { font-size: 12px; color: #888; }
+        
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search users..." onkeyup="performSearch()">
+            <i class="fas fa-search"></i>
+        </div>
+    </header>
+
+    <div class="results-container" id="resultsArea">
+        <p style="text-align:center; color:#555; margin-top: 50px;">Type to find friends...</p>
+    </div>
+
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="document.getElementById('profileModal').style.display='none'">&times;</span>
+            <img src="" id="mpPic" class="p-pic">
+            <h3 id="mpName" style="margin:0;">...</h3>
+            <p id="mpBio" style="color:#aaa; font-size:13px; margin-top:5px;">...</p>
+            
+            <div class="p-stats">
+                <div class="stat"><b id="mpFollowers">0</b><span>Followers</span></div>
+                <div class="stat"><b id="mpVideos">0</b><span>Videos</span></div>
+            </div>
+
+            <button id="mpFollowBtn" class="follow-btn" style="width:100%; padding:10px; margin-top:10px;">Follow</button>
+            <button onclick="goToFullProfile()" style="margin-top:10px; background:none; border:none; color:#aaa; text-decoration:underline; cursor:pointer;">View Full Profile</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- CORRECT FIREBASE CONFIG (ParaVideo) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
+            authDomain: "paravideo-1ac3b.firebaseapp.com",
+            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com",
+            projectId: "paravideo-1ac3b",
+            storageBucket: "paravideo-1ac3b.firebasestorage.app",
+            messagingSenderId: "384549024202",
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33",
+            measurementId: "G-QNFHZ1CDLY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        let currentUser = null;
+        let allUsers = [];
+        let selectedUserId = null;
+
+        // Check Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                fetchAllUsers();
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // 1. FETCH ALL USERS
+        function fetchAllUsers() {
+            onValue(ref(db, 'users'), (snap) => {
+                if(snap.exists()) {
+                    allUsers = Object.values(snap.val());
+                }
+            });
+        }
+
+        // 2. SEARCH LOGIC
+        window.performSearch = () => {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const list = document.getElementById('resultsArea');
+            list.innerHTML = "";
+
+            if(query.length < 1) {
+                list.innerHTML = "<p style='text-align:center; color:#555; margin-top: 50px;'>Type to find friends...</p>";
+                return;
+            }
+
+            const matches = allUsers.filter(u => u.username && u.username.toLowerCase().includes(query));
+
+            if(matches.length === 0) {
+                list.innerHTML = "<p style='text-align:center; color:#555;'>No user found.</p>";
+                return;
+            }
+
+            list.innerHTML = "<div class='section-title'>Users</div>";
+
+            matches.forEach(user => {
+                const div = document.createElement('div');
+                div.className = "user-card";
+                
+                div.innerHTML = `
+                    <div class="user-info-group" onclick="openMiniProfile('${user.uid}')">
+                        <img src="${user.photo || 'https://via.placeholder.com/50'}" class="user-pic">
+                        <div class="user-text">
+                            <h4>${user.username}</h4>
+                            <p>@${user.username.replace(/\s+/g, '').toLowerCase()}</p>
+                        </div>
+                    </div>
+                    <button class="follow-btn js-fol-${user.uid}" onclick="toggleFollow('${user.uid}')">Wait...</button>
+                `;
+                
+                list.appendChild(div);
+                checkFollowStatus(user.uid);
+            });
+        }
+
+        // 3. PROFILE MODAL
+        window.openMiniProfile = async (uid) => {
+            selectedUserId = uid;
+            const modal = document.getElementById('profileModal');
+            modal.style.display = "flex";
+            
+            const uData = allUsers.find(u => u.uid === uid);
+            if(uData) {
+                document.getElementById('mpName').innerText = uData.username;
+                document.getElementById('mpBio').innerText = uData.bio || "No bio.";
+                document.getElementById('mpPic').src = uData.photo || "https://via.placeholder.com/80";
+                
+                // Get Stats
+                const fSnap = await get(ref(db, `followers/${uid}`));
+                let fCount = fSnap.exists() ? fSnap.size : 0;
+                
+                // ADMIN HACK
+                if(uData.email === 'mohsinilyas991@gmail.com') fCount += 125400;
+                
+                document.getElementById('mpFollowers').innerText = formatNumber(fCount);
+                document.getElementById('mpVideos').innerText = "-"; 
+
+                const btn = document.getElementById('mpFollowBtn');
+                btn.className = `follow-btn js-fol-${uid}`; 
+                btn.onclick = () => toggleFollow(uid);
+                checkFollowStatus(uid);
+            }
+        }
+
+        window.goToFullProfile = () => {
+            if(selectedUserId) window.location.href = `profile.html?uid=${selectedUserId}`;
+        }
+
+        // 4. FOLLOW SYSTEM
+        window.toggleFollow = async (targetUid) => {
+            if(!currentUser) return;
+            if (targetUid === currentUser.uid) return alert("You can't follow yourself!");
+
+            const followRef = ref(db, `follows/${currentUser.uid}/${targetUid}`);
+            const followerRef = ref(db, `followers/${targetUid}/${currentUser.uid}`);
+            
+            const snap = await get(followRef);
+            if (snap.exists()) { 
+                await remove(followRef); await remove(followerRef); 
+            } else { 
+                await set(followRef, true); await set(followerRef, true); 
+            }
+            checkFollowStatus(targetUid);
+        }
+
+        function checkFollowStatus(uid) {
+            if(!currentUser) return;
+            if(uid === currentUser.uid) {
+                document.querySelectorAll(`.js-fol-${uid}`).forEach(b => b.style.display = 'none');
+                return;
+            }
+
+            onValue(ref(db, `follows/${currentUser.uid}/${uid}`), (snap) => {
+                const isFollowing = snap.exists();
+                document.querySelectorAll(`.js-fol-${uid}`).forEach(btn => {
+                    if (isFollowing) {
+                        btn.innerText = "Following";
+                        btn.classList.add('following');
+                        btn.style.border = "none";
+                    } else {
+                        btn.innerText = "Follow";
+                        btn.classList.remove('following');
+                        btn.style.border = "1px solid #ff0055";
+                    }
+                });
+            });
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num;
+        }
+    </script>
+</body>
+</html>
