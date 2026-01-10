@@ -31,12 +31,8 @@
 
         /* BUTTON STYLES */
         .btn { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 14px; transition: all 0.2s; }
-        
-        /* 1. FOLLOW BUTTON (Purple) */
-        .btn-follow { background: #8a2be2; color: white; border: 1px solid #8a2be2; }
-        
-        /* 2. FOLLOWING BUTTON (Grey) */
-        .btn-following { background: #333; color: white; border: 1px solid #555; }
+        .btn-follow { background: #8a2be2; color: white; border: 1px solid #8a2be2; } /* Purple */
+        .btn-following { background: #333; color: white; border: 1px solid #555; } /* Grey */
 
         h3 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 20px; color: #8a2be2; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
@@ -153,12 +149,15 @@
                     document.getElementById('ePic').value = u.photo || "";
                 }
 
+                // --- READ FOLLOWERS FROM ROOT NODE (Fixing the 0 issue) ---
                 onValue(ref(db, `followers/${profileUID}`), s => {
-                    document.getElementById('sFollowers').innerText = formatNumber(s.exists() ? s.size : 0);
+                    let count = s.exists() ? s.size : 0;
+                    document.getElementById('sFollowers').innerText = formatNumber(count);
                 });
             });
 
-            onValue(ref(db, `users/${profileUID}/following`), s => document.getElementById('sFollowing').innerText = s.exists() ? Object.keys(s.val()).length : 0);
+            // --- READ FOLLOWING FROM ROOT NODE ---
+            onValue(ref(db, `following/${profileUID}`), s => document.getElementById('sFollowing').innerText = s.exists() ? s.size : 0);
 
             const btn = document.getElementById('actionBtn');
             if (myUID === profileUID) {
@@ -191,33 +190,37 @@
             });
         }
 
-        // --- BUTTON LOGIC (FOLLOW / FOLLOWING / UNFOLLOW) ---
+        // --- CORRECTED FOLLOW LOGIC (Root Path Fix) ---
         function checkFollow(btn) {
-            const r = ref(db, `users/${profileUID}/followers/${myUID}`);
+            // Check in Root 'followers' node
+            const r = ref(db, `followers/${profileUID}/${myUID}`);
             
             onValue(r, s => {
                 if (s.exists()) {
-                    // CASE 1: ALREADY FOLLOWING
+                    // ALREADY FOLLOWER
                     btn.innerText = "FOLLOWING";
-                    btn.className = "btn btn-following"; // Grey
+                    btn.className = "btn btn-following"; // Grey Button
                     
-                    // Jab 'Following' par click hoga, to poochay ga (Confirm)
+                    // Click -> Confirm -> Unfollow
                     btn.onclick = async () => {
-                        if(confirm("Do you want to Unfollow this user?")) {
-                            // Unfollow logic
-                            await remove(ref(db, `users/${profileUID}/followers/${myUID}`));
-                            await remove(ref(db, `users/${myUID}/following/${profileUID}`));
+                        if(confirm("Unfollow this user?")) {
+                            // Remove from Followers
+                            await remove(ref(db, `followers/${profileUID}/${myUID}`));
+                            // Remove from Following
+                            await remove(ref(db, `following/${myUID}/${profileUID}`));
                         }
                     };
                 } else {
-                    // CASE 2: NOT FOLLOWING
+                    // NOT FOLLOWER
                     btn.innerText = "FOLLOW";
-                    btn.className = "btn btn-follow"; // Purple
+                    btn.className = "btn btn-follow"; // Purple Button
                     
-                    // Jab 'Follow' par click hoga, direct follow karega
+                    // Click -> Follow Direct
                     btn.onclick = async () => {
-                        await set(ref(db, `users/${profileUID}/followers/${myUID}`), true);
-                        await set(ref(db, `users/${myUID}/following/${profileUID}`), true);
+                        // Add to Followers (Unka follower badhega)
+                        await set(ref(db, `followers/${profileUID}/${myUID}`), true);
+                        // Add to Following (Meri following badhegi)
+                        await set(ref(db, `following/${myUID}/${profileUID}`), true);
                     };
                 }
             });
