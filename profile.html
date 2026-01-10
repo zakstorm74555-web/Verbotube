@@ -14,15 +14,42 @@
         .back-btn { color: white; text-decoration: none; font-size: 20px; margin-right: 15px; }
         .page-title { font-weight: bold; font-size: 18px; }
 
+        /* HEADER & AVATAR WRAPPER */
         .header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .pic { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #8a2be2; object-fit: cover; }
+        
+        /* Wrapper for Badge Positioning */
+        .pic-wrapper { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+        
+        .pic { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #8a2be2; object-fit: cover; }
+        
+        /* NEW BADGE STYLE */
+        #badge-display {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 25px;
+            height: 25px;
+            background: #ff0055; /* Default fallback */
+            color: white;
+            border-radius: 50%;
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            border: 2px solid #000;
+            overflow: hidden;
+            z-index: 10;
+        }
+        #badge-display img { width: 100%; height: 100%; object-fit: cover; }
+
         .info { flex: 1; }
         .name { font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .bio { color: #aaa; font-size: 14px; margin-top: 5px; }
         
-        /* BADGES */
+        /* Blue Tick (Verification) stays next to name */
         .blue-tick { color: #00C2FF; font-size: 16px; margin-left: 5px; }
-        .custom-badge { background: #ff0055; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; text-transform: uppercase; font-weight: bold; }
 
         .stats { display: flex; gap: 10px; margin: 15px 0; background: #111; padding: 15px; border-radius: 10px; justify-content: space-around; }
         .stat-box { text-align: center; }
@@ -31,8 +58,8 @@
 
         /* BUTTON STYLES */
         .btn { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 14px; transition: all 0.2s; }
-        .btn-follow { background: #8a2be2; color: white; border: 1px solid #8a2be2; } /* Purple */
-        .btn-following { background: #333; color: white; border: 1px solid #555; } /* Grey */
+        .btn-follow { background: #8a2be2; color: white; border: 1px solid #8a2be2; } 
+        .btn-following { background: #333; color: white; border: 1px solid #555; } 
 
         h3 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 20px; color: #8a2be2; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
@@ -55,7 +82,11 @@
         </div>
 
         <div class="header">
-            <img src="" id="pPic" class="pic">
+            <div class="pic-wrapper">
+                <img src="" id="pPic" class="pic">
+                <div id="badge-display"></div>
+            </div>
+
             <div class="info">
                 <div class="name" id="pName">Loading...</div>
                 <div class="bio" id="pBio">...</div>
@@ -116,7 +147,8 @@
                 myUID = user.uid;
                 const params = new URLSearchParams(window.location.search);
                 profileUID = params.get('uid') || user.uid;
-                update(ref(db, 'users/' + user.uid), { email: user.email });
+                // Only update email if it's my profile
+                if(myUID === profileUID) update(ref(db, 'users/' + user.uid), { email: user.email });
                 loadProfile(user);
             } else {
                 window.location.href = 'index.html';
@@ -135,11 +167,33 @@
                     if(u.email && u.email.toLowerCase() === ADMIN_EMAIL) isOwner = true;
                 }
 
-                let badgesHTML = "";
-                if (isOwner) badgesHTML += `<i class="fas fa-check-circle blue-tick"></i>`;
-                if (u.customBadge) badgesHTML += `<span class="custom-badge">${u.customBadge}</span>`;
+                // --- BLUE TICK (Official Owner) ---
+                let tickHTML = isOwner ? `<i class="fas fa-check-circle blue-tick"></i>` : "";
+                
+                // --- CUSTOM BADGE LOGIC (Updated) ---
+                const badgeDiv = document.getElementById('badge-display');
+                if(u.customBadge) {
+                    badgeDiv.style.display = 'flex';
+                    
+                    // Check if Old Style (String) or New Style (Object)
+                    if(typeof u.customBadge === 'object') {
+                        // New Admin Panel Style
+                        badgeDiv.style.background = u.customBadge.color || '#ff0055';
+                        if(u.customBadge.image) {
+                            badgeDiv.innerHTML = `<img src="${u.customBadge.image}">`;
+                        } else {
+                            badgeDiv.innerText = u.customBadge.text || "";
+                        }
+                    } else {
+                        // Old Style Fallback (Just Text)
+                        badgeDiv.style.background = '#ff0055';
+                        badgeDiv.innerText = u.customBadge;
+                    }
+                } else {
+                    badgeDiv.style.display = 'none';
+                }
 
-                document.getElementById('pName').innerHTML = `${u.username || "User"} ${badgesHTML}`;
+                document.getElementById('pName').innerHTML = `${u.username || "User"} ${tickHTML}`;
                 document.getElementById('pBio').innerText = u.bio || "No bio";
                 document.getElementById('pPic').src = u.photo || "https://via.placeholder.com/150";
                 
@@ -149,14 +203,14 @@
                     document.getElementById('ePic').value = u.photo || "";
                 }
 
-                // --- READ FOLLOWERS FROM ROOT NODE (Fixing the 0 issue) ---
+                // --- FOLLOWERS ---
                 onValue(ref(db, `followers/${profileUID}`), s => {
                     let count = s.exists() ? s.size : 0;
                     document.getElementById('sFollowers').innerText = formatNumber(count);
                 });
             });
 
-            // --- READ FOLLOWING FROM ROOT NODE ---
+            // --- FOLLOWING ---
             onValue(ref(db, `following/${profileUID}`), s => document.getElementById('sFollowing').innerText = s.exists() ? s.size : 0);
 
             const btn = document.getElementById('actionBtn');
@@ -190,36 +244,24 @@
             });
         }
 
-        // --- CORRECTED FOLLOW LOGIC (Root Path Fix) ---
+        // --- FOLLOW LOGIC ---
         function checkFollow(btn) {
-            // Check in Root 'followers' node
             const r = ref(db, `followers/${profileUID}/${myUID}`);
-            
             onValue(r, s => {
                 if (s.exists()) {
-                    // ALREADY FOLLOWER
                     btn.innerText = "FOLLOWING";
-                    btn.className = "btn btn-following"; // Grey Button
-                    
-                    // Click -> Confirm -> Unfollow
+                    btn.className = "btn btn-following";
                     btn.onclick = async () => {
                         if(confirm("Unfollow this user?")) {
-                            // Remove from Followers
                             await remove(ref(db, `followers/${profileUID}/${myUID}`));
-                            // Remove from Following
                             await remove(ref(db, `following/${myUID}/${profileUID}`));
                         }
                     };
                 } else {
-                    // NOT FOLLOWER
                     btn.innerText = "FOLLOW";
-                    btn.className = "btn btn-follow"; // Purple Button
-                    
-                    // Click -> Follow Direct
+                    btn.className = "btn btn-follow";
                     btn.onclick = async () => {
-                        // Add to Followers (Unka follower badhega)
                         await set(ref(db, `followers/${profileUID}/${myUID}`), true);
-                        // Add to Following (Meri following badhegi)
                         await set(ref(db, `following/${myUID}/${profileUID}`), true);
                     };
                 }
