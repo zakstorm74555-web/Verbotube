@@ -51,7 +51,7 @@
         .follow-btn { background: transparent; border: 1px solid white; color: white; font-size: 11px; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         .following { background: white; color: black; border: none; }
         
-        /* MUSIC BAR (Restored) */
+        /* MUSIC BAR */
         .music-bar { font-size: 13px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.9; }
         .music-spin { animation: spin 3s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -120,28 +120,22 @@
         <div class="modal-content">
             <span class="close-btn" onclick="closeUpload()">&times;</span>
             <h3 style="color:#8a2be2; margin-top:0;">Create Video</h3>
-
             <div class="tab-btns">
                 <button class="tab-btn active-tab" onclick="switchTab('gallery', this)">Gallery</button>
                 <button class="tab-btn" onclick="switchTab('camera', this)">Camera</button>
             </div>
-
             <div id="gallery-section">
                 <input type="file" id="videoFile" accept="video/*" onchange="fileSelected(this)" style="padding: 20px; border: 2px dashed #555; width:100%; box-sizing:border-box;">
             </div>
-
             <div id="camera-section" style="display:none;">
                 <video id="camera-preview" autoplay muted playsinline style="width:100%; height:200px; background:black; display:none;"></video>
                 <div id="recBtn" style="width:50px; height:50px; background:red; border-radius:50%; margin:10px auto; cursor:pointer; border:3px solid white; display:none;" onclick="toggleRecording()"></div>
                 <p id="rec-status" style="color:red; display:none;">Recording...</p>
             </div>
-
             <h4 style="text-align:left; margin:20px 0 5px;">Details</h4>
             <input type="text" id="caption" placeholder="Write a caption...">
-            
             <input type="text" id="ytLink" placeholder="YouTube Music Link (Optional)">
             <input type="number" id="startTime" placeholder="Music Start Time (sec)">
-            
             <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
             <button class="upload-submit" id="postBtn" onclick="uploadVideo()">POST VIDEO</button>
         </div>
@@ -152,7 +146,7 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // --- FINAL PARVIDEO CONFIG ---
+        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
             authDomain: "paravideo-1ac3b.firebaseapp.com",
@@ -163,7 +157,6 @@
             appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33",
             measurementId: "G-QNFHZ1CDLY"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -173,15 +166,11 @@
 
         let currentUser = null;
         let selectedFile = null;
-        let allVideos = [];
         let currentVideoKeyForComments = null;
 
-        // --- LOGIN LOGIC ---
         document.getElementById('loginBtn').addEventListener('click', () => {
             const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch((error) => {
-                alert("Login Failed: " + error.message);
-            });
+            signInWithPopup(auth, provider).catch((error) => alert("Login Failed: " + error.message));
         });
 
         onAuthStateChanged(auth, async (user) => {
@@ -191,6 +180,7 @@
                 document.getElementById('appScreen').style.display = 'block';
                 document.getElementById('myPic').src = user.photoURL;
                 
+                // SAVE USER DATA & DEFAULT USERNAME (IF NOT EXISTS)
                 const userRef = ref(db, 'users/' + user.uid);
                 const snap = await get(userRef);
                 if (!snap.exists()) {
@@ -210,7 +200,6 @@
             }
         });
 
-        // --- LOAD FEED ---
         function loadFeed() {
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 const feed = document.getElementById('feed');
@@ -218,39 +207,28 @@
                 const data = snap.val();
                 if (!data) { feed.innerHTML = "<p style='text-align:center;color:#555;margin-top:50vh'>No videos yet.</p>"; return; }
 
-                allVideos = Object.entries(data).map(([k, v]) => ({ key: k, ...v })).reverse();
+                const allVideos = Object.entries(data).map(([k, v]) => ({ key: k, ...v })).reverse();
                 
                 allVideos.forEach(vid => {
                     const div = document.createElement('div');
                     div.className = "video-card";
                     
-                    // NEW ADMIN EMAIL
                     const isOwner = (vid.email === 'elitegamer859650@gmail.com');
                     const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:12px; margin-left:5px;"></i>' : '';
+                    const musicHtml = vid.musicLink ? `<div class="music-bar" onclick="window.open('${vid.musicLink}&t=${vid.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> Sound</div>` : '';
 
-                    // Music HTML Check
-                    const musicHtml = vid.musicLink ? 
-                        `<div class="music-bar" onclick="window.open('${vid.musicLink}&t=${vid.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> ${vid.caption.substring(0,10)}... Sound</div>` : '';
-
+                    // HACK: UPLOADER NAME LIVE FETCH
+                    // Video node mein purana naam ho sakta hai, isliye hum live DB check karenge
                     div.innerHTML = `
                         <video src="${vid.videoUrl}" loop playsinline class="reel-video" data-key="${vid.key}"></video>
                         <div class="sidebar">
-                            <button class="action-btn" onclick="window.handleLike('${vid.key}')">
-                                <i class="fas fa-heart" id="like-icon-${vid.key}"></i>
-                                <span id="like-count-${vid.key}">0</span>
-                            </button>
-                            <button class="action-btn" onclick="window.openComments('${vid.key}')">
-                                <i class="fas fa-comment-dots"></i>
-                                <span id="comment-count-${vid.key}">0</span>
-                            </button>
-                            <button class="action-btn" onclick="window.shareVideo('${vid.caption || 'ParaVideo'}', '${vid.videoUrl}')">
-                                <i class="fas fa-share"></i>
-                                <span>Share</span>
-                            </button>
+                            <button class="action-btn" onclick="window.handleLike('${vid.key}')"><i class="fas fa-heart" id="like-icon-${vid.key}"></i><span id="like-count-${vid.key}">0</span></button>
+                            <button class="action-btn" onclick="window.openComments('${vid.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${vid.key}">0</span></button>
+                            <button class="action-btn" onclick="window.shareVideo('${vid.caption || 'ParaVideo'}', '${vid.videoUrl}')"><i class="fas fa-share"></i><span>Share</span></button>
                         </div>
                         <div class="video-info">
                             <div class="user-row">
-                                <div class="uploader-name" onclick="window.location.href='profile.html?uid=${vid.uid}'">@${vid.uploader} ${badge}</div>
+                                <div class="uploader-name" id="name-${vid.key}" onclick="window.location.href='profile.html?uid=${vid.uid}'">@${vid.uploader} ${badge}</div>
                                 <button class="follow-btn js-follow-${vid.uid}" onclick="window.toggleFollow('${vid.uid}')">Follow</button>
                             </div>
                             <div style="font-size:14px; color:#eee;">${vid.caption}</div>
@@ -258,160 +236,65 @@
                         </div>
                     `;
                     feed.appendChild(div);
-                    checkLikeStatus(vid.key);
-                    updateCommentCount(vid.key);
-                    checkFollowStatus(vid.uid);
+
+                    // LIVE NAME FIX
+                    onValue(ref(db, 'users/' + vid.uid + '/username'), (uSnap) => {
+                        if(uSnap.exists()) {
+                            document.getElementById(`name-${vid.key}`).innerHTML = `@${uSnap.val()} ${badge}`;
+                        }
+                    });
+
+                    checkLikeStatus(vid.key); updateCommentCount(vid.key); checkFollowStatus(vid.uid);
                 });
                 setupObserver();
             });
         }
 
-        // --- INTERACTIONS ---
-        window.handleLike = (key) => {
-            const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`);
-            get(r).then(s => s.exists() ? remove(r) : set(r, true));
-        };
-
-        window.openComments = (key) => {
-            currentVideoKeyForComments = key;
-            document.getElementById('commentsModal').classList.add('active');
-            const list = document.getElementById('commentsList');
-            list.innerHTML = "Loading...";
-            onValue(ref(db, `gameplay_comments/${key}`), (snap) => {
-                list.innerHTML = "";
-                if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#555'>No comments.</p>"; return; }
-                snap.forEach(c => {
-                    const val = c.val();
-                    list.innerHTML += `<div style="margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;"><b style="color:#ddd">${val.u || 'User'}:</b> <span style="color:#fff">${val.t}</span></div>`;
-                });
-            });
-        };
-
-        window.postComment = () => {
-            const t = document.getElementById('commentInput').value;
-            if(t && currentVideoKeyForComments) {
-                push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid, time: Date.now() });
-                document.getElementById('commentInput').value = "";
-            }
-        };
-
-        window.shareVideo = (title, url) => {
-            if (navigator.share) { navigator.share({ title: 'ParaVideo', text: title, url: url }).catch(console.error); } 
-            else { navigator.clipboard.writeText(url).then(() => alert("Link copied!")); }
-        };
-
-        window.toggleFollow = async (uid) => {
-            if(uid === currentUser.uid) return;
-            const r1 = ref(db, `follows/${currentUser.uid}/${uid}`);
-            const r2 = ref(db, `followers/${uid}/${currentUser.uid}`);
-            const s = await get(r1);
-            if(s.exists()) { await remove(r1); await remove(r2); } else { await set(r1, true); await set(r2, true); }
-        };
-
-        function checkLikeStatus(key) {
-            onValue(ref(db, `gameplay_likes/${key}`), s => {
-                document.getElementById(`like-count-${key}`).innerText = s.size;
-                document.getElementById(`like-icon-${key}`).style.color = s.hasChild(currentUser.uid) ? '#ff0055' : 'white';
-            });
-        }
+        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
+        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); const list = document.getElementById('commentsList'); list.innerHTML = "Loading..."; onValue(ref(db, `gameplay_comments/${key}`), (snap) => { list.innerHTML = ""; if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#555'>No comments.</p>"; return; } snap.forEach(c => { const val = c.val(); list.innerHTML += `<div style="margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;"><b style="color:#ddd">${val.u || 'User'}:</b> <span style="color:#fff">${val.t}</span></div>`; }); }); };
+        window.postComment = () => { const t = document.getElementById('commentInput').value; if(t && currentVideoKeyForComments) { push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid, time: Date.now() }); document.getElementById('commentInput').value = ""; } };
+        window.shareVideo = (title, url) => { if (navigator.share) { navigator.share({ title: 'ParaVideo', text: title, url: url }).catch(console.error); } else { navigator.clipboard.writeText(url).then(() => alert("Link copied!")); } };
+        window.toggleFollow = async (uid) => { if(uid === currentUser.uid) return; const r1 = ref(db, `follows/${currentUser.uid}/${uid}`); const r2 = ref(db, `followers/${uid}/${currentUser.uid}`); const s = await get(r1); if(s.exists()) { await remove(r1); await remove(r2); } else { await set(r1, true); await set(r2, true); } };
+        function checkLikeStatus(key) { onValue(ref(db, `gameplay_likes/${key}`), s => { document.getElementById(`like-count-${key}`).innerText = s.size; document.getElementById(`like-icon-${key}`).style.color = s.hasChild(currentUser.uid) ? '#ff0055' : 'white'; }); }
         function updateCommentCount(key) { onValue(ref(db, `gameplay_comments/${key}`), s => document.getElementById(`comment-count-${key}`).innerText = s.size); }
-        function checkFollowStatus(uid) {
-            if(uid === currentUser.uid) { document.querySelectorAll(`.js-follow-${uid}`).forEach(b => b.style.display='none'); return; }
-            onValue(ref(db, `follows/${currentUser.uid}/${uid}`), s => {
-                document.querySelectorAll(`.js-follow-${uid}`).forEach(b => {
-                    b.innerText = s.exists() ? "Following" : "Follow";
-                    b.classList.toggle('following', s.exists());
-                });
-            });
-        }
+        function checkFollowStatus(uid) { if(uid === currentUser.uid) { document.querySelectorAll(`.js-follow-${uid}`).forEach(b => b.style.display='none'); return; } onValue(ref(db, `follows/${currentUser.uid}/${uid}`), s => { document.querySelectorAll(`.js-follow-${uid}`).forEach(b => { b.innerText = s.exists() ? "Following" : "Follow"; b.classList.toggle('following', s.exists()); }); }); }
         
         window.openUploadModal = () => document.getElementById('uploadModal').style.display = 'flex';
         window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; stopCamera(); };
         window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
         window.goToMyProfile = () => window.location.href = `profile.html?uid=${currentUser.uid}`;
-
-        window.switchTab = (tab, btn) => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-            btn.classList.add('active-tab');
-            if (tab === 'gallery') {
-                document.getElementById('gallery-section').style.display = 'block'; document.getElementById('camera-section').style.display = 'none'; stopCamera();
-            } else {
-                document.getElementById('gallery-section').style.display = 'none'; document.getElementById('camera-section').style.display = 'block'; startCamera();
-            }
-        };
-
+        window.switchTab = (tab, btn) => { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab')); btn.classList.add('active-tab'); if (tab === 'gallery') { document.getElementById('gallery-section').style.display = 'block'; document.getElementById('camera-section').style.display = 'none'; stopCamera(); } else { document.getElementById('gallery-section').style.display = 'none'; document.getElementById('camera-section').style.display = 'block'; startCamera(); } };
         window.fileSelected = (input) => { if(input.files[0]) selectedFile = input.files[0]; };
 
         let mediaRecorder, chunks = [], stream;
-        async function startCamera() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                const vid = document.getElementById('camera-preview');
-                vid.srcObject = stream; vid.style.display = 'block';
-                document.getElementById('recBtn').style.display = 'block';
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'video/webm' });
-                    selectedFile = new File([blob], "rec.webm", { type: 'video/webm' });
-                    document.getElementById('rec-status').innerText = "Recorded!"; chunks = [];
-                };
-            } catch (e) { alert("Camera Error: " + e.message); }
-        }
+        async function startCamera() { try { stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); const vid = document.getElementById('camera-preview'); vid.srcObject = stream; vid.style.display = 'block'; document.getElementById('recBtn').style.display = 'block'; mediaRecorder = new MediaRecorder(stream); mediaRecorder.ondataavailable = e => chunks.push(e.data); mediaRecorder.onstop = () => { const blob = new Blob(chunks, { type: 'video/webm' }); selectedFile = new File([blob], "rec.webm", { type: 'video/webm' }); document.getElementById('rec-status').innerText = "Recorded!"; chunks = []; }; } catch (e) { alert("Camera Error"); } }
         function stopCamera() { if(stream) stream.getTracks().forEach(t => t.stop()); }
-        window.toggleRecording = () => {
-            const btn = document.getElementById('recBtn');
-            if(mediaRecorder.state === "inactive") { mediaRecorder.start(); btn.style.borderRadius = "10px"; document.getElementById('rec-status').style.display='block'; } 
-            else { mediaRecorder.stop(); btn.style.borderRadius = "50%"; stopCamera(); document.getElementById('rec-status').style.display='none'; }
-        };
+        window.toggleRecording = () => { const btn = document.getElementById('recBtn'); if(mediaRecorder.state === "inactive") { mediaRecorder.start(); btn.style.borderRadius = "10px"; document.getElementById('rec-status').style.display='block'; } else { mediaRecorder.stop(); btn.style.borderRadius = "50%"; stopCamera(); document.getElementById('rec-status').style.display='none'; } };
 
-        window.uploadVideo = () => {
-            if(!selectedFile) return alert("Select video first");
-            const btn = document.getElementById('postBtn');
-            btn.disabled = true; btn.innerText = "Uploading...";
+        window.uploadVideo = async () => {
+            if(!selectedFile) return alert("Select video");
+            const btn = document.getElementById('postBtn'); btn.disabled = true; btn.innerText = "Uploading...";
             
-            const fd = new FormData(); 
-            fd.append("file", selectedFile); 
-            fd.append("upload_preset", UPLOAD_PRESET);
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+            // FETCH LATEST USERNAME BEFORE UPLOADING
+            let uName = currentUser.displayName;
+            try {
+                const uSnap = await get(ref(db, 'users/' + currentUser.uid + '/username'));
+                if(uSnap.exists()) uName = uSnap.val();
+            } catch(e){}
+
+            const fd = new FormData(); fd.append("file", selectedFile); fd.append("upload_preset", UPLOAD_PRESET);
+            const xhr = new XMLHttpRequest(); xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
             xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
             xhr.onload = async () => {
                 if(xhr.status === 200) {
                     const url = JSON.parse(xhr.responseText).secure_url;
-                    await push(ref(db, 'gameplay_clips'), {
-                        videoUrl: url,
-                        caption: document.getElementById('caption').value,
-                        // --- SAVING MUSIC DATA ---
-                        musicLink: document.getElementById('ytLink').value,
-                        startTime: document.getElementById('startTime').value,
-                        // -------------------------
-                        uploader: currentUser.displayName,
-                        uid: currentUser.uid,
-                        email: currentUser.email,
-                        timestamp: Date.now()
-                    });
+                    await push(ref(db, 'gameplay_clips'), { videoUrl: url, caption: document.getElementById('caption').value, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value, uploader: uName, uid: currentUser.uid, email: currentUser.email, timestamp: Date.now() });
                     alert("Uploaded!"); location.reload();
-                } else { 
-                    alert("Upload Failed: " + xhr.statusText); 
-                    btn.disabled = false; btn.innerText = "POST VIDEO";
-                }
+                } else { alert("Failed"); btn.disabled=false; }
             };
             xhr.send(fd);
         };
-
-        function setupObserver() {
-            const obs = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if(entry.isIntersecting) { entry.target.play(); } else { entry.target.pause(); }
-                });
-            }, {threshold: 0.6});
-            document.querySelectorAll('video').forEach(v => {
-                obs.observe(v);
-                v.onclick = () => v.paused ? v.play() : v.pause();
-            });
-        }
+        function setupObserver() { const obs = new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? e.target.play() : e.target.pause()), {threshold: 0.6}); document.querySelectorAll('video').forEach(v => { obs.observe(v); v.onclick = () => v.paused ? v.play() : v.pause(); }); }
     </script>
 </body>
 </html>
