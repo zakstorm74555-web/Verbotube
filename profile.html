@@ -147,8 +147,9 @@
             onValue(ref(db, 'users/' + profileUID), (snap) => {
                 const u = snap.val() || {};
                 
-                // Admin Badge Logic
-                const isOwner = (u.email === 'mohsinilyas991@gmail.com');
+                // --- NEW EMAIL CHECK ---
+                const isOwner = (u.email === 'elitegamer859650@gmail.com');
+                
                 const badge = isOwner ? '<i class="fas fa-check-circle" style="color:#00C2FF; font-size:16px;"></i>' : '';
                 
                 document.getElementById('pName').innerHTML = `${u.username || "User"} ${badge}`;
@@ -162,24 +163,28 @@
                     document.getElementById('ePic').value = u.photo || "";
                 }
                 
-                // Only render monetization if it's the specific admin email
+                // Render Monetization ONLY for Admin
                 if (isOwner && myUID === profileUID) {
                     document.getElementById('monetizationSection').style.display = 'block';
                     renderMonetization(true);
                 }
+                
+                // --- FOLLOWER LOGIC (THE 1.2k + 1 LOGIC) ---
+                onValue(ref(db, `followers/${profileUID}`), s => {
+                    let realCount = s.exists() ? s.size : 0;
+                    
+                    // Agar ye Admin (EliteGamer) ki profile hai:
+                    if(u.email === 'elitegamer859650@gmail.com') {
+                        // Formula: Real + Fake Base (125400)
+                        // Agar koi follow karega to realCount 1 ho jayega, aur total 125401
+                        realCount = realCount + 125400; 
+                    }
+                    
+                    document.getElementById('sFollowers').innerText = formatNumber(realCount);
+                });
             });
 
-            // 2. Followers Stats (With Admin Hack)
-            const uSnap = await get(ref(db, 'users/' + profileUID));
-            const uData = uSnap.val() || {};
-
-            onValue(ref(db, `followers/${profileUID}`), s => {
-                let count = s.exists() ? s.size : 0;
-                // Hack: Agar Mohsin hai to +125k
-                if(uData.email === 'mohsinilyas991@gmail.com') count += 125400;
-                document.getElementById('sFollowers').innerText = formatNumber(count);
-            });
-            
+            // Following Stats
             onValue(ref(db, `users/${profileUID}/following`), s => document.getElementById('sFollowing').innerText = s.exists() ? Object.keys(s.val()).length : 0);
 
             // 3. Button Logic
@@ -190,12 +195,15 @@
                 btn.onclick = () => document.getElementById('editModal').style.display = 'flex';
                 document.getElementById('pageTitle').innerText = "My Profile";
             } else {
-                document.getElementById('pageTitle').innerText = uData.username || "Profile";
+                // Doosron ki profile par title set karo
+                const uSnap = await get(ref(db, 'users/' + profileUID));
+                const uName = uSnap.exists() ? uSnap.val().username : "Profile";
+                document.getElementById('pageTitle').innerText = uName;
                 checkFollow(btn);
             }
 
             // 4. Videos Grid
-            onValue(ref(db, 'gameplay_clips'), snap => { // Matches index.html
+            onValue(ref(db, 'gameplay_clips'), snap => { 
                 const grid = document.getElementById('videoGrid');
                 grid.innerHTML = "";
                 const data = snap.val();
