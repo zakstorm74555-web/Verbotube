@@ -25,7 +25,6 @@
         .user-info { display: flex; gap: 10px; align-items: center; }
         .u-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #444; }
         
-        /* BADGE PREVIEW IN LIST */
         .badge-preview { 
             display: inline-flex; align-items: center; justify-content: center;
             width: 20px; height: 20px; border-radius: 50%; 
@@ -45,6 +44,8 @@
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
         .img-container { max-height: 300px; margin-bottom: 10px; overflow: hidden; }
         #image-to-crop { max-width: 100%; }
+        
+        label { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -74,11 +75,26 @@
 
             <div id="ads" class="section">
                 <h3>Create Ad</h3>
+                
+                <label>Sponsored By (Select User):</label>
+                <select id="adSponsor">
+                    <option value="admin">ParaVideo Team (Default)</option>
+                    </select>
+
+                <label>Video File:</label>
                 <input type="file" id="adFile" accept="video/*">
-                <input type="text" id="adCaption" placeholder="Caption (Top Text)">
+                
+                <label>Caption:</label>
+                <input type="text" id="adCaption" placeholder="Ad Caption">
+                
+                <label>Button Text:</label>
                 <input type="text" id="adBtnText" placeholder="Button Text (e.g. SHOP NOW)">
+                
+                <label>Target Link:</label>
                 <input type="text" id="adLink" placeholder="Link URL (https://...)">
-                <input type="number" id="adTime" placeholder="Duration (Hours)" value="24">
+                
+                <label>Duration (Hours):</label>
+                <input type="number" id="adTime" placeholder="24" value="24">
                 
                 <div id="progress" style="width:0%; height:5px; background:#8a2be2; margin-bottom:10px;"></div>
                 <button class="action-btn" style="width:100%;" onclick="postAd()">LAUNCH AD</button>
@@ -151,7 +167,7 @@
                 document.getElementById('status').style.color = "#00ff00";
                 document.getElementById('adminPanel').style.display = "block";
                 document.getElementById('loginWarning').style.display = "none";
-                loadUsers();
+                loadUsersAndSponsors(); // Populates both Lists
                 loadAds();
             } else {
                 document.getElementById('status').innerText = "Access Denied";
@@ -160,11 +176,15 @@
             }
         });
 
-        // --- USER & BADGE MANAGER ---
-        function loadUsers() {
+        // --- USER & SPONSOR MANAGER ---
+        function loadUsersAndSponsors() {
             onValue(ref(db, 'users'), (snap) => {
                 const list = document.getElementById('userList');
+                const sponsorSelect = document.getElementById('adSponsor');
+                
                 list.innerHTML = "";
+                // Reset Sponsor Select but keep Admin option
+                sponsorSelect.innerHTML = '<option value="admin">ParaVideo Team (Default)</option>';
                 
                 if(!snap.exists()) { list.innerHTML = "<p>No users found.</p>"; return; }
                 
@@ -173,10 +193,9 @@
                     const u = child.val();
                     const uid = child.key;
                     
-                    // Display Badge Preview
+                    // 1. Populate User List for Badges
                     let badgeHtml = '';
                     if(u.customBadge) {
-                        // Check if object (New Style) or string (Old Style)
                         if(typeof u.customBadge === 'object') {
                             if(u.customBadge.image) {
                                 badgeHtml = `<span class="badge-preview" style="background:${u.customBadge.color}"><img src="${u.customBadge.image}"></span>`;
@@ -205,6 +224,12 @@
                     `;
                     list.appendChild(div);
                     allUsers.push({ name: u.username.toLowerCase(), el: div });
+
+                    // 2. Populate Sponsor Dropdown
+                    const option = document.createElement('option');
+                    option.value = uid;
+                    option.innerText = `${u.username} (${u.email})`;
+                    sponsorSelect.appendChild(option);
                 });
             });
         }
@@ -218,7 +243,7 @@
             if(confirm("Remove Badge?")) update(ref(db, `users/${uid}`), { customBadge: null });
         };
 
-        // --- BADGE MODAL LOGIC ---
+        // --- BADGE MODAL LOGIC (Unchanged) ---
         window.openBadgeModal = (uid) => {
             document.getElementById('targetUid').value = uid;
             document.getElementById('badgeModal').style.display = 'flex';
@@ -263,7 +288,6 @@
             const type = document.getElementById('badgeType').value;
             const color = document.getElementById('badgeColor').value;
             const btn = document.getElementById('saveBadgeBtn');
-            
             let badgeData = { color: color };
 
             if (type === 'text') {
@@ -276,39 +300,38 @@
                 if (!cropper) return alert("Crop Image First!");
                 btn.disabled = true;
                 document.getElementById('uploadProgress').style.display = 'block';
-
                 cropper.getCroppedCanvas({ width: 100, height: 100 }).toBlob(async (blob) => {
-                    const fd = new FormData();
-                    fd.append('file', blob);
-                    fd.append('upload_preset', UPLOAD_PRESET);
-
+                    const fd = new FormData(); fd.append('file', blob); fd.append('upload_preset', UPLOAD_PRESET);
                     try {
                         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
                         const data = await res.json();
                         badgeData.image = data.secure_url;
                         update(ref(db, `users/${uid}`), { customBadge: badgeData });
                         closeBadgeModal();
-                    } catch (e) {
-                        alert("Upload Failed");
-                        btn.disabled = false;
-                    }
+                    } catch (e) { alert("Upload Failed"); btn.disabled = false; }
                 });
             }
         };
 
-        // --- ADS MANAGER (Same as before) ---
+        // --- ADS MANAGER (Updated) ---
         window.postAd = () => {
             const file = document.getElementById('adFile').files[0];
+            const sponsorUid = document.getElementById('adSponsor').value; // Get Selected User UID
+            
             if(!file) return alert("Select Video");
-            const btn = event.target; btn.disabled = true;
+            const btn = event.target; btn.disabled = true; btn.innerText = "Uploading...";
+            
             const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
             const xhr = new XMLHttpRequest();
             xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
             xhr.upload.onprogress = e => document.getElementById('progress').style.width = (e.loaded/e.total)*100+"%";
+            
             xhr.onload = async () => {
                 const url = JSON.parse(xhr.responseText).secure_url;
                 await push(ref(db, 'ads'), {
-                    videoUrl: url, caption: document.getElementById('adCaption').value,
+                    uid: sponsorUid, // Saving the Sponsor's UID
+                    videoUrl: url,
+                    caption: document.getElementById('adCaption').value,
                     btnText: document.getElementById('adBtnText').value || "Visit",
                     link: document.getElementById('adLink').value,
                     expiry: Date.now() + (document.getElementById('adTime').value * 3600000)
