@@ -3,34 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ParaVideo - Admin Panel</title>
+    <title>ParaVideo - Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background: #111; color: white; font-family: monospace; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; }
         
-        /* HEADER */
         .header { border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; }
         .title { font-size: 24px; color: #ff0055; font-weight: bold; }
         
-        /* TABS */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 10px 20px; cursor: pointer; }
         .tab-btn.active { background: #ff0055; color: white; border-color: #ff0055; font-weight: bold; }
         
-        /* SECTIONS */
         .section { display: none; background: #1a1a1a; padding: 20px; border: 1px solid #333; }
         .section.active { display: block; }
 
-        /* LISTS */
-        .user-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding: 10px 0; }
+        /* USER LIST STYLE */
+        .user-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding: 12px 0; }
         .user-info { display: flex; gap: 10px; align-items: center; }
-        .u-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        
-        /* FORMS */
+        .u-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #444; }
+        .badge-display { background: #ff0055; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+
+        /* CONTROLS */
         input, select { background: #000; border: 1px solid #444; color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        .action-btn { background: #00C2FF; border: none; color: black; padding: 5px 15px; cursor: pointer; font-weight: bold; }
+        .action-btn { background: #00C2FF; border: none; color: black; padding: 8px 15px; cursor: pointer; font-weight: bold; font-family: monospace; }
         .btn-red { background: #ff0055; color: white; }
+        .btn-del { background: #333; color: #ff4444; border: 1px solid #555; margin-left: 5px; }
+        
+        /* SEARCH BAR */
+        #userSearch { margin-bottom: 20px; border-bottom: 2px solid #00C2FF; }
     </style>
 </head>
 <body>
@@ -38,13 +40,12 @@
     <div class="container">
         <div class="header">
             <div class="title">ADMIN // CONTROL</div>
-            <div id="status" style="font-size:12px; color:gray;">Checking Access...</div>
+            <div id="status" style="color:gray;">Checking...</div>
         </div>
 
         <div id="loginWarning" style="text-align:center; margin-top:50px; display:none;">
             <h2>ACCESS DENIED</h2>
-            <p>You are not the Owner.</p>
-            <button onclick="login()" style="padding:10px 20px;">Login as Admin</button>
+            <button onclick="login()" style="padding:10px 20px; cursor:pointer;">Login Admin</button>
         </div>
 
         <div id="adminPanel" style="display:none;">
@@ -56,30 +57,21 @@
             <div id="users" class="section active">
                 <h3>Manage Users</h3>
                 <input type="text" id="userSearch" placeholder="Search User via Name..." onkeyup="filterUsers()">
-                <div id="userList">Loading...</div>
+                <div id="userList">Loading users...</div>
             </div>
 
             <div id="ads" class="section">
-                <h3>Create Advertisement</h3>
-                <label>Ad Video File</label>
+                <h3>Create Ad</h3>
                 <input type="file" id="adFile" accept="video/*">
+                <input type="text" id="adCaption" placeholder="Caption (Top Text)">
+                <input type="text" id="adBtnText" placeholder="Button Text (e.g. SHOP NOW)">
+                <input type="text" id="adLink" placeholder="Link URL (https://...)">
+                <input type="number" id="adTime" placeholder="Duration (Hours)" value="24">
                 
-                <label>Caption (Top Text)</label>
-                <input type="text" id="adCaption" placeholder="e.g. Best Diamond Store!">
+                <div id="progress" style="width:0%; height:5px; background:red; margin-bottom:10px;"></div>
+                <button class="action-btn btn-red" style="width:100%;" onclick="postAd()">LAUNCH AD</button>
                 
-                <label>Button Text</label>
-                <input type="text" id="adBtnText" placeholder="e.g. Shop Now / Visit">
-                
-                <label>Link URL (Where button goes)</label>
-                <input type="text" id="adLink" placeholder="https://...">
-                
-                <label>Duration (Hours)</label>
-                <input type="number" id="adTime" placeholder="24" value="24">
-                
-                <div id="progress" style="width:0%; height:5px; background:#ff0055; margin-bottom:10px;"></div>
-                <button class="action-btn btn-red" style="width:100%; padding:15px;" onclick="postAd()">LAUNCH AD</button>
-                
-                <h4 style="margin-top:30px;">Active Ads</h4>
+                <h4 style="margin-top:20px;">Active Ads</h4>
                 <div id="activeAdsList"></div>
             </div>
         </div>
@@ -90,103 +82,116 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, push, set, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc",
-            authDomain: "paravideo-1ac3b.firebaseapp.com",
-            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com",
-            projectId: "paravideo-1ac3b",
-            storageBucket: "paravideo-1ac3b.firebasestorage.app",
-            messagingSenderId: "384549024202",
-            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33",
-            measurementId: "G-QNFHZ1CDLY"
-        };
-
+        // CONFIG
+        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33", measurementId: "G-QNFHZ1CDLY" };
+        
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        
+        // ADMIN EMAIL & CLOUDINARY
         const ADMIN_EMAIL = "elitegamer859650@gmail.com";
-        const CLOUD_NAME = "dusj0vpsi";
+        const CLOUD_NAME = "dusj0vpsi"; 
         const UPLOAD_PRESET = "paravideo";
 
         let allUsers = [];
+        let listenerAttached = false; // DUPLICATE FIX FLAG
 
         window.login = () => signInWithPopup(auth, new GoogleAuthProvider());
 
         onAuthStateChanged(auth, (user) => {
             if (user && user.email.toLowerCase() === ADMIN_EMAIL) {
-                document.getElementById('status').innerText = "Logged in as COMMANDER";
+                document.getElementById('status').innerText = "COMMANDER ACTIVE";
                 document.getElementById('status').style.color = "#00ff00";
                 document.getElementById('adminPanel').style.display = "block";
                 document.getElementById('loginWarning').style.display = "none";
-                loadUsers();
-                loadAds();
+                
+                // Sirf tab load karo agar pehle se load nahi hua (Duplicate Fix)
+                if(!listenerAttached) {
+                    loadUsers();
+                    loadAds();
+                    listenerAttached = true;
+                }
             } else {
-                document.getElementById('status').innerText = "Unauthorized";
+                document.getElementById('status').innerText = "Access Denied";
                 document.getElementById('loginWarning').style.display = "block";
                 document.getElementById('adminPanel').style.display = "none";
             }
         });
 
-        // --- USER MANAGEMENT ---
+        // --- USER & BADGE MANAGER ---
         function loadUsers() {
             onValue(ref(db, 'users'), (snap) => {
                 const list = document.getElementById('userList');
-                list.innerHTML = "";
-                if(!snap.exists()) return;
+                list.innerHTML = ""; // Clear list completely before adding new items
+                
+                if(!snap.exists()) {
+                    list.innerHTML = "<p>No users found.</p>";
+                    return;
+                }
                 
                 allUsers = [];
+                
                 snap.forEach(child => {
                     const u = child.val();
-                    // Get Followers Count Async
-                    get(ref(db, `followers/${child.key}`)).then(fSnap => {
-                        const count = fSnap.exists() ? fSnap.size : 0;
-                        const div = document.createElement('div');
-                        div.className = "user-item";
-                        div.innerHTML = `
-                            <div class="user-info">
-                                <img src="${u.photo || 'https://via.placeholder.com/40'}" class="u-pic">
-                                <div>
-                                    <div style="font-weight:bold;">${u.username} <span style="color:#00C2FF; font-size:10px;">${u.customBadge || ''}</span></div>
-                                    <div style="font-size:11px; color:#777;">${count} Followers</div>
-                                </div>
+                    const uid = child.key;
+                    
+                    // Badge Display Logic
+                    let badgeHtml = u.customBadge ? `<span class="badge-display">${u.customBadge}</span>` : '';
+                    
+                    const div = document.createElement('div');
+                    div.className = "user-item";
+                    div.innerHTML = `
+                        <div class="user-info">
+                            <img src="${u.photo || 'https://via.placeholder.com/40'}" class="u-pic">
+                            <div>
+                                <div><b>${u.username}</b> ${badgeHtml}</div>
+                                <div style="font-size:11px; color:#777;">${u.email}</div>
                             </div>
-                            <div style="display:flex; gap:5px;">
-                                <input type="text" id="badge-${child.key}" placeholder="Badge Name" style="width:100px; padding:5px; margin:0;">
-                                <button class="action-btn" onclick="giveBadge('${child.key}')">SET</button>
-                            </div>
-                        `;
-                        list.appendChild(div);
-                        allUsers.push({name: u.username.toLowerCase(), el: div});
-                    });
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <input type="text" id="badge-${uid}" placeholder="Badge Name" style="width:100px; margin:0; padding:8px;">
+                            <button class="action-btn" onclick="giveBadge('${uid}')">SET</button>
+                            <button class="action-btn btn-del" onclick="removeBadge('${uid}')">REMOVE</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                    allUsers.push({ name: u.username.toLowerCase(), el: div });
                 });
             });
         }
 
+        // Give Badge Function
         window.giveBadge = (uid) => {
             const text = document.getElementById(`badge-${uid}`).value;
-            if(!text) {
-                if(confirm("Remove Badge?")) update(ref(db, `users/${uid}`), { customBadge: null });
-            } else {
-                update(ref(db, `users/${uid}`), { customBadge: text });
-                alert("Badge Awarded!");
+            if(!text) return alert("Write badge name first!");
+            update(ref(db, `users/${uid}`), { customBadge: text });
+            alert("Badge Given!");
+        };
+
+        // Remove Badge Function (New)
+        window.removeBadge = (uid) => {
+            if(confirm("Are you sure you want to remove the badge?")) {
+                update(ref(db, `users/${uid}`), { customBadge: null });
+                alert("Badge Removed.");
             }
         };
 
         window.filterUsers = () => {
             const q = document.getElementById('userSearch').value.toLowerCase();
-            allUsers.forEach(u => u.el.style.display = u.name.includes(q) ? "flex" : "none");
-        }
+            allUsers.forEach(u => {
+                u.el.style.display = u.name.includes(q) ? "flex" : "none";
+            });
+        };
 
-        // --- AD MANAGEMENT ---
+        // --- AD MANAGER ---
         window.postAd = () => {
             const file = document.getElementById('adFile').files[0];
-            if(!file) return alert("Select Video");
+            if(!file) return alert("Select Video File");
             
-            const caption = document.getElementById('adCaption').value;
-            const btnText = document.getElementById('adBtnText').value || "Learn More";
-            const link = document.getElementById('adLink').value;
-            const hours = document.getElementById('adTime').value;
-            const expiry = Date.now() + (hours * 60 * 60 * 1000);
+            const btn = event.target;
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
 
             const fd = new FormData();
             fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
@@ -198,17 +203,17 @@
                 const url = JSON.parse(xhr.responseText).secure_url;
                 await push(ref(db, 'ads'), {
                     videoUrl: url,
-                    caption: caption,
-                    btnText: btnText,
-                    link: link,
-                    expiry: expiry,
-                    timestamp: Date.now() // Created now
+                    caption: document.getElementById('adCaption').value,
+                    btnText: document.getElementById('adBtnText').value || "Visit",
+                    link: document.getElementById('adLink').value,
+                    expiry: Date.now() + (document.getElementById('adTime').value * 3600000),
+                    timestamp: Date.now()
                 });
                 alert("Ad Launched!");
                 location.reload();
             };
             xhr.send(fd);
-        }
+        };
 
         function loadAds() {
             onValue(ref(db, 'ads'), snap => {
@@ -216,21 +221,15 @@
                 div.innerHTML = "";
                 if(!snap.exists()) return;
                 snap.forEach(c => {
-                    const ad = c.val();
-                    const timeLeft = Math.round((ad.expiry - Date.now()) / 1000 / 60); // minutes
-                    
-                    // Auto Delete from Admin View if Expired
-                    if(timeLeft < 0) {
+                    if(Date.now() > c.val().expiry) {
                         remove(ref(db, `ads/${c.key}`));
-                        return;
+                    } else {
+                        div.innerHTML += `
+                            <div class="user-item">
+                                <div>${c.val().caption}</div>
+                                <button class="action-btn btn-del" onclick="deleteAd('${c.key}')">STOP AD</button>
+                            </div>`;
                     }
-
-                    div.innerHTML += `
-                        <div class="user-item">
-                            <div>${ad.caption} (${timeLeft} mins left)</div>
-                            <button class="action-btn btn-red" onclick="deleteAd('${c.key}')">STOP</button>
-                        </div>
-                    `;
                 });
             });
         }
@@ -240,7 +239,7 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(t).classList.add('active');
-            event.target.classList.add('active'); // Simple tab switch
+            event.target.classList.add('active');
         }
     </script>
 </body>
