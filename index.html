@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>ParaVideo - Short Video Platform</title>
-    <meta name="description" content="ParaVideo is the #1 short video platform in Pakistan. Watch and share the best clips.">
+    <meta name="description" content="ParaVideo is the #1 short video platform in Pakistan. Watch viral clips and upload your own content.">
     <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456" crossorigin="anonymous"></script>
 
     <link rel="icon" href="https://ibb.co/ZsDDGHQ">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -28,9 +30,14 @@
         .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         
+        /* 16:9 TikTok Style Ratio */
         video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
 
         .hd-tag { position: absolute; top: 75px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1.5px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
+        
+        /* Ad Container in Feed */
+        .ad-container { width: 100%; height: 100px; background: #111; display: flex; align-items: center; justify-content: center; margin-top: 10px; }
+
         .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 
@@ -42,7 +49,7 @@
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; }
         .user-row { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
         .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
-        .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .music-bar { font-size: 12px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.8; }
 
         /* MODALS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
@@ -72,7 +79,7 @@
         </header>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading ParaVideo...</p>
+            <p style="text-align:center; color:#555; margin-top:50vh;">Loading ParaVideo Feed...</p>
         </div>
 
         <div id="uploadModal" class="modal">
@@ -125,11 +132,8 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
                 currentUser = user; 
-                // Fix: Fetch REAL username from DB instead of Google Name
                 const uSnap = await get(ref(db, 'users/' + user.uid));
-                if(uSnap.exists()) {
-                    document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
-                }
+                if(uSnap.exists()) { document.getElementById('myPic').src = uSnap.val().photo || user.photoURL; }
                 loadSmartFeed(); 
             } else { signInWithPopup(auth, new GoogleAuthProvider()); }
         });
@@ -143,10 +147,12 @@
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
                 videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
 
-                videos.forEach(item => {
+                videos.forEach((item, index) => {
                     const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
                     let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
                     const hdBadge = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
+                    const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
+                    
                     div.innerHTML = `
                         <div class="video-loader" id="loader-${item.key}"></div>
                         ${hdBadge}
@@ -157,21 +163,30 @@
                             <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
                         </div>
                         <div class="video-info">
-                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader}</div></div>
+                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader}</div></div>
                             <div style="font-size:14px; color:#eee;">${item.caption}</div>
+                            ${musicHtml}
                         </div>
                     `;
-                    // Fix: Always fetch current username from users node
+
                     onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
-                        if(uSnap.exists()) {
-                            const u = uSnap.val();
-                            document.getElementById(`pic-${item.key}`).src = u.photo || "";
-                            document.getElementById(`name-${item.key}`).innerText = `@${u.username || item.uploader}`;
-                        }
+                        if(uSnap.exists()) { document.getElementById(`pic-${item.key}`).src = uSnap.val().photo || ""; }
                     });
-                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
+                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { 
+                        document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; 
+                        document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); 
+                    });
                     onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
+                    
                     feed.appendChild(div);
+
+                    // --- AD SLOT (Every 3 videos) ---
+                    if((index + 1) % 3 === 0) {
+                        const adDiv = document.createElement('div'); adDiv.className = "ad-container";
+                        adDiv.innerHTML = `<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1234567890123456" data-ad-slot="1234567890" data-ad-format="horizontal" data-full-width-responsive="true"></ins>`;
+                        feed.appendChild(adDiv);
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    }
                 });
                 setupObserver();
             });
@@ -188,15 +203,17 @@
             document.querySelectorAll('.video-card').forEach(card => obs.observe(card));
         }
 
-        // --- HANDLERS ---
+        // --- CAMERA, UPLOAD & INTERACTION ---
         let mediaRecorder, chunks = [], stream, camFile = null;
         window.switchTab = async (tab) => {
             document.getElementById('galTab').className = `tab-btn ${tab === 'gallery' ? 'active-tab' : ''}`;
             document.getElementById('camTab').className = `tab-btn ${tab === 'camera' ? 'active-tab' : ''}`;
             document.getElementById('gallery-section').style.display = tab === 'gallery' ? 'block' : 'none';
             document.getElementById('camera-section').style.display = tab === 'camera' ? 'block' : 'none';
-            if(tab === 'camera') { stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); document.getElementById('camera-preview').srcObject = stream; } 
-            else if(stream) stream.getTracks().forEach(t => t.stop());
+            if(tab === 'camera') { 
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); 
+                document.getElementById('camera-preview').srcObject = stream; 
+            } else if(stream) stream.getTracks().forEach(t => t.stop());
         };
 
         window.toggleRecording = () => {
@@ -214,7 +231,6 @@
             if(!file) return alert("Select video");
             if(file.size < 400000) return alert("❌ Quality too low!");
             
-            // Get REAL username for upload metadata
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
             const realUploaderName = uSnap.exists() ? uSnap.val().username : currentUser.displayName;
 
