@@ -142,9 +142,8 @@
         const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
 
         let currentUser = null, currentVideoKeyForComments = null;
-        
-        // GLOBAL SETTINGS HOLDER
-        let globalSettings = {
+        let globalAds = []; // Stores ads separately to avoid blocking video load
+        let siteSettings = {
             favicon: "https://ibb.co/ZsDDGHQ",
             defaultProfile: "https://ibb.co/ZsDDGHQ"
         };
@@ -153,7 +152,7 @@
         window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
         window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
 
-        // --- NEW: TOGGLE SOUND FUNCTION ---
+        // --- SOUND TOGGLE FUNCTION ---
         window.toggleSound = (vid, id) => {
             vid.muted = !vid.muted;
             const indicator = document.getElementById(`mute-icon-${id}`);
@@ -170,121 +169,118 @@
                 const uSnap = await get(ref(db, 'users/' + user.uid));
                 if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
                 
-                // 1. FETCH GLOBAL SETTINGS (Favicon & Default Profile)
+                // 1. Load Settings (Favicon & Default Pic)
                 onValue(ref(db, 'site_settings'), snap => {
                     if(snap.exists()) {
-                        globalSettings = snap.val();
-                        // Update Favicon dynamically
-                        if(globalSettings.favicon) {
-                            document.getElementById('dynamicFavicon').href = globalSettings.favicon;
-                        }
+                        siteSettings = snap.val();
+                        if(siteSettings.favicon) document.getElementById('dynamicFavicon').href = siteSettings.favicon;
                     }
-                    // After settings loaded, load content
-                    loadSmartFeed();
                 });
+
+                // 2. Load Ads (Separately - No Blocking)
+                onValue(ref(db, 'admin_ads'), (snap) => {
+                    globalAds = snap.exists() ? Object.values(snap.val()) : [];
+                });
+
+                // 3. Load Videos (Immediate)
+                loadVideos();
                 
             } else { signInWithPopup(auth, new GoogleAuthProvider()); }
         });
 
-        async function loadSmartFeed() {
+        function loadVideos() {
             const urlParams = new URLSearchParams(window.location.search);
             let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
-            
-            onValue(ref(db, 'admin_ads'), (adsSnap) => {
-                const currentAds = adsSnap.exists() ? Object.values(adsSnap.val()) : [];
 
-                onValue(ref(db, 'gameplay_clips'), (snap) => {
-                    const feed = document.getElementById('feed'); feed.innerHTML = "";
-                    if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+            onValue(ref(db, 'gameplay_clips'), (snap) => {
+                const feed = document.getElementById('feed'); feed.innerHTML = "";
+                if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+                
+                // --- INSERT AD IF LOADED ---
+                if (globalAds.length > 0) {
+                    renderAd(feed, globalAds[0]);
+                }
+
+                let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
+                videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
+
+                videos.forEach(item => {
+                    const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
+                    let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
+                    const hdBadge = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
+                    const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
                     
-                    // --- 1. SHOW AD AT TOP ---
-                    if (currentAds.length > 0) {
-                        const ad = currentAds[0]; 
-                        const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
-                        
-                        // Using toggleSound() on click
-                        adDiv.innerHTML = `
-                            <div class="ad-tag">SPONSORED</div>
-                            <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img" onclick="window.toggleSound(this, 'ad-top')"></video>
-                            <div id="mute-icon-ad-top" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
-                            
-                            <div class="video-info">
-                                <div class="user-row">
-                                    <img src="" id="ad-pic-top" class="feed-profile-pic">
-                                    <div class="uploader-name" id="ad-name-top">...</div>
-                                </div>
-                                <div style="font-size:14px; color:#eee;">${ad.caption}</div>
-                                <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
-                            </div>
-                        `;
-                        
-                        const sponsorUid = ad.uid;
-                        if(sponsorUid && sponsorUid !== 'admin') {
-                            onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
-                                if(uSnap.exists()) {
-                                    const u = uSnap.val();
-                                    document.getElementById('ad-pic-top').src = u.photo || globalSettings.defaultProfile;
-                                    document.getElementById('ad-name-top').innerText = `@${u.username}`;
-                                } else {
-                                    document.getElementById('ad-pic-top').src = globalSettings.defaultProfile;
-                                    document.getElementById('ad-name-top').innerText = "ParaVideo Team";
-                                }
-                            });
-                        } else {
-                            // USE DYNAMIC DEFAULT PROFILE
-                            document.getElementById('ad-pic-top').src = globalSettings.defaultProfile;
-                            document.getElementById('ad-name-top').innerText = "ParaVideo Team";
-                        }
+                    div.innerHTML = `
+                        <div class="video-loader" id="loader-${item.key}"></div>
+                        ${hdBadge}
+                        <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'" onclick="window.toggleSound(this, '${item.key}')"></video>
+                        <div id="mute-icon-${item.key}" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
 
-                        feed.appendChild(adDiv);
-                    }
-
-                    // --- 2. SHOW VIDEOS ---
-                    let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                    videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
-
-                    videos.forEach(item => {
-                        const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
-                        let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
-                        const hdBadge = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
-                        const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
-                        
-                        div.innerHTML = `
-                            <div class="video-loader" id="loader-${item.key}"></div>
-                            ${hdBadge}
-                            <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'" onclick="window.toggleSound(this, '${item.key}')"></video>
-                            <div id="mute-icon-${item.key}" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
-
-                            <div class="sidebar">
-                                <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
-                                <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
-                                <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
-                            </div>
-                            <div class="video-info">
-                                <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
-                                <div style="font-size:14px; color:#eee;">${item.caption}</div>
-                                ${musicHtml}
-                            </div>
-                        `;
-                        onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
-                            if(uSnap.exists()) {
-                                const u = uSnap.val();
-                                document.getElementById(`pic-${item.key}`).src = u.photo || globalSettings.defaultProfile; // Fallback to settings
-                                document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
-                            } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
-                        });
-                        onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-                        onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
-                        feed.appendChild(div);
+                        <div class="sidebar">
+                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
+                            <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
+                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
+                        </div>
+                        <div class="video-info">
+                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
+                            <div style="font-size:14px; color:#eee;">${item.caption}</div>
+                            ${musicHtml}
+                        </div>
+                    `;
+                    onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
+                        if(uSnap.exists()) {
+                            const u = uSnap.val();
+                            document.getElementById(`pic-${item.key}`).src = u.photo || siteSettings.defaultProfile;
+                            document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
+                        } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
                     });
-                    setupObserver();
+                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
+                    onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
+                    feed.appendChild(div);
                 });
+                setupObserver();
             });
+        }
+
+        function renderAd(feed, ad) {
+            const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
+            adDiv.innerHTML = `
+                <div class="ad-tag">SPONSORED</div>
+                <video src="${ad.videoUrl}" autoplay loop playsinline class="ad-img" onclick="window.toggleSound(this, 'ad-top')"></video>
+                <div id="mute-icon-ad-top" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
+                <div class="video-info">
+                    <div class="user-row">
+                        <img src="" id="ad-pic-top" class="feed-profile-pic">
+                        <div class="uploader-name" id="ad-name-top">...</div>
+                    </div>
+                    <div style="font-size:14px; color:#eee;">${ad.caption}</div>
+                    <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
+                </div>
+            `;
+            const sponsorUid = ad.uid;
+            if(sponsorUid && sponsorUid !== 'admin') {
+                onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
+                    if(uSnap.exists()) {
+                        const u = uSnap.val();
+                        document.getElementById('ad-pic-top').src = u.photo || siteSettings.defaultProfile;
+                        document.getElementById('ad-name-top').innerText = `@${u.username}`;
+                    } else { setAdminProfile(); }
+                });
+            } else { setAdminProfile(); }
+            feed.appendChild(adDiv);
+        }
+
+        function setAdminProfile() {
+            setTimeout(() => {
+                const img = document.getElementById('ad-pic-top');
+                const name = document.getElementById('ad-name-top');
+                if(img) img.src = siteSettings.defaultProfile;
+                if(name) name.innerText = "ParaVideo Team";
+            }, 100);
         }
 
         function setupObserver() { const obs = new IntersectionObserver(entries => { entries.forEach(entry => { const v = entry.target.querySelector('video'); if(entry.isIntersecting) { if(v) v.play(); window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`); } else { if(v) v.pause(); } }); }, {threshold: 0.6}); document.querySelectorAll('.video-card').forEach(card => obs.observe(card)); }
         
-        // ... (Rest of Upload/Comments functions remain exactly the same) ...
         let mediaRecorder, chunks = [], stream, camFile = null;
         window.switchTab = async (tab) => {
             document.getElementById('galTab').className = tab === 'gallery' ? 'tab-btn active-tab' : 'tab-btn';
