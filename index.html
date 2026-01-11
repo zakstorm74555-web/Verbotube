@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>ParaVideo - Pakistan's Short Video Platform</title>
-    <meta name="description" content="ParaVideo is the #1 platform in Pakistan to watch and share short videos. Join the community, upload your clips, and go viral!">
+    <meta name="description" content="ParaVideo is the #1 platform in Pakistan to watch and share short videos. Watch viral clips, upload your own content, and join the community!">
     <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
 
     <link rel="icon" href="https://ibb.co/ZsDDGHQ">
@@ -28,9 +28,7 @@
         
         .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; }
-        
-        /* Video quality fix: Smooth and crisp */
-        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block; background: #000; }
+        video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; display: block; }
 
         .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -45,17 +43,24 @@
         .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
         .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
+        .music-bar { font-size: 12px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.8; }
+        .music-spin { animation: spin_disc 3s linear infinite; }
+        @keyframes spin_disc { 100% { transform: rotate(360deg); } }
+
         /* MODALS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: #1a1a1a; width: 90%; max-width: 400px; padding: 20px; border-radius: 15px; border: 1px solid #8a2be2; text-align: center; position: relative; }
+        .modal-content { background: #1a1a1a; width: 95%; max-width: 420px; padding: 20px; border-radius: 15px; border: 1px solid #8a2be2; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; }
         
+        .tab-btns { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .active-tab { background: #8a2be2; }
+
+        input[type="text"], input[type="number"] { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; outline: none; }
+        .btn-main { width: 100%; background: #8a2be2; border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; margin-top: 5px; }
+
         .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease-in-out; border-top: 1px solid #333; display: flex; flex-direction: column; }
         .comments-modal.active { bottom: 0; }
         .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .comment-input-area { padding: 10px; display: flex; gap: 10px; background: #000; border-top: 1px solid #333; }
-        .comment-input-area input { flex: 1; background: #222; border: none; padding: 12px; color: white; border-radius: 20px; outline: none; }
-        
-        .btn-main { width: 100%; background: #8a2be2; border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -73,17 +78,35 @@
         </header>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading Clear Feed...</p>
+            <p style="text-align:center; color:#555; margin-top:50vh;">Loading ParaVideo Feed...</p>
         </div>
 
         <div id="uploadModal" class="modal">
             <div class="modal-content">
                 <span style="position:absolute; top:15px; right:20px; cursor:pointer; font-size:20px;" onclick="window.closeUpload()">&times;</span>
-                <h3 style="color:#8a2be2; margin-top:0;">New Post</h3>
-                <input type="file" id="videoFile" accept="video/*" style="margin-bottom:15px; color:white; width:100%;">
-                <input type="text" id="caption" placeholder="Write a caption..." style="width:100%; padding:10px; background:#222; color:white; border:none; border-radius:5px;">
-                <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin: 10px 0;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
-                <button class="btn-main" id="postBtn" onclick="window.uploadVideo()">UPLOAD VIDEO</button>
+                <h3 style="color:#8a2be2; margin-top:0;">Create Post</h3>
+                
+                <div class="tab-btns">
+                    <button class="tab-btn active-tab" id="galTab" onclick="window.switchTab('gallery')">Gallery</button>
+                    <button class="tab-btn" id="camTab" onclick="window.switchTab('camera')">Camera</button>
+                </div>
+
+                <div id="gallery-section">
+                    <input type="file" id="videoFile" accept="video/*" style="margin-bottom:15px; color:white; width:100%;">
+                </div>
+
+                <div id="camera-section" style="display:none;">
+                    <video id="camera-preview" autoplay muted playsinline style="width:100%; height:180px; background:black; border-radius:10px; margin-bottom:10px;"></video>
+                    <div id="recBtn" style="width:50px; height:50px; background:red; border-radius:50%; margin:0 auto 10px; cursor:pointer; border:3px solid white;" onclick="window.toggleRecording()"></div>
+                    <p id="rec-status" style="color:red; font-size:12px; display:none;">Recording...</p>
+                </div>
+
+                <input type="text" id="caption" placeholder="Caption...">
+                <input type="text" id="ytLink" placeholder="YouTube Music Link (Optional)">
+                <input type="number" id="startTime" placeholder="Music Start Time (Seconds)">
+                
+                <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin:10px 0;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
+                <button class="btn-main" id="postBtn" onclick="window.uploadVideo()">POST VIDEO</button>
             </div>
         </div>
 
@@ -93,8 +116,8 @@
                 <i class="fas fa-times" onclick="window.closeComments()" style="cursor:pointer; font-size: 20px;"></i>
             </div>
             <div class="comments-list" id="commentsList"></div>
-            <div class="comment-input-area">
-                <input type="text" id="commentInput" placeholder="Add a comment...">
+            <div class="comment-input-area" style="padding:10px; display:flex; gap:10px; background:#000;">
+                <input type="text" id="commentInput" placeholder="Add a comment..." style="flex:1; background:#222; border:none; padding:12px; color:white; border-radius:20px; outline:none;">
                 <button onclick="window.postComment()" style="color:#8a2be2; background:none; border:none; font-weight:bold;">Post</button>
             </div>
         </div>
@@ -112,82 +135,44 @@
         const CLOUD_NAME = "dusj0vpsi"; 
         const UPLOAD_PRESET = "paravideo";
 
-        let currentUser = null;
-        let currentVideoKeyForComments = null;
+        let currentUser = null, currentVideoKeyForComments = null;
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('myPic').src = user.photoURL;
-                loadSmartFeed();
-            } else {
-                signInWithPopup(auth, new GoogleAuthProvider());
-            }
+            if (user) { currentUser = user; document.getElementById('myPic').src = user.photoURL; loadSmartFeed(); } 
+            else { signInWithPopup(auth, new GoogleAuthProvider()); }
         });
 
         async function loadSmartFeed() {
             const urlParams = new URLSearchParams(window.location.search);
             let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
-
             onValue(ref(db, 'gameplay_clips'), (snap) => {
-                const feed = document.getElementById('feed');
-                feed.innerHTML = "";
+                const feed = document.getElementById('feed'); feed.innerHTML = "";
                 if (!snap.exists()) return;
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
                 if(targetId) videos.sort((a, b) => (a.key === targetId) ? -1 : (b.key === targetId) ? 1 : b.timestamp - a.timestamp);
                 else videos.sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = "video-card";
-                    div.setAttribute('data-id', item.key);
-                    
-                    // --- NEW HD BALANCED OPTIMIZATION ---
-                    // Using q_80 for high quality and w_480 for mobile speed
+                    const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
                     let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
-
+                    const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc music-spin"></i> Sound</div>` : '';
                     div.innerHTML = `
                         <div class="video-loader" id="loader-${item.key}"></div>
-                        <video src="${hdUrl}" loop playsinline class="reel-video" 
-                               onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
+                        <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
                         <div class="sidebar">
-                            <button class="action-btn" onclick="window.handleLike('${item.key}')">
-                                <i class="fas fa-heart" id="like-icon-${item.key}"></i>
-                                <span id="like-count-${item.key}">0</span>
-                            </button>
-                            <button class="action-btn" onclick="window.openComments('${item.key}')">
-                                <i class="fas fa-comment-dots"></i>
-                                <span id="comment-count-${item.key}">0</span>
-                            </button>
-                            <button class="action-btn" onclick="window.shareVideo('${item.key}')">
-                                <i class="fas fa-share"></i>
-                            </button>
+                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
+                            <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
+                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
                         </div>
                         <div class="video-info">
-                            <div class="user-row">
-                                <img src="" id="pic-${item.key}" class="feed-profile-pic">
-                                <div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader}</div>
-                            </div>
+                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader}</div></div>
                             <div style="font-size:14px; color:#eee; margin-top:5px;">${item.caption}</div>
+                            ${musicHtml}
                         </div>
                     `;
-                    
-                    // Database Listeners (Same as before)
-                    onValue(ref(db, 'users/' + item.uid), (uSnap) => {
-                        if(uSnap.exists()) {
-                            const u = uSnap.val();
-                            document.getElementById(`pic-${item.key}`).src = u.photo || "";
-                            document.getElementById(`name-${item.key}`).innerText = `@${u.username}`;
-                        }
-                    });
-                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { 
-                        document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; 
-                        document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
-                    });
-                    onValue(ref(db, `gameplay_comments/${item.key}`), s => { 
-                        document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0; 
-                    });
-
+                    onValue(ref(db, 'users/' + item.uid), (uSnap) => { if(uSnap.exists()) { const u = uSnap.val(); document.getElementById(`pic-${item.key}`).src = u.photo || ""; document.getElementById(`name-${item.key}`).innerText = `@${u.username}`; } });
+                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
+                    onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
                     feed.appendChild(div);
                 });
                 setupObserver();
@@ -197,44 +182,62 @@
         function setupObserver() {
             const obs = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
-                    const video = entry.target.querySelector('video');
-                    if(entry.isIntersecting) {
-                        if (video) video.play();
-                        window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`);
-                    } else {
-                        if (video) video.pause();
-                    }
+                    const v = entry.target.querySelector('video');
+                    if(entry.isIntersecting) { if(v) v.play(); window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`); } 
+                    else { if(v) v.pause(); }
                 });
             }, {threshold: 0.6});
             document.querySelectorAll('.video-card').forEach(card => obs.observe(card));
         }
 
-        // Functions (Same as before)
-        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
-        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), snap => { const list = document.getElementById('commentsList'); list.innerHTML = ""; if(!snap.exists()) { list.innerHTML = "<p style='text-align:center; color:#555'>No comments yet.</p>"; return; } snap.forEach(c => { list.innerHTML += `<div style="margin-bottom:10px;"><b style="color:#ddd">${c.val().u}:</b> <span style="color:#fff">${c.val().t}</span></div>`; }); }); };
-        window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = () => { const t = document.getElementById('commentInput').value; if(t && currentVideoKeyForComments) { push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
-        window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; if(navigator.share) navigator.share({ title: 'ParaVideo', url: link }); else { navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); } };
+        // --- CAMERA & RECORDING LOGIC ---
+        let mediaRecorder, chunks = [], stream, selectedFile = null;
+        window.switchTab = async (tab) => {
+            document.getElementById('galTab').classList.toggle('active-tab', tab === 'gallery');
+            document.getElementById('camTab').classList.toggle('active-tab', tab === 'camera');
+            document.getElementById('gallery-section').style.display = (tab === 'gallery' ? 'block' : 'none');
+            document.getElementById('camera-section').style.display = (tab === 'camera' ? 'block' : 'none');
+            if(tab === 'camera') {
+                try { stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); document.getElementById('camera-preview').srcObject = stream; } 
+                catch (e) { alert("Camera Permission Denied"); }
+            } else { if(stream) stream.getTracks().forEach(t => t.stop()); }
+        };
+
+        window.toggleRecording = () => {
+            const btn = document.getElementById('recBtn');
+            if(!mediaRecorder || mediaRecorder.state === "inactive") {
+                chunks = []; mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => { const b = new Blob(chunks, {type: 'video/mp4'}); selectedFile = new File([b], "camera.mp4", {type:'video/mp4'}); alert("Recording Saved!"); };
+                mediaRecorder.start(); btn.style.background = "white"; document.getElementById('rec-status').style.display = "block";
+            } else { mediaRecorder.stop(); btn.style.background = "red"; document.getElementById('rec-status').style.display = "none"; }
+        };
+
+        // --- UPLOAD & OTHER HELPERS ---
         window.openUpload = () => document.getElementById('uploadModal').style.display = 'flex';
-        window.closeUpload = () => document.getElementById('uploadModal').style.display = 'none';
+        window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
         window.uploadVideo = async () => {
-            const file = document.getElementById('videoFile').files[0];
-            if(!file) return alert("Select video");
+            const file = selectedFile || document.getElementById('videoFile').files[0];
+            if(!file) return alert("Select or record a video!");
             const btn = document.getElementById('postBtn'); btn.disabled = true; btn.innerText = "Uploading...";
             document.getElementById('progress').style.display = 'block';
             const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+            const xhr = new XMLHttpRequest(); xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
             xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
             xhr.onload = async () => {
                 if(xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, uploader: currentUser.displayName, uid: currentUser.uid, email: currentUser.email, timestamp: Date.now() });
+                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: currentUser.displayName, uid: currentUser.uid, timestamp: Date.now() });
                     location.reload();
                 } else { alert("Failed"); btn.disabled = false; }
-            };
-            xhr.send(fd);
+            }; xhr.send(fd);
         };
+
+        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
+        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = ""; if(!s.exists()) l.innerHTML = "<p style='text-align:center;color:#555'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b style="color:#ddd">${c.val().u}:</b> <span style="color:#fff">${c.val().t}</span></div>`; }); }); };
+        window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
+        window.postComment = () => { const t = document.getElementById('commentInput').value; if(t && currentVideoKeyForComments) { push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
+        window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; if(navigator.share) navigator.share({ title: 'ParaVideo', url: link }); else { navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); } };
     </script>
 </body>
 </html>
