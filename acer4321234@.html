@@ -6,26 +6,48 @@
     <title>ParaVideo - Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    
     <style>
         body { background: #111; color: white; font-family: 'Segoe UI', monospace; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
+        
         .header { border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; }
         .title { font-size: 24px; color: #8a2be2; font-weight: bold; }
+        
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 10px 20px; cursor: pointer; }
         .tab-btn.active { background: #8a2be2; color: white; border-color: #8a2be2; font-weight: bold; }
+        
         .section { display: none; background: #1a1a1a; padding: 20px; border: 1px solid #333; }
         .section.active { display: block; }
+
+        /* USER LIST */
         .user-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding: 12px 0; }
         .user-info { display: flex; gap: 10px; align-items: center; }
         .u-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #444; }
+        
+        /* BADGES */
+        .badge-preview { display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: bold; margin-left: 8px; border: 1px solid #fff; vertical-align: middle; }
+        .badge-img { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; }
+        .badge-img img { width: 100%; height: 100%; object-fit: cover; }
+        .badge-txt { padding: 2px 8px; border-radius: 10px; }
+
+        /* CONTROLS */
         input, select { background: #000; border: 1px solid #444; color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
         .action-btn { background: #8a2be2; border: none; color: white; padding: 8px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; }
         .btn-del { background: #333; color: #ff4444; border: 1px solid #555; margin-left: 5px; }
+        
+        /* MODAL & CROPPER */
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index: 2000; }
-        .modal-box { background:#222; padding:20px; width:90%; max-width: 400px; border-radius: 10px; border: 1px solid #8a2be2; position: relative; }
+        .modal-box { background:#222; padding:20px; width:90%; max-width: 450px; border-radius: 10px; border: 1px solid #8a2be2; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
+        
+        .img-container { height: 300px; width: 100%; margin-bottom: 15px; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        #image-to-crop { max-width: 100%; max-height: 100%; }
+        
         label { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
+        .preview-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .preview-img { width: 50px; height: 50px; border-radius: 50%; border: 1px solid #555; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -56,13 +78,13 @@
 
             <div id="ads" class="section">
                 <h3>Create Ad</h3>
-                <label>Sponsored By (Select User):</label>
+                <label>Sponsored By:</label>
                 <select id="adSponsor"><option value="admin">ParaVideo Team (Default)</option></select>
                 <input type="file" id="adFile" accept="video/*">
                 <input type="text" id="adCaption" placeholder="Ad Caption">
-                <input type="text" id="adBtnText" placeholder="Button Text">
+                <input type="text" id="adBtnText" placeholder="Button Text (e.g. JOIN NOW)">
                 <input type="text" id="adLink" placeholder="Link URL">
-                <input type="number" id="adTime" placeholder="24" value="24">
+                <input type="number" id="adTime" placeholder="Duration (Hours)" value="24">
                 <div id="progress" style="width:0%; height:5px; background:#8a2be2; margin-bottom:10px;"></div>
                 <button class="action-btn" style="width:100%;" onclick="postAd()">LAUNCH AD</button>
                 <h4 style="margin-top:20px;">Active Ads</h4>
@@ -71,17 +93,24 @@
 
             <div id="settings" class="section">
                 <h3>Site Settings</h3>
-                <label>Admin/Team Profile Picture:</label>
-                <input type="file" id="settingProfile" accept="image/*">
-                <button class="action-btn" onclick="uploadSetting('profile')">Update Profile Pic</button>
-                <img id="previewProfile" style="width:50px; height:50px; border-radius:50%; margin-top:5px; border:1px solid white; display:block;">
+                
+                <div class="preview-box">
+                    <img id="previewProfile" class="preview-img">
+                    <div style="flex:1;">
+                        <label>Default Team Profile Pic:</label>
+                        <input type="file" id="settingProfile" accept="image/*" onchange="initCrop('profile', this)">
+                    </div>
+                </div>
 
                 <hr style="border-color:#333; margin:20px 0;">
 
-                <label>Site Favicon (Browser Icon):</label>
-                <input type="file" id="settingFavicon" accept="image/*">
-                <button class="action-btn" onclick="uploadSetting('favicon')">Update Favicon</button>
-                <img id="previewFavicon" style="width:32px; height:32px; margin-top:5px; display:block;">
+                <div class="preview-box">
+                    <img id="previewFavicon" class="preview-img" style="border-radius:0;">
+                    <div style="flex:1;">
+                        <label>Site Favicon:</label>
+                        <input type="file" id="settingFavicon" accept="image/*" onchange="initCrop('favicon', this)">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -91,13 +120,44 @@
             <span class="close-btn" onclick="closeBadgeModal()">&times;</span>
             <h3>Set Badge</h3>
             <input type="hidden" id="targetUid">
-            <select id="badgeType"><option value="text">Text Badge</option></select>
-            <input type="text" id="badgeText" maxlength="10" placeholder="Text Label">
+            
+            <label>Badge Type:</label>
+            <select id="badgeType" onchange="toggleBadgeInputs()">
+                <option value="text">Text Badge</option>
+                <option value="image">Image Badge</option>
+            </select>
+
+            <div id="textInputs">
+                <label>Text (e.g. 'V', 'PRO'):</label>
+                <input type="text" id="badgeText" maxlength="10" placeholder="Text Label">
+            </div>
+
+            <div id="imageInputs" style="display:none;">
+                <label>Badge Image:</label>
+                <input type="file" id="badgeFile" accept="image/*" onchange="initCrop('badge', this)">
+            </div>
+
+            <label>Badge Color:</label>
             <input type="color" id="badgeColor" value="#8a2be2" style="height:40px;">
+
             <button onclick="saveBadge()" class="action-btn" style="width:100%; margin-top:10px;">SAVE BADGE</button>
         </div>
     </div>
 
+    <div id="cropperModal" class="modal" style="z-index: 3000;">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeCropper()">&times;</span>
+            <h3>Crop Image</h3>
+            <div class="img-container">
+                <img id="image-to-crop" src="">
+            </div>
+            <button onclick="uploadCroppedImage()" class="action-btn" style="width:100%;">CROP & UPLOAD</button>
+            <div id="cropProgress" style="display:none; text-align:center; color:#8a2be2; margin-top:5px;">Uploading...</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -111,6 +171,11 @@
         const ADMIN_EMAIL = "elitegamer859650@gmail.com";
         const CLOUD_NAME = "dusj0vpsi"; const UPLOAD_PRESET = "paravideo";
 
+        let allUsers = [];
+        let cropper = null;
+        let currentCropType = null; // 'profile', 'favicon', 'badge'
+        let badgeImageUrl = null; // Stores URL after badge crop
+
         window.login = () => signInWithPopup(auth, new GoogleAuthProvider());
 
         onAuthStateChanged(auth, (user) => {
@@ -121,7 +186,7 @@
                 document.getElementById('loginWarning').style.display = "none";
                 loadUsersAndSponsors();
                 loadAds();
-                loadSettings(); // NEW
+                loadSettings();
             } else {
                 document.getElementById('status').innerText = "Access Denied";
                 document.getElementById('loginWarning').style.display = "block";
@@ -129,28 +194,148 @@
             }
         });
 
-        // --- NEW: SETTINGS LOGIC ---
-        window.uploadSetting = (type) => {
-            const fileInput = document.getElementById(type === 'profile' ? 'settingProfile' : 'settingFavicon');
-            const file = fileInput.files[0];
-            if(!file) return alert("Select Image!");
+        // --- CROPPER SYSTEM (Smart Crop) ---
+        window.initCrop = (type, input) => {
+            if (input.files && input.files[0]) {
+                currentCropType = type;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('image-to-crop').src = e.target.result;
+                    document.getElementById('cropperModal').style.display = 'flex';
+                    
+                    if(cropper) cropper.destroy();
+                    const img = document.getElementById('image-to-crop');
+                    // If Favicon or Badge, force 1:1 square. 
+                    cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
 
-            const btn = event.target; btn.disabled = true; btn.innerText = "Uploading...";
-            const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
+        window.closeCropper = () => {
+            document.getElementById('cropperModal').style.display = 'none';
+            if(cropper) cropper.destroy();
+            // Reset inputs
+            document.getElementById('settingProfile').value = "";
+            document.getElementById('settingFavicon').value = "";
+            document.getElementById('badgeFile').value = "";
+        };
 
-            fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: fd })
-            .then(res => res.json())
-            .then(data => {
-                const updates = {};
-                if(type === 'profile') updates.defaultProfile = data.secure_url;
-                if(type === 'favicon') updates.favicon = data.secure_url;
+        window.uploadCroppedImage = () => {
+            if(!cropper) return;
+            document.getElementById('cropProgress').style.display = 'block';
+            
+            cropper.getCroppedCanvas({ width: 300, height: 300 }).toBlob((blob) => {
+                const fd = new FormData(); fd.append("file", blob); fd.append("upload_preset", UPLOAD_PRESET);
                 
-                update(ref(db, 'site_settings'), updates).then(() => {
-                    alert("Updated!");
-                    btn.disabled = false; btn.innerText = "Update";
+                fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: fd })
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('cropProgress').style.display = 'none';
+                    closeCropper();
+
+                    if(currentCropType === 'profile') {
+                        update(ref(db, 'site_settings'), { defaultProfile: data.secure_url }).then(() => alert("Profile Pic Updated!"));
+                    } 
+                    else if(currentCropType === 'favicon') {
+                        update(ref(db, 'site_settings'), { favicon: data.secure_url }).then(() => alert("Favicon Updated!"));
+                    } 
+                    else if(currentCropType === 'badge') {
+                        badgeImageUrl = data.secure_url; // Save URL for when "Save Badge" is clicked
+                        alert("Image Ready! Click 'SAVE BADGE' to apply.");
+                    }
                 });
             });
         };
+
+        // --- BADGE SYSTEM ---
+        window.openBadgeModal = (uid) => {
+            document.getElementById('targetUid').value = uid;
+            document.getElementById('badgeModal').style.display = 'flex';
+            document.getElementById('badgeType').value = 'text';
+            badgeImageUrl = null; // Reset
+            toggleBadgeInputs();
+        };
+        window.closeBadgeModal = () => document.getElementById('badgeModal').style.display = 'none';
+        
+        window.toggleBadgeInputs = () => {
+            const type = document.getElementById('badgeType').value;
+            document.getElementById('textInputs').style.display = type === 'text' ? 'block' : 'none';
+            document.getElementById('imageInputs').style.display = type === 'image' ? 'block' : 'none';
+        };
+
+        window.saveBadge = () => {
+            const uid = document.getElementById('targetUid').value;
+            const type = document.getElementById('badgeType').value;
+            const color = document.getElementById('badgeColor').value;
+            let badgeData = { color: color };
+
+            if(type === 'text') {
+                const txt = document.getElementById('badgeText').value;
+                if(!txt) return alert("Enter text");
+                badgeData.text = txt;
+                update(ref(db, `users/${uid}`), { customBadge: badgeData });
+            } else {
+                if(!badgeImageUrl) return alert("Please upload and crop an image first!");
+                badgeData.image = badgeImageUrl;
+                update(ref(db, `users/${uid}`), { customBadge: badgeData });
+            }
+            closeBadgeModal();
+        };
+
+        window.removeBadge = (uid) => {
+            if(confirm("Remove Badge?")) update(ref(db, `users/${uid}`), { customBadge: null });
+        };
+
+        // --- ADS & USERS & SETTINGS LOADERS ---
+        function loadUsersAndSponsors() {
+            onValue(ref(db, 'users'), (snap) => {
+                const list = document.getElementById('userList');
+                const sponsorSelect = document.getElementById('adSponsor');
+                list.innerHTML = "";
+                sponsorSelect.innerHTML = '<option value="admin">ParaVideo Team (Default)</option>';
+                allUsers = [];
+                
+                if(!snap.exists()) return;
+                snap.forEach(child => {
+                    const u = child.val();
+                    const uid = child.key;
+                    
+                    // Badge Display
+                    let badgeHtml = '';
+                    if(u.customBadge) {
+                        if(u.customBadge.image) badgeHtml = `<span class="badge-preview badge-img" style="border-color:${u.customBadge.color}"><img src="${u.customBadge.image}"></span>`;
+                        else badgeHtml = `<span class="badge-preview badge-txt" style="background:${u.customBadge.color}">${u.customBadge.text}</span>`;
+                    }
+
+                    const div = document.createElement('div'); div.className = "user-item";
+                    div.innerHTML = `
+                        <div class="user-info"><img src="${u.photo||''}" class="u-pic"><div><b>${u.username}</b> ${badgeHtml}</div></div>
+                        <div>
+                            <button class="action-btn" onclick="openBadgeModal('${uid}')">BADGE</button>
+                            <button class="action-btn btn-del" onclick="removeBadge('${uid}')">X</button>
+                        </div>`;
+                    list.appendChild(div);
+                    allUsers.push({ name: u.username.toLowerCase(), el: div });
+
+                    const opt = document.createElement('option'); opt.value = uid; opt.innerText = u.username;
+                    sponsorSelect.appendChild(opt);
+                });
+            });
+        }
+
+        window.filterUsers = () => {
+            const q = document.getElementById('userSearch').value.toLowerCase();
+            allUsers.forEach(u => u.el.style.display = u.name.includes(q) ? "flex" : "none");
+        };
+
+        function loadAds() {
+            onValue(ref(db, 'admin_ads'), snap => {
+                const div = document.getElementById('activeAdsList'); div.innerHTML = "";
+                if(!snap.exists()) { div.innerHTML = "<p>No active ads.</p>"; return; }
+                snap.forEach(c => div.innerHTML += `<div class="user-item"><div>${c.val().caption || "Ad"}</div><button class="action-btn btn-del" onclick="window.deleteAd('${c.key}')">STOP</button></div>`);
+            });
+        }
 
         function loadSettings() {
             onValue(ref(db, 'site_settings'), snap => {
@@ -162,22 +347,13 @@
             });
         }
 
-        // ... (Keep existing Users/Ads functions: postAd, deleteAd, loadUsersAndSponsors, etc.) ...
-        // Note: For brevity, I assumed you kept the previous functions. 
-        // Ensure switchTab works:
-        window.switchTab = (t, btn) => {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(t).classList.add('active');
-            btn.classList.add('active');
-        }
-        
-        // Re-adding postAd/deleteAd/loadAds for completeness if you replaced the whole file:
+        // --- AD ACTIONS ---
         window.postAd = () => {
             const file = document.getElementById('adFile').files[0];
             const sponsorUid = document.getElementById('adSponsor').value;
             if(!file) return alert("Select Video");
-            const btn = event.target; btn.disabled = true; btn.innerText = "Uploading...";
+            document.getElementById('progress').style.width = "10%";
+            
             const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
             const xhr = new XMLHttpRequest();
             xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
@@ -197,29 +373,12 @@
             xhr.send(fd);
         };
         window.deleteAd = async (key) => { if(confirm("Stop Ad?")) await remove(ref(db, `admin_ads/${key}`)); };
-        function loadAds() {
-            onValue(ref(db, 'admin_ads'), snap => {
-                const div = document.getElementById('activeAdsList'); div.innerHTML = "";
-                if(!snap.exists()) { div.innerHTML = "<p>No active ads.</p>"; return; }
-                snap.forEach(c => div.innerHTML += `<div class="user-item"><div>${c.val().caption || "Ad"}</div><button class="action-btn btn-del" onclick="window.deleteAd('${c.key}')">STOP</button></div>`);
-            });
-        }
-        function loadUsersAndSponsors() {
-             onValue(ref(db, 'users'), (snap) => {
-                const list = document.getElementById('userList');
-                const sponsorSelect = document.getElementById('adSponsor');
-                list.innerHTML = "";
-                sponsorSelect.innerHTML = '<option value="admin">ParaVideo Team (Default)</option>';
-                if(!snap.exists()) return;
-                snap.forEach(child => {
-                    const u = child.val();
-                    const option = document.createElement('option');
-                    option.value = child.key;
-                    option.innerText = u.username;
-                    sponsorSelect.appendChild(option);
-                    list.innerHTML += `<div class="user-item"><div class="user-info"><img src="${u.photo||''}" class="u-pic"><div><b>${u.username}</b></div></div></div>`;
-                });
-            });
+
+        window.switchTab = (t, btn) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+            btn.classList.add('active');
         }
     </script>
 </body>
