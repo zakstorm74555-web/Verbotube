@@ -13,7 +13,7 @@
         .chat-header { background: #111; padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; }
         .back-btn { color: white; background: none; border: none; font-size: 22px; cursor: pointer; }
         .chat-title { font-weight: bold; font-size: 18px; flex: 1; text-transform: capitalize; }
-        .video-btn { color: #8a2be2; font-size: 22px; cursor: pointer; padding: 10px; }
+        /* Video Icon Removed */
         
         /* MESSAGES AREA */
         .chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background-image: radial-gradient(#222 1px, transparent 1px); background-size: 20px 20px; }
@@ -35,7 +35,6 @@
     <div class="chat-header">
         <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="chat-title" id="chatTitle">User</div>
-        <i class="fas fa-video video-btn" onclick="startVideoCall()"></i>
     </div>
 
     <div class="chat-area" id="messages">
@@ -46,6 +45,8 @@
         <input type="text" id="msgInput" placeholder="Type a message...">
         <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
     </div>
+
+    <audio id="notifySound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3" preload="auto"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -58,20 +59,24 @@
         const auth = getAuth(app);
 
         let myUid = null;
-        
-        // URL se data uthana
+        let isFirstLoad = true; // To prevent notifications on old messages
+        let lastMsgCount = 0;
+
         const params = new URLSearchParams(window.location.search);
         const otherUid = params.get('uid');
         const otherName = params.get('name');
         
-        // Title Set Karna
         document.getElementById('chatTitle').innerText = otherName || "Chat User";
+
+        // Request Notification Permission on Load
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
 
         onAuthStateChanged(auth, user => {
             if(user) { 
                 myUid = user.uid;
                 if(!otherUid) {
-                    alert("Error: User not found!");
                     window.history.back();
                 } else {
                     loadMessages();
@@ -81,7 +86,6 @@
             }
         });
 
-        // Unique Chat Room ID (Sorted so both users get same ID)
         function getChatId() {
             if (!myUid || !otherUid) return null;
             return [myUid, otherUid].sort().join("_");
@@ -98,26 +102,55 @@
                 div.innerHTML = "";
                 
                 if(snap.exists()) {
-                    snap.forEach(child => {
-                        const msg = child.val();
+                    let messages = [];
+                    snap.forEach(child => { messages.push(child.val()); });
+
+                    // Render Messages
+                    messages.forEach(msg => {
                         const isMe = msg.sender === myUid;
-                        
                         const bubble = document.createElement('div');
                         bubble.className = `msg ${isMe ? 'msg-me' : 'msg-other'}`;
-                        
-                        // Time formatting
                         const date = new Date(msg.time);
                         const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        
                         bubble.innerHTML = `${msg.text} <div class="msg-time">${timeStr}</div>`;
                         div.appendChild(bubble);
                     });
-                    // Auto scroll to latest message
-                    setTimeout(() => div.scrollTop = div.scrollHeight, 100);
+
+                    // Scroll to bottom
+                    setTimeout(() => div.scrollTop = div.scrollHeight, 50);
+
+                    // --- NOTIFICATION LOGIC ---
+                    // Agar naya message aaya hai (Count badh gaya hai)
+                    if (!isFirstLoad && messages.length > lastMsgCount) {
+                        const lastMsg = messages[messages.length - 1];
+                        
+                        // Agar message MERA nahi hai (kisi aur ne bheja hai)
+                        if (lastMsg.sender !== myUid) {
+                            sendNotification(lastMsg.text);
+                        }
+                    }
+
+                    lastMsgCount = messages.length;
+                    isFirstLoad = false;
+
                 } else {
-                    div.innerHTML = "<p style='text-align:center; color:#555; margin-top:20px;'>No messages yet. Say Hi! 👋</p>";
+                    div.innerHTML = "<p style='text-align:center; color:#555; margin-top:20px;'>No messages yet.</p>";
                 }
             });
+        }
+
+        function sendNotification(text) {
+            // 1. Play Sound
+            const audio = document.getElementById('notifySound');
+            audio.play().catch(e => console.log("Sound blocked"));
+
+            // 2. Show System Notification
+            if (Notification.permission === "granted") {
+                new Notification(`Message from ${otherName || 'User'}`, {
+                    body: text,
+                    icon: "https://ibb.co/ZsDDGHQ" // ParaVideo Logo
+                });
+            }
         }
 
         window.sendMessage = () => {
@@ -132,46 +165,14 @@
                 text: text,
                 sender: myUid,
                 time: Date.now()
-            })
-            .then(() => {
-                input.value = ""; // Clear input on success
-                input.focus();
-            })
-            .catch((error) => {
-                alert("Message Failed: " + error.message);
-                console.error(error);
             });
+            input.value = "";
+            input.focus();
         };
 
-        // Enter Key to Send
         document.getElementById('msgInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') sendMessage();
         });
-
-        // --- VIDEO CALL FUNCTION ---
-        window.startVideoCall = () => {
-            const chatId = getChatId();
-            if(!chatId) return alert("Wait for connection...");
-            
-            if(confirm("Start Video Call with " + (otherName || "User") + "?")) {
-                // Using Jitsi Meet (Free, Secure, No-Code Server)
-                // We create a unique room based on Chat ID
-                const roomName = `ParaVideo_Call_${chatId}`;
-                const callLink = `https://meet.jit.si/${roomName}`;
-                
-                // Open in new window (User can return to chat easily)
-                window.open(callLink, '_blank');
-                
-                // Optional: Send a message that you started a call
-                push(ref(db, `chats/${chatId}`), {
-                    text: "📞 I started a video call. Join me!",
-                    sender: myUid,
-                    time: Date.now()
-                });
-            }
-        };
 
     </script>
 </body>
