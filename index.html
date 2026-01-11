@@ -24,41 +24,45 @@
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
         
-        /* --- ADMIN AD CARD (Top) --- */
+        /* --- ADMIN AD CARD (Corrected Layout) --- */
         .admin-ad-card { 
             background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             border-bottom: 2px solid #222;
         }
-        .ad-img { width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
-        .ad-tag { position: absolute; top: 75px; left: 15px; background: #ffcc00; color: #000; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; z-index: 20; }
-        .ad-btn-container { position: absolute; bottom: 100px; width: 100%; display: flex; justify-content: center; z-index: 20; pointer-events: none; }
-        .ad-link-btn { pointer-events: auto; background: #8a2be2; color: white; padding: 10px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); }
-
-        .hd-tag { position: absolute; top: 75px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
+        .ad-tag { position: absolute; top: 80px; right: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
         
-        /* --- SIDEBAR UI FIXED (Small Icons) --- */
+        /* AD CTA BUTTON STYLE */
+        .ad-cta-btn {
+            background: #8a2be2; color: white; border: none;
+            padding: 10px; width: 100%; border-radius: 5px;
+            font-weight: bold; font-size: 14px; cursor: pointer;
+            text-transform: uppercase; margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
         .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
-        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 0; }
+        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 12px; margin-top: 3px; font-weight: 600; }
         .liked { color: #ff0055 !important; }
 
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; }
-        .user-row { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
+        .video-info * { pointer-events: auto; }
+        .user-row { display: flex; align-items: center; gap: 10px; }
         .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
         .uploader-name { font-weight: bold; color: white; font-size: 16px; cursor: pointer; }
-        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 6px; pointer-events: auto; cursor: pointer; opacity: 0.9; }
+        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 6px; opacity: 0.9; cursor: pointer; }
 
-        /* MODALS & MENU */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1a1a1a; width: 95%; max-width: 420px; padding: 20px; border-radius: 15px; text-align: center; }
         .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 1500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease; border-top: 1px solid #333; display: flex; flex-direction: column; }
         .comments-modal.active { bottom: 0; }
         .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        
         .profile-dropdown { position: absolute; top: 50px; right: 15px; background: #222; border: 1px solid #444; border-radius: 10px; width: 150px; display: none; flex-direction: column; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .dropdown-item { padding: 12px 15px; font-size: 14px; color: white; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; }
-        
         .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .active-tab { background: #8a2be2; }
         input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; outline: none; }
@@ -154,17 +158,44 @@
 
                 onValue(ref(db, 'gameplay_clips'), (snap) => {
                     const feed = document.getElementById('feed'); feed.innerHTML = "";
-                    if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos.</p>"; return; }
+                    if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                     
-                    // --- 1. SHOW AD AT TOP (Priority High) ---
+                    // --- 1. SHOW AD AT TOP WITH USER INFO ---
                     if (currentAds.length > 0) {
                         const ad = currentAds[0]; 
                         const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
+                        
                         adDiv.innerHTML = `
                             <div class="ad-tag">SPONSORED</div>
-                            <img src="${ad.imageUrl}" class="ad-img" onclick="window.open('${ad.link}', '_blank')">
-                            <div class="ad-btn-container"><a href="${ad.link}" target="_blank" class="ad-link-btn">${ad.buttonText || 'Learn More'}</a></div>
+                            <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
+                            
+                            <div class="video-info">
+                                <div class="user-row">
+                                    <img src="" id="ad-pic-top" class="feed-profile-pic">
+                                    <div class="uploader-name" id="ad-name-top">Loading...</div>
+                                </div>
+                                
+                                <div style="font-size:14px; color:#eee;">${ad.caption}</div>
+                                <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
+                            </div>
                         `;
+                        
+                        // Fetch Sponsor Data
+                        const sponsorUid = ad.uid; // Using UID saved from Admin Panel
+                        if(sponsorUid) {
+                            onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
+                                if(uSnap.exists()) {
+                                    const u = uSnap.val();
+                                    document.getElementById('ad-pic-top').src = u.photo || "https://via.placeholder.com/40";
+                                    document.getElementById('ad-name-top').innerText = `@${u.username}`;
+                                } else {
+                                    document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
+                                }
+                            });
+                        } else {
+                            document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
+                        }
+
                         feed.appendChild(adDiv);
                     }
 
@@ -241,7 +272,6 @@
             vidMeta.onloadedmetadata = () => {
                 const isHD = (vidMeta.videoWidth >= 1280 || vidMeta.videoHeight >= 720);
                 const btn = document.getElementById('postBtn'); btn.disabled = true; btn.innerText = "Uploading...";
-                document.getElementById('progress').style.display = 'block';
                 const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
                 const xhr = new XMLHttpRequest(); xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
                 xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
