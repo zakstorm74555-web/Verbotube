@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ParaVideo - Short Video Platform</title>
     
-    <link rel="icon" id="dynamicFavicon" href="https://ibb.co/ZsDDGHQ" sizes="32x32">
-    <link rel="apple-touch-icon" id="dynamicAppleIcon" href="https://ibb.co/ZsDDGHQ">
-    <link rel="shortcut icon" id="dynamicShortcut" href="https://ibb.co/ZsDDGHQ" sizes="196x196">
-
+    <link rel="icon" id="fav1" href="https://ibb.co/ZsDDGHQ" sizes="32x32">
+    <link rel="icon" id="fav2" href="https://ibb.co/ZsDDGHQ" sizes="192x192">
+    <link rel="apple-touch-icon" id="fav3" href="https://ibb.co/ZsDDGHQ">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -34,6 +34,7 @@
             display: flex; align-items: center; justify-content: center;
             border-bottom: 2px solid #222;
         }
+        
         .ad-tag { position: absolute; top: 80px; left: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
         
         .top-mute-btn {
@@ -190,16 +191,18 @@
                 const uSnap = await get(ref(db, 'users/' + user.uid));
                 if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
                 
-                // --- DYNAMIC SETTINGS with CACHE BUSTING ---
+                // --- FORCE UPDATE FAVICON LOGIC ---
                 onValue(ref(db, 'site_settings'), snap => {
                     if(snap.exists()) {
                         siteSettings = snap.val();
                         if(siteSettings.favicon) {
-                            // Adding Timestamp to force Browser Refresh
-                            const favUrl = siteSettings.favicon + "?t=" + new Date().getTime();
-                            document.getElementById('dynamicFavicon').href = favUrl;
-                            document.getElementById('dynamicAppleIcon').href = favUrl;
-                            document.getElementById('dynamicShortcut').href = favUrl;
+                            // Add Time to URL to bypass Cache
+                            const newFav = siteSettings.favicon + "?t=" + new Date().getTime();
+                            
+                            // Update ALL icon tags
+                            document.getElementById('fav1').href = newFav;
+                            document.getElementById('fav2').href = newFav;
+                            document.getElementById('fav3').href = newFav;
                         }
                     }
                 });
