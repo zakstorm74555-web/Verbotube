@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ParaVideo - Short Video Platform</title>
-    <link rel="icon" href="https://ibb.co/ZsDDGHQ">
+    <link rel="icon" id="dynamicFavicon" href="https://ibb.co/ZsDDGHQ">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -24,7 +24,7 @@
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
         
-        /* --- ADMIN AD CARD (Corrected Layout) --- */
+        /* --- ADMIN AD CARD --- */
         .admin-ad-card { 
             background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
             display: flex; align-items: center; justify-content: center;
@@ -32,7 +32,14 @@
         }
         .ad-tag { position: absolute; top: 80px; right: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
         
-        /* AD CTA BUTTON STYLE */
+        /* Volume Indicator */
+        .mute-indicator {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 40px; color: rgba(255,255,255,0.8); pointer-events: none;
+            opacity: 0; transition: opacity 0.3s; z-index: 15;
+            background: rgba(0,0,0,0.5); padding: 20px; border-radius: 50%;
+        }
+
         .ad-cta-btn {
             background: #8a2be2; color: white; border: none;
             padding: 10px; width: 100%; border-radius: 5px;
@@ -135,17 +142,47 @@
         const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
 
         let currentUser = null, currentVideoKeyForComments = null;
+        
+        // GLOBAL SETTINGS HOLDER
+        let globalSettings = {
+            favicon: "https://ibb.co/ZsDDGHQ",
+            defaultProfile: "https://ibb.co/ZsDDGHQ"
+        };
 
         window.toggleProfileMenu = (e) => { e.stopPropagation(); const m = document.getElementById('profileDropdown'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; };
         window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
         window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
+
+        // --- NEW: TOGGLE SOUND FUNCTION ---
+        window.toggleSound = (vid, id) => {
+            vid.muted = !vid.muted;
+            const indicator = document.getElementById(`mute-icon-${id}`);
+            if(indicator) {
+                indicator.innerHTML = vid.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                indicator.style.opacity = 1;
+                setTimeout(() => indicator.style.opacity = 0, 1000);
+            }
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
                 currentUser = user; 
                 const uSnap = await get(ref(db, 'users/' + user.uid));
                 if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
-                loadSmartFeed(); 
+                
+                // 1. FETCH GLOBAL SETTINGS (Favicon & Default Profile)
+                onValue(ref(db, 'site_settings'), snap => {
+                    if(snap.exists()) {
+                        globalSettings = snap.val();
+                        // Update Favicon dynamically
+                        if(globalSettings.favicon) {
+                            document.getElementById('dynamicFavicon').href = globalSettings.favicon;
+                        }
+                    }
+                    // After settings loaded, load content
+                    loadSmartFeed();
+                });
+                
             } else { signInWithPopup(auth, new GoogleAuthProvider()); }
         });
 
@@ -160,40 +197,43 @@
                     const feed = document.getElementById('feed'); feed.innerHTML = "";
                     if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                     
-                    // --- 1. SHOW AD AT TOP WITH USER INFO ---
+                    // --- 1. SHOW AD AT TOP ---
                     if (currentAds.length > 0) {
                         const ad = currentAds[0]; 
                         const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
                         
+                        // Using toggleSound() on click
                         adDiv.innerHTML = `
                             <div class="ad-tag">SPONSORED</div>
-                            <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
+                            <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img" onclick="window.toggleSound(this, 'ad-top')"></video>
+                            <div id="mute-icon-ad-top" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
                             
                             <div class="video-info">
                                 <div class="user-row">
                                     <img src="" id="ad-pic-top" class="feed-profile-pic">
-                                    <div class="uploader-name" id="ad-name-top">Loading...</div>
+                                    <div class="uploader-name" id="ad-name-top">...</div>
                                 </div>
-                                
                                 <div style="font-size:14px; color:#eee;">${ad.caption}</div>
                                 <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
                             </div>
                         `;
                         
-                        // Fetch Sponsor Data
-                        const sponsorUid = ad.uid; // Using UID saved from Admin Panel
-                        if(sponsorUid) {
+                        const sponsorUid = ad.uid;
+                        if(sponsorUid && sponsorUid !== 'admin') {
                             onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
                                 if(uSnap.exists()) {
                                     const u = uSnap.val();
-                                    document.getElementById('ad-pic-top').src = u.photo || "https://via.placeholder.com/40";
+                                    document.getElementById('ad-pic-top').src = u.photo || globalSettings.defaultProfile;
                                     document.getElementById('ad-name-top').innerText = `@${u.username}`;
                                 } else {
-                                    document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
+                                    document.getElementById('ad-pic-top').src = globalSettings.defaultProfile;
+                                    document.getElementById('ad-name-top').innerText = "ParaVideo Team";
                                 }
                             });
                         } else {
-                            document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
+                            // USE DYNAMIC DEFAULT PROFILE
+                            document.getElementById('ad-pic-top').src = globalSettings.defaultProfile;
+                            document.getElementById('ad-name-top').innerText = "ParaVideo Team";
                         }
 
                         feed.appendChild(adDiv);
@@ -212,7 +252,9 @@
                         div.innerHTML = `
                             <div class="video-loader" id="loader-${item.key}"></div>
                             ${hdBadge}
-                            <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
+                            <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'" onclick="window.toggleSound(this, '${item.key}')"></video>
+                            <div id="mute-icon-${item.key}" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
+
                             <div class="sidebar">
                                 <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
                                 <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
@@ -227,7 +269,7 @@
                         onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
                             if(uSnap.exists()) {
                                 const u = uSnap.val();
-                                document.getElementById(`pic-${item.key}`).src = u.photo || "";
+                                document.getElementById(`pic-${item.key}`).src = u.photo || globalSettings.defaultProfile; // Fallback to settings
                                 document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
                             } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
                         });
@@ -242,6 +284,7 @@
 
         function setupObserver() { const obs = new IntersectionObserver(entries => { entries.forEach(entry => { const v = entry.target.querySelector('video'); if(entry.isIntersecting) { if(v) v.play(); window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`); } else { if(v) v.pause(); } }); }, {threshold: 0.6}); document.querySelectorAll('.video-card').forEach(card => obs.observe(card)); }
         
+        // ... (Rest of Upload/Comments functions remain exactly the same) ...
         let mediaRecorder, chunks = [], stream, camFile = null;
         window.switchTab = async (tab) => {
             document.getElementById('galTab').className = tab === 'gallery' ? 'tab-btn active-tab' : 'tab-btn';
@@ -264,10 +307,8 @@
             const file = camFile || document.getElementById('videoFile').files[0];
             if(!file) return alert("Select video");
             if(file.size < 400000) return alert("❌ Quality too low!");
-            
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const realUploaderName = uSnap.exists() ? uSnap.val().username : "User";
-
+            const realName = uSnap.exists() ? uSnap.val().username : "User";
             const vidMeta = document.createElement('video'); vidMeta.preload = 'metadata';
             vidMeta.onloadedmetadata = () => {
                 const isHD = (vidMeta.videoWidth >= 1280 || vidMeta.videoHeight >= 720);
@@ -277,7 +318,7 @@
                 xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
                 xhr.onload = async () => {
                     const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realUploaderName, uid: currentUser.uid, timestamp: Date.now() });
+                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realName, uid: currentUser.uid, timestamp: Date.now() });
                     location.reload();
                 }; xhr.send(fd);
             }; vidMeta.src = URL.createObjectURL(file);
@@ -286,15 +327,7 @@
         window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
         window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
         window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = async () => { 
-            const t = document.getElementById('commentInput').value;
-            if(t) { 
-                const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-                const realName = uSnap.exists() ? uSnap.val().username : "User";
-                push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); 
-                document.getElementById('commentInput').value = ""; 
-            }
-        };
+        window.postComment = async () => { const t = document.getElementById('commentInput').value; if(t) { const uSnap = await get(ref(db, 'users/' + currentUser.uid)); const realName = uSnap.exists() ? uSnap.val().username : "User"; push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
         window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
         window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); };
     </script>
