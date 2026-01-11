@@ -63,8 +63,8 @@
         /* --- VIDEO INFO & SCROLLING TEXT --- */
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; padding-bottom: 20px; z-index: 20; pointer-events: none; }
         .video-info * { pointer-events: auto; }
-        .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; }
-        .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; }
+        .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; text-shadow: 1px 1px 2px black; }
+        .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; text-shadow: 1px 1px 2px black; }
         
         /* SCROLLING MARQUEE */
         .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 14px; overflow: hidden; white-space: nowrap; width: 60%; }
@@ -89,13 +89,25 @@
         .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; opacity: 0; pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
-        /* --- BOTTOM NAV --- */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: black; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-item { color: #888; font-size: 22px; cursor: pointer; }
-        .nav-item.active { color: white; }
-        .add-btn-nav { width: 45px; height: 30px; background: white; border-radius: 8px; display: flex; justify-content: center; align-items: center; position: relative; }
-        .add-btn-nav::before { content:''; position: absolute; left: -4px; width: 4px; height: 100%; background: #00f2ea; border-radius: 8px 0 0 8px; }
-        .add-btn-nav::after { content:''; position: absolute; right: -4px; width: 4px; height: 100%; background: #ff0050; border-radius: 0 8px 8px 0; }
+        /* --- BOTTOM NAV (PARAVIDEO STYLE) --- */
+        .bottom-nav { 
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; 
+            background: rgba(0,0,0,0.95); /* Solid Dark */
+            border-top: 1px solid #222; 
+            display: flex; justify-content: space-around; align-items: center; 
+            z-index: 100; 
+        }
+        .nav-item { color: #888; font-size: 22px; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: #8a2be2; text-shadow: 0 0 10px #8a2be2; }
+
+        .add-btn-nav { 
+            width: 45px; height: 30px; 
+            background: #8a2be2; /* Purple */
+            border-radius: 8px; 
+            display: flex; justify-content: center; align-items: center; 
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5); 
+        }
+        .add-btn-nav i { color: white; font-size: 16px; }
 
     </style>
 </head>
@@ -118,11 +130,15 @@
 
         <div class="bottom-nav">
             <i class="fas fa-home nav-item active"></i>
-            <i class="fas fa-user-friends nav-item"></i>
+            
+            <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends.html'"></i>
+            
             <div class="add-btn-nav" onclick="window.location.href='upload.html'">
-                <i class="fas fa-plus" style="color: black; font-size: 16px;"></i>
+                <i class="fas fa-plus"></i>
             </div>
-            <i class="fas fa-inbox nav-item"></i>
+            
+            <i class="fas fa-inbox nav-item" onclick="window.location.href='friends.html'"></i>
+            
             <i class="fas fa-user nav-item" onclick="window.location.href='profile.html'"></i>
         </div>
 
@@ -197,7 +213,7 @@
                         </div>
 
                         <div class="video-info">
-                            <div class="username" id="name-${item.key}">@...</div>
+                            <div class="username" id="name-${item.key}">...</div>
                             <div class="caption">${item.caption}</div>
                             <div class="music-marquee">
                                 <i class="fas fa-music music-icon-anim"></i> 
@@ -215,7 +231,10 @@
                         const u = uSnap.val() || {};
                         const pic = u.photo || "https://ibb.co/ZsDDGHQ";
                         document.getElementById(`pic-${item.key}`).src = pic;
-                        document.getElementById(`name-${item.key}`).innerText = `@${u.username || item.uploader}`;
+                        
+                        // REMOVED THE @ SYMBOL HERE
+                        document.getElementById(`name-${item.key}`).innerText = `${u.username || item.uploader}`;
+                        
                         // Set Disc Image
                         document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
                     });
@@ -262,8 +281,8 @@
         };
         
         window.useSound = (url) => {
-            alert("Use this Sound feature coming soon in Studio!");
-            // Future logic: Redirect to upload.html?sound=url
+            // Redirect to Upload page with sound URL
+            window.location.href = `upload.html?sound=${encodeURIComponent(url)}`;
         };
 
         // --- OBSERVER (AUTO SCROLL PLAY) ---
