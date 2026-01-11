@@ -24,15 +24,13 @@
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
         
-        /* --- ADMIN AD CARD (Corrected Layout) --- */
+        /* --- ADMIN AD CARD --- */
         .admin-ad-card { 
             background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
             display: flex; align-items: center; justify-content: center;
             border-bottom: 2px solid #222;
         }
         .ad-tag { position: absolute; top: 80px; right: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
-        
-        /* AD CTA BUTTON STYLE */
         .ad-cta-btn {
             background: #8a2be2; color: white; border: none;
             padding: 10px; width: 100%; border-radius: 5px;
@@ -42,6 +40,13 @@
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        /* Volume Icon Overlay for Ad */
+        .unmute-hint {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.6); padding: 15px; border-radius: 50%;
+            font-size: 30px; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+        }
 
         .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
         .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
@@ -135,6 +140,9 @@
         const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
 
         let currentUser = null, currentVideoKeyForComments = null;
+        
+        // --- FAVICON URL FOR DEFAULT ADMIN PIC ---
+        const DEFAULT_FAVICON = "https://ibb.co/ZsDDGHQ";
 
         window.toggleProfileMenu = (e) => { e.stopPropagation(); const m = document.getElementById('profileDropdown'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; };
         window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
@@ -160,40 +168,44 @@
                     const feed = document.getElementById('feed'); feed.innerHTML = "";
                     if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                     
-                    // --- 1. SHOW AD AT TOP WITH USER INFO ---
+                    // --- 1. SHOW AD AT TOP ---
                     if (currentAds.length > 0) {
                         const ad = currentAds[0]; 
                         const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
                         
+                        // SOUND FIX: Removed 'muted', added click toggle
                         adDiv.innerHTML = `
                             <div class="ad-tag">SPONSORED</div>
-                            <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
+                            <video src="${ad.videoUrl}" autoplay loop playsinline class="ad-img" onclick="this.muted = !this.muted; this.play();"></video>
+                            <div class="unmute-hint"><i class="fas fa-volume-up"></i></div>
                             
                             <div class="video-info">
                                 <div class="user-row">
                                     <img src="" id="ad-pic-top" class="feed-profile-pic">
                                     <div class="uploader-name" id="ad-name-top">Loading...</div>
                                 </div>
-                                
                                 <div style="font-size:14px; color:#eee;">${ad.caption}</div>
                                 <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
                             </div>
                         `;
                         
-                        // Fetch Sponsor Data
-                        const sponsorUid = ad.uid; // Using UID saved from Admin Panel
-                        if(sponsorUid) {
+                        // PROFILE PIC FIX: Use Favicon if Admin/Default
+                        const sponsorUid = ad.uid;
+                        if(sponsorUid && sponsorUid !== 'admin') {
                             onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
                                 if(uSnap.exists()) {
                                     const u = uSnap.val();
-                                    document.getElementById('ad-pic-top').src = u.photo || "https://via.placeholder.com/40";
+                                    document.getElementById('ad-pic-top').src = u.photo || DEFAULT_FAVICON;
                                     document.getElementById('ad-name-top').innerText = `@${u.username}`;
                                 } else {
-                                    document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
+                                    document.getElementById('ad-pic-top').src = DEFAULT_FAVICON;
+                                    document.getElementById('ad-name-top').innerText = "ParaVideo Team";
                                 }
                             });
                         } else {
-                            document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
+                            // Default Admin Case
+                            document.getElementById('ad-pic-top').src = DEFAULT_FAVICON;
+                            document.getElementById('ad-name-top').innerText = "ParaVideo Team";
                         }
 
                         feed.appendChild(adDiv);
