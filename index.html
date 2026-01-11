@@ -3,149 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ParaVideo - Home</title>
     
+    <title>ParaVideo - Pakistan's Gaming Short Video Platform</title>
+    <meta name="description" content="ParaVideo is the #1 platform in Pakistan to watch and share gameplay shorts. Join the gaming community, upload clips, and go viral!">
+    <meta name="keywords" content="ParaVideo, Gaming Shorts Pakistan, Free Fire Clips, PUBG Shorts, Gameplay Video App, Para Video">
+    <meta name="author" content="ParaVideo Team">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ParaVideo - Watch Gaming Shorts">
+    <meta property="og:description" content="The best gameplay clips from Pakistan's top gamers. Watch now on ParaVideo!">
+    <meta property="og:image" content="https://ibb.co/ZsDDGHQ">
+    <meta property="og:url" content="https://paravideo-sand.vercel.app/">
+
     <link rel="icon" href="https://ibb.co/ZsDDGHQ">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        /* --- THEME & RESET --- */
         * { box-sizing: border-box; }
         body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
 
-        /* --- DESKTOP VIEW FIX --- */
         @media (min-width: 768px) {
             body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-            #appScreen, #loginScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
-            header, .modal, .comments-modal { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
+            #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
+            header { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- MOBILE STYLES --- */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .app-name { font-size: 40px; font-weight: bold; color: #fff; letter-spacing: 2px; }
-        .login-btn { background: white; color: black; padding: 12px 30px; border-radius: 30px; border: none; font-weight: bold; margin-top: 20px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 16px; }
-
-        header { 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
-            padding: 10px 15px; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; 
-            display: flex; flex-direction: column; gap: 10px; 
-        }
+        header { background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); padding: 10px 15px; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
         .top-row { display: flex; justify-content: space-between; align-items: center; }
         .header-logo { font-size: 20px; font-weight: bold; color: white; }
-        .upload-icon { color: #fff; font-size: 26px; cursor: pointer; }
         
-        /* --- SEARCH BAR RE-ADDED --- */
         .search-box { width: 100%; position: relative; }
-        .search-box input { 
-            width: 100%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); padding: 10px 40px 10px 15px; 
-            border-radius: 20px; color: white; outline: none; cursor: pointer; backdrop-filter: blur(5px);
-        }
+        .search-box input { width: 100%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); padding: 10px 40px 10px 15px; border-radius: 20px; color: white; outline: none; }
         .search-box i { position: absolute; right: 15px; top: 12px; color: #ddd; }
 
         .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; }
         video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
 
+        /* --- LOADING SPINNER --- */
+        .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
         .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; align-items: center; z-index: 10; }
         .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .action-btn span { font-size: 13px; margin-top: 5px; font-weight: bold; }
-        .liked { color: #ff0055 !important; }
-
+        
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; }
-        .user-row { display: flex; align-items: center; gap: 10px; pointer-events: auto; margin-bottom: 8px; }
+        .user-row { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
         .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
         .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .follow-btn { background: transparent; border: 1px solid white; color: white; font-size: 11px; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
         .badge-circle { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid white; margin-left: 5px; }
         .badge-text { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; margin-left: 5px; }
-
-        .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease-in-out; border-top: 1px solid #333; }
-        .comments-modal.active { bottom: 0; }
-        .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .comment-input-area { padding: 10px; display: flex; gap: 10px; background: #000; }
-        .comment-input-area input { flex: 1; background: #222; border: none; padding: 12px; color: white; border-radius: 20px; outline: none; }
     </style>
 </head>
 <body>
 
-    <div id="loginScreen">
-        <div class="app-name">PARA<span style="color:#8a2be2;">VIDEO</span></div>
-        <button class="login-btn" id="loginBtn"><i class="fab fa-google"></i> Login with Google</button>
-    </div>
-
-    <div id="appScreen" style="display:none;">
+    <div id="appScreen">
         <header>
             <div class="top-row">
                 <div class="header-logo">PARA<span style="color:#8a2be2;">VIDEO</span></div>
-                <div style="display:flex; gap:20px; align-items:center;">
-                    <i class="fas fa-plus-square upload-icon" onclick="openUploadModal()"></i>
-                    <img src="" id="myPic" onclick="goToMyProfile()" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <i class="fas fa-search" onclick="window.location.href='search.html'" style="font-size:20px; cursor:pointer;"></i>
+                    <img src="" id="myPic" onclick="window.location.href='profile.html'" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
                 </div>
-            </div>
-            <div class="search-box">
-                <input type="text" placeholder="Search Users..." onclick="window.location.href='search.html'">
-                <i class="fas fa-search"></i>
             </div>
         </header>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading Feed...</p>
-        </div>
-        
-        <div class="comments-modal" id="commentsModal">
-            <div style="padding:15px; border-bottom:1px solid #333; display:flex; justify-content:space-between; font-weight:bold;">
-                <span>Comments</span>
-                <i class="fas fa-times" onclick="closeComments()" style="cursor:pointer; font-size: 20px;"></i>
-            </div>
-            <div class="comments-list" id="commentsList"></div>
-            <div class="comment-input-area">
-                <input type="text" id="commentInput" placeholder="Add a comment...">
-                <button onclick="postComment()" style="color:#8a2be2; background:none; border:none; font-weight:bold;">Post</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="uploadModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; justify-content:center; align-items:center;">
-        <div style="background:#1a1a1a; padding:20px; width:90%; max-width:400px; border-radius:15px; text-align:center; border:1px solid #8a2be2;">
-            <h3 style="color:#8a2be2;">Post Video</h3>
-            <input type="file" id="videoFile" accept="video/*" style="margin-bottom:10px;">
-            <input type="text" id="caption" placeholder="Caption..." style="width:100%; padding:10px; background:#222; color:white; border:none; border-radius:5px; margin-bottom:10px;">
-            <button onclick="uploadVideo()" id="postBtn" style="width:100%; padding:12px; background:#8a2be2; color:white; border:none; border-radius:25px; font-weight:bold;">UPLOAD</button>
-            <button onclick="closeUpload()" style="background:none; border:none; color:#777; margin-top:10px; cursor:pointer;">Cancel</button>
+            <p style="text-align:center; color:#555; margin-top:50vh;">Loading ParaVideo...</p>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, set, onValue, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const CLOUD_NAME = "dusj0vpsi"; 
-        const UPLOAD_PRESET = "paravideo";
 
         let currentUser = null;
-        let currentVideoKeyForComments = null;
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appScreen').style.display = 'block';
                 document.getElementById('myPic').src = user.photoURL;
                 loadSmartFeed();
             } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('appScreen').style.display = 'none';
+                signInWithPopup(auth, new GoogleAuthProvider());
             }
         });
 
         async function loadSmartFeed() {
             const urlParams = new URLSearchParams(window.location.search);
-            const targetVideoId = urlParams.get('v');
+            let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
 
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 const feed = document.getElementById('feed');
@@ -154,8 +108,8 @@
 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
                 
-                if(targetVideoId) {
-                    videos.sort((a, b) => (a.key === targetVideoId) ? -1 : (b.key === targetVideoId) ? 1 : b.timestamp - a.timestamp);
+                if(targetId) {
+                    videos.sort((a, b) => (a.key === targetId) ? -1 : (b.key === targetId) ? 1 : b.timestamp - a.timestamp);
                 } else {
                     videos.sort((a, b) => b.timestamp - a.timestamp);
                 }
@@ -163,27 +117,32 @@
                 videos.forEach(item => {
                     const div = document.createElement('div');
                     div.className = "video-card";
+                    div.setAttribute('data-id', item.key);
+
+                    // --- CLOUDINARY SPEED OPTIMIZATION ---
+                    let fastUrl = item.videoUrl.replace("/upload/", "/upload/q_auto,f_auto,w_450/");
+
                     div.innerHTML = `
-                        <video src="${item.videoUrl}" loop playsinline class="reel-video" data-key="${item.key}"></video>
+                        <div class="video-loader" id="loader-${item.key}"></div>
+                        <video src="${fastUrl}" loop playsinline class="reel-video" 
+                               onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
                         <div class="sidebar">
-                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
-                            <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
-                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i><span>Share</span></button>
+                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i></button>
+                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
                         </div>
                         <div class="video-info">
                             <div class="user-row">
-                                <img src="" id="pic-${item.key}" class="feed-profile-pic" onclick="window.location.href='profile.html?uid=${item.uid}'">
+                                <img src="" id="pic-${item.key}" class="feed-profile-pic">
                                 <div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">@${item.uploader}</div>
-                                <button class="follow-btn js-follow-${item.uid}" onclick="window.toggleFollow('${item.uid}')">Follow</button>
                             </div>
-                            <div style="font-size:14px; color:#eee;">${item.caption}</div>
+                            <div style="font-size:14px; color:#eee; margin-top:5px;">${item.caption}</div>
                         </div>
                     `;
 
                     onValue(ref(db, 'users/' + item.uid), (uSnap) => {
                         if(uSnap.exists()) {
                             const u = uSnap.val();
-                            document.getElementById(`pic-${item.key}`).src = u.photo || "https://via.placeholder.com/40";
+                            document.getElementById(`pic-${item.key}`).src = u.photo || "";
                             let bHtml = (u.email === 'elitegamer859650@gmail.com') ? '<i class="fas fa-check-circle" style="color:#00C2FF; margin-left:5px;"></i>' : '';
                             if(u.customBadge) {
                                 if(typeof u.customBadge === 'object' && u.customBadge.image) bHtml += `<img src="${u.customBadge.image}" class="badge-circle">`;
@@ -193,51 +152,33 @@
                         }
                     });
 
-                    checkLikeStatus(item.key); updateCommentCount(item.key); checkFollowStatus(item.uid);
                     feed.appendChild(div);
                 });
                 setupObserver();
             });
         }
 
-        window.shareVideo = (videoKey) => {
-            const shareUrl = `https://paravideo-sand.vercel.app/?v=${videoKey}`;
-            if (navigator.share) {
-                navigator.share({ title: 'ParaVideo', text: 'Watch this on ParaVideo!', url: shareUrl }).catch(console.error);
-            } else {
-                navigator.clipboard.writeText(shareUrl).then(() => alert("ParaVideo link copied!"));
-            }
-        };
-
-        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
-        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), (snap) => { const list = document.getElementById('commentsList'); list.innerHTML = ""; if(!snap.exists()) { list.innerHTML = "<p>No comments.</p>"; return; } snap.forEach(c => { list.innerHTML += `<div style="margin-bottom:10px;"><b style="color:#ddd">${c.val().u}:</b> <span style="color:#fff">${c.val().t}</span></div>`; }); }); };
-        window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = () => { const t = document.getElementById('commentInput').value; if(t && currentVideoKeyForComments) { push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: currentUser.displayName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
-        window.toggleFollow = async (uid) => { if(uid === currentUser.uid) return; const r1 = ref(db, `followers/${uid}/${currentUser.uid}`); const r2 = ref(db, `following/${currentUser.uid}/${uid}`); const s = await get(r1); s.exists() ? (await remove(r1), await remove(r2)) : (await set(r1, true), await set(r2, true)); };
-        function checkLikeStatus(key) { onValue(ref(db, `gameplay_likes/${key}`), s => { document.getElementById(`like-count-${key}`).innerText = s.size; document.getElementById(`like-icon-${key}`).style.color = s.hasChild(currentUser.uid) ? '#ff0055' : 'white'; }); }
-        function updateCommentCount(key) { onValue(ref(db, `gameplay_comments/${key}`), s => document.getElementById(`comment-count-${key}`).innerText = s.size); }
-        function checkFollowStatus(uid) { if(uid === currentUser.uid) { document.querySelectorAll(`.js-follow-${uid}`).forEach(b => b.style.display='none'); return; } onValue(ref(db, `followers/${uid}/${currentUser.uid}`), s => { document.querySelectorAll(`.js-follow-${uid}`).forEach(b => { b.innerText = s.exists() ? "Following" : "Follow"; b.style.background = s.exists() ? "white" : "transparent"; b.style.color = s.exists() ? "black" : "white"; }); }); }
-        window.openUploadModal = () => document.getElementById('uploadModal').style.display = 'flex';
-        window.closeUpload = () => document.getElementById('uploadModal').style.display = 'none';
-        window.goToMyProfile = () => window.location.href = `profile.html?uid=${currentUser.uid}`;
-        
-        window.uploadVideo = async () => {
-            const file = document.getElementById('videoFile').files[0];
-            if(!file) return alert("Select video");
-            document.getElementById('postBtn').innerText = "Uploading...";
-            const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, { method: "POST", body: fd });
-            const data = await res.json();
-            if(data.secure_url) {
-                await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, uploader: currentUser.displayName, uid: currentUser.uid, email: currentUser.email, timestamp: Date.now() });
-                location.reload();
-            }
-        };
-
         function setupObserver() {
-            const obs = new IntersectionObserver(entries => { entries.forEach(entry => { entry.isIntersecting ? entry.target.play() : entry.target.pause(); }); }, {threshold: 0.6});
-            document.querySelectorAll('video').forEach(v => { obs.observe(v); v.onclick = () => v.paused ? v.play() : v.pause(); });
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        const video = entry.target.querySelector('video');
+                        const videoId = entry.target.getAttribute('data-id');
+                        video.play();
+                        window.history.replaceState(null, null, `#v=${videoId}`);
+                    } else {
+                        entry.target.querySelector('video').pause();
+                    }
+                });
+            }, {threshold: 0.7});
+            document.querySelectorAll('.video-card').forEach(card => obs.observe(card));
         }
+
+        window.shareVideo = (id) => {
+            const link = `https://paravideo-sand.vercel.app/#v=${id}`;
+            if(navigator.share) { navigator.share({ title: 'ParaVideo', url: link }); } 
+            else { navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); }
+        };
     </script>
 </body>
 </html>
