@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following - ParaVideo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        .header { padding: 15px; background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; }
+        .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        h2 { margin: 0; font-size: 18px; color: #8a2be2; }
+        
+        .user-list { padding: 10px; }
+        .user-card { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        .user-card:active { background: #111; }
+        
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .profile-pic { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #8a2be2; }
+        .names { display: flex; flex-direction: column; }
+        .username { font-weight: bold; font-size: 16px; }
+        .status { font-size: 12px; color: #aaa; }
+        
+        .chat-btn { background: #8a2be2; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></button>
+        <h2>Following</h2>
+    </div>
+
+    <div class="user-list" id="list">
+        <p style="text-align:center; color:#555; margin-top:50px;">Loading...</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, user => {
+            if (user) loadFollowing(user.uid);
+            else window.location.href = 'index.html';
+        });
+
+        function loadFollowing(myUid) {
+            // Note: Assuming you have a 'following' node. If not, this shows All Users for testing.
+            // Replace 'users' with `users/${myUid}/following` when ready.
+            const userRef = ref(db, 'users'); 
+            
+            onValue(userRef, (snap) => {
+                const list = document.getElementById('list');
+                list.innerHTML = "";
+                
+                if(!snap.exists()) { list.innerHTML = "<p style='text-align:center'>No users found.</p>"; return; }
+
+                snap.forEach(child => {
+                    const u = child.val();
+                    if(child.key !== auth.currentUser.uid) { // Don't show myself
+                        const div = document.createElement('div');
+                        div.className = "user-card";
+                        div.innerHTML = `
+                            <div class="user-info">
+                                <img src="${u.photo || 'https://via.placeholder.com/50'}" class="profile-pic">
+                                <div class="names">
+                                    <span class="username">${u.username || 'User'}</span>
+                                    <span class="status">Tap to chat</span>
+                                </div>
+                            </div>
+                            <button class="chat-btn"><i class="fas fa-comment"></i> Chat</button>
+                        `;
+                        div.onclick = () => {
+                            window.location.href = `chat.html?uid=${child.key}&name=${u.username || 'User'}`;
+                        };
+                        list.appendChild(div);
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
