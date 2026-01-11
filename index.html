@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ParaVideo</title>
+    <title>ParaVideo - Short Video Platform</title>
     <link rel="icon" href="https://ibb.co/ZsDDGHQ">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -24,13 +24,15 @@
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
         
-        /* --- ADMIN AD CARD --- */
+        /* --- ADMIN AD CARD (Corrected Layout) --- */
         .admin-ad-card { 
             background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
             display: flex; align-items: center; justify-content: center;
             border-bottom: 2px solid #222;
         }
         .ad-tag { position: absolute; top: 80px; right: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
+        
+        /* AD CTA BUTTON STYLE */
         .ad-cta-btn {
             background: #8a2be2; color: white; border: none;
             padding: 10px; width: 100%; border-radius: 5px;
@@ -131,7 +133,6 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
-        const DEFAULT_FAVICON = "https://ibb.co/ZsDDGHQ";
 
         let currentUser = null, currentVideoKeyForComments = null;
 
@@ -152,48 +153,47 @@
             const urlParams = new URLSearchParams(window.location.search);
             let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
             
-            // --- SAFETY CHECK FOR ADS ---
             onValue(ref(db, 'admin_ads'), (adsSnap) => {
-                const currentAds = (adsSnap.exists() && adsSnap.val()) ? Object.values(adsSnap.val()) : [];
+                const currentAds = adsSnap.exists() ? Object.values(adsSnap.val()) : [];
 
                 onValue(ref(db, 'gameplay_clips'), (snap) => {
                     const feed = document.getElementById('feed'); feed.innerHTML = "";
                     if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                     
-                    // --- 1. SHOW AD AT TOP ---
+                    // --- 1. SHOW AD AT TOP WITH USER INFO ---
                     if (currentAds.length > 0) {
                         const ad = currentAds[0]; 
                         const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
                         
                         adDiv.innerHTML = `
                             <div class="ad-tag">SPONSORED</div>
-                            <video src="${ad.videoUrl}" autoplay loop playsinline class="ad-img" onclick="this.muted = !this.muted"></video>
+                            <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
                             
                             <div class="video-info">
                                 <div class="user-row">
                                     <img src="" id="ad-pic-top" class="feed-profile-pic">
-                                    <div class="uploader-name" id="ad-name-top">...</div>
+                                    <div class="uploader-name" id="ad-name-top">Loading...</div>
                                 </div>
+                                
                                 <div style="font-size:14px; color:#eee;">${ad.caption}</div>
                                 <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
                             </div>
                         `;
                         
-                        const sponsorUid = ad.uid;
-                        if(sponsorUid && sponsorUid !== 'admin') {
+                        // Fetch Sponsor Data
+                        const sponsorUid = ad.uid; // Using UID saved from Admin Panel
+                        if(sponsorUid) {
                             onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
                                 if(uSnap.exists()) {
                                     const u = uSnap.val();
-                                    document.getElementById('ad-pic-top').src = u.photo || DEFAULT_FAVICON;
+                                    document.getElementById('ad-pic-top').src = u.photo || "https://via.placeholder.com/40";
                                     document.getElementById('ad-name-top').innerText = `@${u.username}`;
                                 } else {
-                                    document.getElementById('ad-pic-top').src = DEFAULT_FAVICON;
-                                    document.getElementById('ad-name-top').innerText = "ParaVideo Team";
+                                    document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
                                 }
                             });
                         } else {
-                            document.getElementById('ad-pic-top').src = DEFAULT_FAVICON;
-                            document.getElementById('ad-name-top').innerText = "ParaVideo Team";
+                            document.getElementById('ad-name-top').innerText = "@ParaVideoTeam";
                         }
 
                         feed.appendChild(adDiv);
@@ -264,8 +264,10 @@
             const file = camFile || document.getElementById('videoFile').files[0];
             if(!file) return alert("Select video");
             if(file.size < 400000) return alert("❌ Quality too low!");
+            
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const realName = uSnap.exists() ? uSnap.val().username : "User";
+            const realUploaderName = uSnap.exists() ? uSnap.val().username : "User";
+
             const vidMeta = document.createElement('video'); vidMeta.preload = 'metadata';
             vidMeta.onloadedmetadata = () => {
                 const isHD = (vidMeta.videoWidth >= 1280 || vidMeta.videoHeight >= 720);
@@ -275,7 +277,7 @@
                 xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
                 xhr.onload = async () => {
                     const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realName, uid: currentUser.uid, timestamp: Date.now() });
+                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realUploaderName, uid: currentUser.uid, timestamp: Date.now() });
                     location.reload();
                 }; xhr.send(fd);
             }; vidMeta.src = URL.createObjectURL(file);
@@ -284,7 +286,15 @@
         window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
         window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
         window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = async () => { const t = document.getElementById('commentInput').value; if(t) { const uSnap = await get(ref(db, 'users/' + currentUser.uid)); const realName = uSnap.exists() ? uSnap.val().username : "User"; push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
+        window.postComment = async () => { 
+            const t = document.getElementById('commentInput').value;
+            if(t) { 
+                const uSnap = await get(ref(db, 'users/' + currentUser.uid));
+                const realName = uSnap.exists() ? uSnap.val().username : "User";
+                push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); 
+                document.getElementById('commentInput').value = ""; 
+            }
+        };
         window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
         window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); };
     </script>
