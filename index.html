@@ -9,17 +9,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- GLOBAL PERFORMANCE (NO LAG) --- */
+        /* --- GLOBAL PERFORMANCE --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; 
             margin: 0; padding: 0; overflow: hidden; 
-            transform: translateZ(0); /* Force GPU */
+            transform: translateZ(0);
         }
 
+        /* --- DESKTOP/LAPTOP CONSTRAINT --- */
         @media (min-width: 768px) {
             body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
             #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
+            /* Fix Bottom Nav on Laptop to stay inside app */
+            .bottom-nav { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
         }
 
         /* --- HEADER --- */
@@ -45,7 +48,13 @@
             will-change: transform; 
         }
         
-        video { width: 100%; height: 100%; object-fit: cover; transform: translateZ(0); }
+        /* --- FIX: OBJECT-FIT CONTAIN (Show full landscape video) --- */
+        video { 
+            width: 100%; height: 100%; 
+            object-fit: contain; /* Changed from cover to contain */
+            background: #000; 
+            transform: translateZ(0); 
+        }
         
         /* FILTERS */
         .f-normal { filter: none; }
@@ -61,7 +70,14 @@
         @keyframes pop { 50% { transform: scale(1.2); } }
 
         /* --- VIDEO INFO & SCROLLING TEXT --- */
-        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; padding-bottom: 20px; z-index: 20; pointer-events: none; }
+        .video-info { 
+            position: absolute; 
+            bottom: 60px; /* FIX: Moved up so nav bar doesn't cover it */
+            left: 0; width: 100%; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
+            padding: 20px; padding-bottom: 20px; 
+            z-index: 20; pointer-events: none; 
+        }
         .video-info * { pointer-events: auto; }
         .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; text-shadow: 1px 1px 2px black; }
         .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; text-shadow: 1px 1px 2px black; }
@@ -72,8 +88,8 @@
         .marquee-track { display: inline-block; animation: marquee 6s linear infinite; will-change: transform; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* --- SPINNING DISC (THUMBNAIL) --- */
-        .disc-area { position: absolute; bottom: 20px; right: 10px; width: 50px; height: 50px; z-index: 35; }
+        /* --- SPINNING DISC --- */
+        .disc-area { position: absolute; bottom: 80px; /* Adjusted up */ right: 10px; width: 50px; height: 50px; z-index: 35; }
         .disc-bg { 
             width: 100%; height: 100%; border-radius: 50%; background: #111; 
             border: 8px solid #222; display: flex; justify-content: center; align-items: center; 
@@ -82,17 +98,16 @@
         }
         .playing .disc-bg { animation-play-state: running; }
         .paused .disc-bg { animation-play-state: paused; }
-        
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* --- PLAY ICON --- */
         .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; opacity: 0; pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
-        /* --- BOTTOM NAV (PARAVIDEO STYLE) --- */
+        /* --- BOTTOM NAV --- */
         .bottom-nav { 
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; 
-            background: rgba(0,0,0,0.95); /* Solid Dark */
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
+            background: #000; /* Solid Black */
             border-top: 1px solid #222; 
             display: flex; justify-content: space-around; align-items: center; 
             z-index: 100; 
@@ -102,8 +117,7 @@
 
         .add-btn-nav { 
             width: 45px; height: 30px; 
-            background: #8a2be2; /* Purple */
-            border-radius: 8px; 
+            background: #8a2be2; border-radius: 8px; 
             display: flex; justify-content: center; align-items: center; 
             box-shadow: 0 0 10px rgba(138, 43, 226, 0.5); 
         }
@@ -130,15 +144,11 @@
 
         <div class="bottom-nav">
             <i class="fas fa-home nav-item active"></i>
-            
             <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends.html'"></i>
-            
             <div class="add-btn-nav" onclick="window.location.href='upload.html'">
                 <i class="fas fa-plus"></i>
             </div>
-            
             <i class="fas fa-inbox nav-item" onclick="window.location.href='friends.html'"></i>
-            
             <i class="fas fa-user nav-item" onclick="window.location.href='profile.html'"></i>
         </div>
 
@@ -182,7 +192,6 @@
                     const filterClass = item.filter ? `f-${item.filter}` : '';
                     const isRemix = item.remixUrl ? true : false; 
                     
-                    // --- HTML STRUCTURE ---
                     div.innerHTML = `
                         <video src="${videoUrl}" class="${filterClass}" loop playsinline preload="metadata"></video>
                         ${isRemix ? `<audio src="${item.remixUrl}" loop></audio>` : ''}
@@ -226,20 +235,14 @@
                         </div>
                     `;
 
-                    // Load User Info & Update Disc
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
                         const u = uSnap.val() || {};
                         const pic = u.photo || "https://ibb.co/ZsDDGHQ";
                         document.getElementById(`pic-${item.key}`).src = pic;
-                        
-                        // REMOVED THE @ SYMBOL HERE
                         document.getElementById(`name-${item.key}`).innerText = `${u.username || item.uploader}`;
-                        
-                        // Set Disc Image
                         document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
                     });
 
-                    // Likes Logic
                     onValue(ref(db, `gameplay_likes/${item.key}`), s => {
                         document.getElementById(`like-count-${item.key}`).innerText = s.size || 0;
                         document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
@@ -252,7 +255,6 @@
             });
         }
 
-        // --- GLOBAL FUNCTIONS ---
         window.togglePlay = (layer) => {
             const card = layer.parentElement;
             const video = card.querySelector('video');
@@ -281,11 +283,9 @@
         };
         
         window.useSound = (url) => {
-            // Redirect to Upload page with sound URL
             window.location.href = `upload.html?sound=${encodeURIComponent(url)}`;
         };
 
-        // --- OBSERVER (AUTO SCROLL PLAY) ---
         function setupObserver() {
             const obs = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
@@ -305,10 +305,8 @@
                     }
                 });
             }, { threshold: 0.6 }); 
-
             document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
         }
-
     </script>
 </body>
 </html>
