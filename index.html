@@ -46,16 +46,11 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
 
+        /* INVISIBLE PLAY LAYER - Lower Z-Index than Sidebar */
         .invisible-play-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 85%;
-            z-index: 25; background: transparent;
-        }
-
-        .center-status-icon {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 50px; color: rgba(255,255,255,0.8); pointer-events: none;
-            opacity: 0; transition: opacity 0.3s; z-index: 26;
-            background: rgba(0,0,0,0.4); padding: 20px; border-radius: 50%;
+            z-index: 5; /* Low Z-Index so buttons can be clicked */
+            background: transparent;
         }
 
         .ad-cta-btn {
@@ -69,7 +64,15 @@
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
         .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
+        
+        /* SIDEBAR - High Z-Index to work over play layer */
+        .sidebar { 
+            position: absolute; right: 10px; bottom: 120px; 
+            display: flex; flex-direction: column; gap: 20px; align-items: center; 
+            z-index: 30; /* Higher than play layer */
+            text-shadow: 1px 1px 2px black; 
+        }
+        
         .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 12px; margin-top: 3px; font-weight: 600; }
         .liked { color: #ff0055 !important; }
@@ -169,13 +172,12 @@
         window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
         window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
 
+        // --- UPDATED TOGGLE PLAY (NO ICON, ONLY FUNCTION) ---
         window.togglePlay = (overlay) => {
             const card = overlay.parentElement;
             const video = card.querySelector('video');
-            const icon = card.querySelector('.center-status-icon');
-            if(video.paused) { video.play(); icon.innerHTML = '<i class="fas fa-play"></i>'; } 
-            else { video.pause(); icon.innerHTML = '<i class="fas fa-pause"></i>'; }
-            icon.style.opacity = 1; setTimeout(() => icon.style.opacity = 0, 800);
+            if(video.paused) { video.play(); } 
+            else { video.pause(); }
         };
 
         window.toggleMute = (btn) => {
@@ -191,7 +193,6 @@
                 const uSnap = await get(ref(db, 'users/' + user.uid));
                 if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
                 
-                // --- FORCE UPDATE FAVICON LOGIC ---
                 onValue(ref(db, 'site_settings'), snap => {
                     if(snap.exists()) {
                         siteSettings = snap.val();
@@ -236,7 +237,6 @@
                         ${hdBadge}
                         <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
                         <div class="invisible-play-layer" onclick="window.togglePlay(this)"></div>
-                        <div class="center-status-icon"><i class="fas fa-play"></i></div>
                         <div id="mute-icon-${item.key}" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
 
                         <div class="sidebar">
@@ -272,7 +272,6 @@
                 <div class="top-mute-btn" onclick="window.toggleMute(this)"><i class="fas fa-volume-mute"></i></div>
                 <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
                 <div class="invisible-play-layer" onclick="window.togglePlay(this)"></div>
-                <div class="center-status-icon"><i class="fas fa-play"></i></div>
                 <div class="video-info">
                     <div class="user-row">
                         <img src="" id="ad-pic-top" class="feed-profile-pic">
@@ -325,15 +324,10 @@
             } else { mediaRecorder.stop(); btn.style.background = "red"; }
         };
 
-        // --- UPDATED UPLOAD FUNCTION (With Progress % & Size Limit) ---
         window.uploadVideo = async () => {
             const file = camFile || document.getElementById('videoFile').files[0];
             if(!file) return alert("Select video");
-            
-            // 1. Minimum Quality Check
             if(file.size < 400000) return alert("❌ Quality too low! Please upload HD clips.");
-            
-            // 2. Maximum Size Check (100MB Limit)
             if(file.size > 100000000) return alert("❌ Video is too large! Max limit is 100MB.");
 
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
@@ -352,14 +346,12 @@
                 const xhr = new XMLHttpRequest(); 
                 xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
                 
-                // Progress Handler
                 xhr.upload.onprogress = e => {
                     const percent = Math.round((e.loaded / e.total) * 100);
                     progressBar.style.width = percent + "%";
-                    btn.innerText = `Uploading... ${percent}%`; // Shows Percentage on Button
+                    btn.innerText = `Uploading... ${percent}%`;
                 };
                 
-                // Success Handler
                 xhr.onload = async () => {
                     if (xhr.status === 200) {
                         btn.innerText = "Processing...";
@@ -372,7 +364,6 @@
                     }
                 };
 
-                // Error Handler
                 xhr.onerror = () => {
                     btn.disabled = false; btn.innerText = "POST VIDEO";
                     alert("Network Error! Check internet.");
