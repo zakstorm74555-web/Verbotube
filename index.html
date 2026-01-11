@@ -17,23 +17,24 @@
             transform: translateZ(0);
         }
 
-        /* --- DESKTOP/LAPTOP CONSTRAINT --- */
         @media (min-width: 768px) {
             body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
             #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
-            /* Fix Bottom Nav on Laptop to stay inside app */
             .bottom-nav { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- HEADER --- */
+        /* --- HEADER (Fixed & Center Aligned) --- */
         header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); 
-            display: flex; justify-content: space-between; align-items: center; pointer-events: none; 
+            display: flex; justify-content: center; align-items: center; pointer-events: auto; /* Buttons need clicks */
         }
-        header * { pointer-events: auto; }
-        .tab-switch { font-size: 16px; font-weight: bold; color: #aaa; cursor: pointer; margin: 0 10px; text-shadow: 1px 1px 2px black; }
-        .tab-switch.active { color: white; border-bottom: 2px solid white; padding-bottom: 3px; }
+        
+        .header-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
+        .tab-btn { cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: white; border-bottom: 2px solid white; padding-bottom: 3px; }
+        
+        .search-icon { position: absolute; right: 15px; top: 15px; font-size: 20px; cursor: pointer; color: white; }
 
         /* --- FEED --- */
         .feed-container { 
@@ -48,10 +49,9 @@
             will-change: transform; 
         }
         
-        /* --- FIX: OBJECT-FIT CONTAIN (Show full landscape video) --- */
         video { 
             width: 100%; height: 100%; 
-            object-fit: contain; /* Changed from cover to contain */
+            object-fit: contain; /* Landscape videos won't crop */
             background: #000; 
             transform: translateZ(0); 
         }
@@ -62,17 +62,22 @@
         .f-mono { filter: grayscale(1); }
         .f-dramatic { filter: contrast(1.2) brightness(0.9); }
 
-        /* --- SIDEBAR ICONS --- */
-        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; text-shadow: 1px 1px 2px black; }
+        /* --- SIDEBAR (Moved UP to fix overlap) --- */
+        .sidebar { 
+            position: absolute; right: 10px; 
+            bottom: 160px; /* Increased from 100px so Share button is visible above text */
+            display: flex; flex-direction: column; gap: 20px; align-items: center; 
+            z-index: 30; text-shadow: 1px 1px 2px black; 
+        }
         .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 12px; margin-top: 5px; font-weight: 600; }
         .liked { color: #FE2C55 !important; animation: pop 0.3s ease; }
         @keyframes pop { 50% { transform: scale(1.2); } }
 
-        /* --- VIDEO INFO & SCROLLING TEXT --- */
+        /* --- VIDEO INFO --- */
         .video-info { 
             position: absolute; 
-            bottom: 60px; /* FIX: Moved up so nav bar doesn't cover it */
+            bottom: 60px; 
             left: 0; width: 100%; 
             background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
             padding: 20px; padding-bottom: 20px; 
@@ -82,14 +87,14 @@
         .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; text-shadow: 1px 1px 2px black; }
         .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; text-shadow: 1px 1px 2px black; }
         
-        /* SCROLLING MARQUEE */
+        /* MARQUEE */
         .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 14px; overflow: hidden; white-space: nowrap; width: 60%; }
         .music-icon-anim { animation: pulse 2s infinite; }
         .marquee-track { display: inline-block; animation: marquee 6s linear infinite; will-change: transform; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
         /* --- SPINNING DISC --- */
-        .disc-area { position: absolute; bottom: 80px; /* Adjusted up */ right: 10px; width: 50px; height: 50px; z-index: 35; }
+        .disc-area { position: absolute; bottom: 80px; right: 10px; width: 50px; height: 50px; z-index: 35; }
         .disc-bg { 
             width: 100%; height: 100%; border-radius: 50%; background: #111; 
             border: 8px solid #222; display: flex; justify-content: center; align-items: center; 
@@ -100,28 +105,21 @@
         .paused .disc-bg { animation-play-state: paused; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- PLAY ICON --- */
-        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
-        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; opacity: 0; pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-
         /* --- BOTTOM NAV --- */
         .bottom-nav { 
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
-            background: #000; /* Solid Black */
-            border-top: 1px solid #222; 
+            background: #000; border-top: 1px solid #222; 
             display: flex; justify-content: space-around; align-items: center; 
             z-index: 100; 
         }
         .nav-item { color: #888; font-size: 22px; cursor: pointer; transition: 0.2s; }
         .nav-item.active { color: #8a2be2; text-shadow: 0 0 10px #8a2be2; }
-
-        .add-btn-nav { 
-            width: 45px; height: 30px; 
-            background: #8a2be2; border-radius: 8px; 
-            display: flex; justify-content: center; align-items: center; 
-            box-shadow: 0 0 10px rgba(138, 43, 226, 0.5); 
-        }
+        .add-btn-nav { width: 45px; height: 30px; background: #8a2be2; border-radius: 8px; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 10px rgba(138, 43, 226, 0.5); }
         .add-btn-nav i { color: white; font-size: 16px; }
+
+        /* --- PLAY ICON --- */
+        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; opacity: 0; pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
 
     </style>
 </head>
@@ -130,12 +128,11 @@
     <div id="appScreen">
         
         <header>
-            <div style="font-weight: bold; font-size: 18px; color: #ccc;"><i class="fas fa-tv"></i> Live</div>
-            <div>
-                <span class="tab-switch">Following</span>
-                <span class="tab-switch active">For You</span>
+            <div class="header-tabs">
+                <span class="tab-btn" id="tabFollowing" onclick="switchFeed('following')">Following</span>
+                <span class="tab-btn active" id="tabForYou" onclick="switchFeed('foryou')">For You</span>
             </div>
-            <div onclick="window.location.href='search.html'"><i class="fas fa-search" style="font-size: 20px;"></i></div>
+            <div class="search-icon" onclick="window.location.href='search.html'"><i class="fas fa-search"></i></div>
         </header>
 
         <div class="feed-container" id="feed">
@@ -165,19 +162,71 @@
         const auth = getAuth(app);
 
         let currentUser = null;
+        let activeTab = 'foryou';
+        let followingList = [];
 
         onAuthStateChanged(auth, user => {
-            if (user) { currentUser = user; loadVideos(); }
+            if (user) { 
+                currentUser = user; 
+                loadFollowingList().then(() => loadVideos());
+            }
         });
 
+        // 1. Get List of People I Follow
+        async function loadFollowingList() {
+            // Assuming structure: users/myUID/following/otherUID = true
+            // If you used a different structure, adjust this.
+            // But based on friends.html logic, we might need to check how you implemented 'Follow'.
+            // For now, I'll assume a standard 'following' node inside user profile.
+            const fRef = ref(db, `users/${currentUser.uid}/following`);
+            const snap = await get(fRef);
+            if(snap.exists()) {
+                followingList = Object.keys(snap.val());
+            } else {
+                followingList = [];
+            }
+        }
+
+        // 2. Switch Tabs UI
+        window.switchFeed = (type) => {
+            activeTab = type;
+            document.getElementById('tabFollowing').className = type === 'following' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tabForYou').className = type === 'foryou' ? 'tab-btn active' : 'tab-btn';
+            
+            // Reload with Filter
+            const feed = document.getElementById('feed');
+            feed.innerHTML = "<p style='text-align:center; color:#555; margin-top:50vh;'>Loading...</p>";
+            loadVideos();
+        };
+
+        // 3. Load Videos with Filter Logic
         function loadVideos() {
             const feed = document.getElementById('feed');
             
             onValue(ref(db, 'gameplay_clips'), (snap) => {
+                feed.innerHTML = "";
                 if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                 
-                feed.innerHTML = "";
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
+                
+                // --- FILTER LOGIC ---
+                if(activeTab === 'following') {
+                    // Filter: Only show videos from users in my following list
+                    videos = videos.filter(v => followingList.includes(v.uid));
+                    
+                    if(videos.length === 0) {
+                        feed.innerHTML = `
+                            <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; color:#777;">
+                                <i class="fas fa-user-plus" style="font-size:40px; margin-bottom:15px;"></i>
+                                <p>Follow people to see their videos here!</p>
+                                <button onclick="window.switchFeed('foryou')" style="background:#8a2be2; color:white; border:none; padding:10px 20px; border-radius:20px; margin-top:10px;">Go to For You</button>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+
+                // Sort Newest First
                 videos.sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
@@ -185,7 +234,6 @@
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
 
-                    // --- SMART LOGIC ---
                     let videoUrl = item.videoUrl;
                     if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_80,w_720/"); 
                     
