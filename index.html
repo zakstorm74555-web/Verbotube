@@ -20,59 +20,45 @@
         header { background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); padding: 10px 15px; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
         .header-logo { font-size: 20px; font-weight: bold; color: white; }
 
-        /* --- PROFILE DROPDOWN MENU --- */
-        .profile-dropdown {
-            position: absolute;
-            top: 50px;
-            right: 15px;
-            background: #222;
-            border: 1px solid #444;
-            border-radius: 10px;
-            width: 150px;
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            z-index: 2000;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-            overflow: hidden;
-        }
-        .dropdown-item {
-            padding: 12px 15px;
-            font-size: 14px;
-            color: white;
-            cursor: pointer;
-            border-bottom: 1px solid #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: #333; }
-        .logout-text { color: #ff4444; font-weight: bold; }
-
         .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
         
-        .admin-ad-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid #333; }
+        /* --- ADMIN AD CARD (Top) --- */
+        .admin-ad-card { 
+            background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-bottom: 2px solid #222;
+        }
         .ad-img { width: 100%; height: 100%; object-fit: contain; cursor: pointer; }
-        .ad-tag { position: absolute; top: 80px; left: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; }
+        .ad-tag { position: absolute; top: 75px; left: 15px; background: #ffcc00; color: #000; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; z-index: 20; }
         .ad-btn-container { position: absolute; bottom: 100px; width: 100%; display: flex; justify-content: center; z-index: 20; pointer-events: none; }
-        .ad-link-btn { pointer-events: auto; background: #8a2be2; color: white; padding: 12px 40px; border-radius: 30px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); }
+        .ad-link-btn { pointer-events: auto; background: #8a2be2; color: white; padding: 10px 30px; border-radius: 25px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); }
 
-        .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 25px; align-items: center; z-index: 10; text-shadow: 1px 1px 3px black; }
-        .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .hd-tag { position: absolute; top: 75px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
+        
+        /* --- SIDEBAR UI FIXED (Small Icons) --- */
+        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
+        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 0; }
+        .action-btn span { font-size: 12px; margin-top: 3px; font-weight: 600; }
+        .liked { color: #ff0055 !important; }
+
         .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; }
         .user-row { display: flex; align-items: center; gap: 10px; pointer-events: auto; }
         .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
-        .uploader-name { font-weight: bold; color: white; font-size: 17px; cursor: pointer; }
-        .music-bar { font-size: 12px; color: #fff; display: flex; align-items: center; gap: 8px; margin-top: 8px; pointer-events: auto; cursor: pointer; opacity: 0.8; }
+        .uploader-name { font-weight: bold; color: white; font-size: 16px; cursor: pointer; }
+        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 6px; pointer-events: auto; cursor: pointer; opacity: 0.9; }
 
+        /* MODALS & MENU */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1a1a1a; width: 95%; max-width: 420px; padding: 20px; border-radius: 15px; text-align: center; }
         .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 1500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease; border-top: 1px solid #333; display: flex; flex-direction: column; }
         .comments-modal.active { bottom: 0; }
         .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
+        
+        .profile-dropdown { position: absolute; top: 50px; right: 15px; background: #222; border: 1px solid #444; border-radius: 10px; width: 150px; display: none; flex-direction: column; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .dropdown-item { padding: 12px 15px; font-size: 14px; color: white; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; }
+        
         .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .active-tab { background: #8a2be2; }
         input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; outline: none; }
@@ -86,7 +72,7 @@
     <div id="appScreen">
         <header>
             <div class="header-logo">PARA<span style="color:#8a2be2;">VIDEO</span></div>
-            <div style="display:flex; gap:15px; align-items:center; position: relative;">
+            <div style="display:flex; gap:15px; align-items:center;">
                 <i class="fas fa-plus-square" onclick="window.openUpload()" style="font-size:26px; cursor:pointer;"></i>
                 <i class="fas fa-search" onclick="window.location.href='search.html'" style="font-size:20px; cursor:pointer;"></i>
                 <img src="" id="myPic" onclick="window.toggleProfileMenu(event)" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
@@ -94,12 +80,8 @@
         </header>
 
         <div id="profileDropdown" class="profile-dropdown">
-            <div class="dropdown-item" onclick="window.location.href='profile.html'">
-                <i class="fas fa-user"></i> View Profile
-            </div>
-            <div class="dropdown-item logout-text" onclick="window.logoutUser()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </div>
+            <div class="dropdown-item" onclick="window.location.href='profile.html'"><i class="fas fa-user"></i> Profile</div>
+            <div class="dropdown-item" style="color:#ff4444;" onclick="window.logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</div>
         </div>
 
         <div class="feed-container" id="feed">
@@ -150,26 +132,9 @@
 
         let currentUser = null, currentVideoKeyForComments = null;
 
-        // --- MENU & LOGOUT LOGIC ---
-        window.toggleProfileMenu = (e) => {
-            e.stopPropagation();
-            const menu = document.getElementById('profileDropdown');
-            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
-        };
-        
-        window.onclick = (event) => {
-            if (!event.target.closest('.profile-dropdown') && event.target.id !== 'myPic') {
-                document.getElementById('profileDropdown').style.display = 'none';
-            }
-        };
-
-        window.logoutUser = () => {
-            if(confirm("Are you sure you want to logout?")) {
-                signOut(auth).then(() => {
-                    location.reload();
-                });
-            }
-        };
+        window.toggleProfileMenu = (e) => { e.stopPropagation(); const m = document.getElementById('profileDropdown'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; };
+        window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
+        window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
@@ -189,8 +154,9 @@
 
                 onValue(ref(db, 'gameplay_clips'), (snap) => {
                     const feed = document.getElementById('feed'); feed.innerHTML = "";
-                    if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+                    if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos.</p>"; return; }
                     
+                    // --- 1. SHOW AD AT TOP (Priority High) ---
                     if (currentAds.length > 0) {
                         const ad = currentAds[0]; 
                         const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
@@ -202,6 +168,7 @@
                         feed.appendChild(adDiv);
                     }
 
+                    // --- 2. SHOW VIDEOS ---
                     let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
                     videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
 
@@ -221,7 +188,7 @@
                                 <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
                             </div>
                             <div class="video-info">
-                                <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">Loading...</div></div>
+                                <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
                                 <div style="font-size:14px; color:#eee;">${item.caption}</div>
                                 ${musicHtml}
                             </div>
@@ -287,7 +254,7 @@
         };
         window.openUpload = () => document.getElementById('uploadModal').style.display = 'flex';
         window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
-        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='color:#777; text-align:center;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
+        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
         window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
         window.postComment = async () => { 
             const t = document.getElementById('commentInput').value;
