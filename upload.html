@@ -3,226 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Upload - ParaVideo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Studio - ParaVideo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #111; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; height: 100vh; }
-        .container { width: 100%; max-width: 450px; background: #000; padding: 20px; display: flex; flex-direction: column; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; }
-        .header { display: flex; align-items: center; margin-bottom: 20px; }
-        .back-btn { font-size: 24px; color: white; background: none; border: none; cursor: pointer; margin-right: 15px; }
-        h2 { margin: 0; color: #8a2be2; }
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        .app-container { width: 100%; max-width: 450px; height: 100%; position: relative; background: #000; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* --- HEADER (ADD SOUND) --- */
+        .top-bar { position: absolute; top: 10px; width: 100%; z-index: 50; display: flex; justify-content: center; }
+        .add-sound-btn { background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); }
         
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; background: #222; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .active-tab { background: #8a2be2; }
+        /* --- MAIN PREVIEW --- */
+        .preview-area { width: 100%; height: 100%; position: relative; display: flex; justify-content: center; align-items: center; background: #111; }
+        video { width: 100%; height: 100%; object-fit: contain; }
         
-        .upload-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed #444; border-radius: 10px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
-        .placeholder { text-align: center; color: #666; pointer-events: none; }
-        .preview-media { width: 100%; height: 100%; object-fit: contain; display: none; }
+        /* --- RIGHT SIDEBAR TOOLS --- */
+        .sidebar-tools { position: absolute; right: 15px; top: 80px; display: flex; flex-direction: column; gap: 20px; z-index: 30; }
+        .tool-btn { display: flex; flex-direction: column; align-items: center; cursor: pointer; text-shadow: 1px 1px 2px black; }
+        .tool-icon { font-size: 22px; color: white; margin-bottom: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 50%; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; }
+        .tool-label { font-size: 10px; font-weight: 600; }
+
+        /* --- TRIMMER UI --- */
+        .trimmer-container { position: absolute; bottom: 120px; left: 10px; right: 10px; height: 60px; background: rgba(0,0,0,0.6); border-radius: 10px; display: none; z-index: 40; padding: 10px; }
+        .trim-slider { width: 100%; -webkit-appearance: none; background: #444; height: 5px; border-radius: 5px; outline: none; }
+        .trim-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: #FE2C55; border-radius: 50%; cursor: pointer; }
+        .time-display { font-size: 12px; color: #ccc; text-align: center; margin-top: 5px; }
+
+        /* --- BOTTOM POST SECTION --- */
+        .bottom-section { position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px; background: linear-gradient(transparent, black); z-index: 30; display: flex; flex-direction: column; gap: 10px; }
         
-        input[type="text"] { width: 100%; padding: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 8px; margin-bottom: 15px; outline: none; }
-        .btn-main { width: 100%; background: #8a2be2; border: none; padding: 15px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: auto; }
-        .btn-main:disabled { background: #444; }
+        .caption-row { display: flex; gap: 10px; align-items: center; }
+        .thumb-preview { width: 60px; height: 80px; background: #333; border-radius: 5px; object-fit: cover; border: 1px solid #555; cursor: pointer; }
+        .caption-input { flex: 1; background: transparent; border: none; color: white; border-bottom: 1px solid #555; padding: 5px; outline: none; }
         
-        #progress { width: 100%; height: 5px; background: #333; margin-top: 10px; display: none; }
-        #bar { width: 0%; height: 100%; background: #8a2be2; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #ccc; margin-bottom: 10px; }
+        .visibility-select { background: #333; color: white; border: none; padding: 5px; border-radius: 5px; outline: none; }
+
+        .post-btn { width: 100%; background: #FE2C55; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: none; flex-direction: column; }
+        .sound-list { padding: 20px; overflow-y: auto; flex: 1; }
+        .sound-item { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; }
+        .sound-icon { width: 40px; height: 40px; background: #333; border-radius: 5px; margin-right: 10px; display: flex; justify-content: center; align-items: center; color: #FE2C55; }
+        
+        .loading { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></button>
-        <h2>Create Post</h2>
-    </div>
-
-    <div class="tabs">
-        <button class="tab-btn active-tab" onclick="switchTab('gallery')">Video 🎥</button>
-        <button class="tab-btn" onclick="switchTab('music')">Music 🎵</button>
-        <button class="tab-btn" onclick="switchTab('camera')">Camera 🔴</button>
-    </div>
-
-    <div class="upload-area" id="uploadBox">
-        <video id="vidPreview" class="preview-media" playsinline controls></video>
-        <div id="audioPreview" class="preview-media" style="display:none; flex-direction:column; align-items:center; justify-content:center; color:#8a2be2;">
-            <i class="fas fa-compact-disc" style="font-size: 50px; animation: spin 2s linear infinite;"></i>
-            <p style="margin-top:10px; color:white;">Music Selected</p>
-        </div>
-        <video id="camPreview" class="preview-media" autoplay muted playsinline></video>
-        
-        <div class="placeholder" id="placeholderText">
-            <i class="fas fa-cloud-upload-alt" style="font-size: 40px; margin-bottom: 10px;"></i><br>
-            Tap to Select Video
-        </div>
-        
-        <input type="file" id="videoFile" accept="video/*" onchange="previewFile(this, 'video')">
-        <input type="file" id="audioFile" accept="audio/*" style="display:none;" onchange="previewFile(this, 'audio')">
-    </div>
-
-    <div id="recBtnContainer" style="display:none; text-align:center; margin-bottom:10px;">
-        <button id="recBtn" style="width:60px; height:60px; background:red; border:4px solid white; border-radius:50%; cursor:pointer;" onclick="toggleRecording()"></button>
-    </div>
-
-    <input type="text" id="caption" placeholder="Write a caption or Song Name...">
+<div class="app-container">
     
-    <div id="progress"><div id="bar"></div></div>
-    <button class="btn-main" id="postBtn" onclick="uploadContent()">POST</button>
+    <div class="top-bar">
+        <div class="add-sound-btn" onclick="openSoundLibrary()">
+            <i class="fas fa-music"></i> <span id="soundName">Add Sound</span>
+        </div>
+    </div>
+
+    <div class="preview-area">
+        <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="loadVideo(this)">
+        
+        <div id="uploadPlaceholder" onclick="document.getElementById('fileInput').click()" style="text-align:center; cursor:pointer;">
+            <div style="width:60px; height:60px; background:#FE2C55; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; animation: pulse 2s infinite;">
+                <i class="fas fa-plus" style="font-size:24px;"></i>
+            </div>
+            <p>Select Video</p>
+        </div>
+
+        <video id="mainVideo" loop playsinline onclick="togglePlay()" style="display:none;"></video>
+        <audio id="remixAudio" style="display:none;"></audio>
+    </div>
+
+    <div class="sidebar-tools" id="sidebar" style="display:none;">
+        <div class="tool-btn" onclick="toggleTrimmer()">
+            <div class="tool-icon"><i class="fas fa-cut"></i></div>
+            <span class="tool-label">Trim</span>
+        </div>
+        <div class="tool-btn" onclick="captureThumbnail()">
+            <div class="tool-icon"><i class="fas fa-image"></i></div>
+            <span class="tool-label">Cover</span>
+        </div>
+    </div>
+
+    <div class="trimmer-container" id="trimmerBox">
+        <input type="range" min="0" max="100" value="0" class="trim-slider" id="startSlider" oninput="updateTrim()">
+        <div class="time-display">Start: <span id="startTimeDisplay">0s</span></div>
+    </div>
+
+    <div class="bottom-section" id="bottomUi" style="display:none;">
+        <div class="caption-row">
+            <img id="thumbPreview" class="thumb-preview" src="https://via.placeholder.com/60" onclick="captureThumbnail()">
+            <input type="text" id="caption" class="caption-input" placeholder="Describe your video... #ParaVideo">
+        </div>
+        
+        <div class="settings-row">
+            <span><i class="fas fa-globe"></i> Who can watch?</span>
+            <select id="visibility" class="visibility-select">
+                <option value="public">Everyone</option>
+                <option value="friends">Friends</option>
+                <option value="private">Private</option>
+            </select>
+        </div>
+
+        <button class="post-btn" onclick="uploadPost()">Post</button>
+    </div>
+
+    <div class="modal-overlay" id="soundModal">
+        <div style="padding:15px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <h3>Pick a Sound</h3>
+            <i class="fas fa-times" onclick="closeSoundLibrary()" style="cursor:pointer; font-size:20px;"></i>
+        </div>
+        <div class="sound-list" id="soundListContainer">
+            <p style="text-align:center; color:#666; margin-top:20px;">Loading Sounds...</p>
+        </div>
+    </div>
+
+    <div class="loading" id="loader">
+        <i class="fas fa-circle-notch fa-spin" style="font-size:40px; color:#FE2C55;"></i>
+        <p style="margin-top:15px;" id="uploadStatus">Uploading...</p>
+    </div>
+
 </div>
+
+<canvas id="thumbCanvas" style="display:none;"></canvas>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
+    const storage = getStorage(app);
+    const CLOUD_NAME = "dusj0vpsi"; // Still using Cloudinary for Video, Storage for Thumb
 
     let currentUser = null;
-    let currentTab = 'gallery';
-    let stream, mediaRecorder, chunks = [], camFile = null;
-
+    let videoFile = null;
+    let thumbnailBlob = null;
+    let selectedSoundUrl = null;
+    let trimStart = 0;
+    
+    // Auth Check
     onAuthStateChanged(auth, user => {
         if (user) currentUser = user;
-        else window.location.href = 'index.html'; // Kick back if not logged in
+        else window.location.href = 'index.html';
     });
 
-    window.switchTab = async (tab) => {
-        currentTab = tab;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-        event.target.classList.add('active-tab');
+    // 1. LOAD VIDEO
+    window.loadVideo = (input) => {
+        if(input.files && input.files[0]) {
+            videoFile = input.files[0];
+            const url = URL.createObjectURL(videoFile);
+            const vid = document.getElementById('mainVideo');
+            
+            vid.src = url;
+            vid.style.display = 'block';
+            document.getElementById('uploadPlaceholder').style.display = 'none';
+            document.getElementById('sidebar').style.display = 'flex';
+            document.getElementById('bottomUi').style.display = 'flex';
 
-        // Reset UI
-        document.getElementById('videoFile').style.display = 'none';
-        document.getElementById('audioFile').style.display = 'none';
-        document.getElementById('placeholderText').style.display = 'block';
-        document.getElementById('vidPreview').style.display = 'none';
-        document.getElementById('audioPreview').style.display = 'none';
-        document.getElementById('camPreview').style.display = 'none';
-        document.getElementById('recBtnContainer').style.display = 'none';
-
-        // Stop Camera if running
-        if(stream) stream.getTracks().forEach(t => t.stop());
-
-        if (tab === 'gallery') {
-            document.getElementById('videoFile').style.display = 'block';
-            document.getElementById('placeholderText').innerHTML = '<i class="fas fa-video"></i><br>Select Video';
-        } else if (tab === 'music') {
-            document.getElementById('audioFile').style.display = 'block';
-            document.getElementById('placeholderText').innerHTML = '<i class="fas fa-music"></i><br>Select MP3';
-        } else if (tab === 'camera') {
-            document.getElementById('placeholderText').style.display = 'none';
-            document.getElementById('camPreview').style.display = 'block';
-            document.getElementById('recBtnContainer').style.display = 'block';
-            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('camPreview').srcObject = stream;
+            // Generate auto thumbnail after metadata loads
+            vid.onloadedmetadata = () => {
+                document.getElementById('startSlider').max = vid.duration;
+                setTimeout(captureThumbnail, 500); 
+            };
         }
     };
 
-    window.previewFile = (input, type) => {
-        if (input.files && input.files[0]) {
-            const file = input.files[0];
-            document.getElementById('placeholderText').style.display = 'none';
-            if(type === 'video') {
-                const vid = document.getElementById('vidPreview');
-                vid.style.display = 'block';
-                vid.src = URL.createObjectURL(file);
-            } else {
-                document.getElementById('audioPreview').style.display = 'flex';
-            }
-        }
-    };
-
-    window.toggleRecording = () => {
-        const btn = document.getElementById('recBtn');
-        if(!mediaRecorder || mediaRecorder.state === "inactive") {
-            mediaRecorder = new MediaRecorder(stream); chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            mediaRecorder.onstop = () => { camFile = new File([new Blob(chunks, {type: 'video/mp4'})], "cam.mp4", {type:'video/mp4'}); alert("Recorded! Click POST."); };
-            mediaRecorder.start(); 
-            btn.style.background = "white";
-            btn.style.animation = "pulse 1s infinite";
-        } else { 
-            mediaRecorder.stop(); 
-            btn.style.background = "red";
-            btn.style.animation = "none";
-        }
-    };
-
-    window.uploadContent = async () => {
-        let file;
-        let isAudio = (currentTab === 'music');
-
-        if (currentTab === 'music') file = document.getElementById('audioFile').files[0];
-        else if (currentTab === 'camera') file = camFile;
-        else file = document.getElementById('videoFile').files[0];
-
-        if(!file) return alert("Please select a file first!");
-        if(file.size > 100000000) return alert("File too large (Max 100MB)");
-
-        const btn = document.getElementById('postBtn');
-        const bar = document.getElementById('bar');
+    // 2. PLAY/PAUSE (With Remix Sync)
+    window.togglePlay = () => {
+        const vid = document.getElementById('mainVideo');
+        const audio = document.getElementById('remixAudio');
         
-        btn.disabled = true;
-        document.getElementById('progress').style.display = 'block';
+        if (vid.paused) {
+            vid.play();
+            if (selectedSoundUrl) audio.play();
+        } else {
+            vid.pause();
+            if (selectedSoundUrl) audio.pause();
+        }
+    };
 
+    // 3. SOUND REMIX LOGIC
+    window.openSoundLibrary = () => {
+        document.getElementById('soundModal').style.display = 'flex';
+        const list = document.getElementById('soundListContainer');
+        list.innerHTML = "";
+        
+        // Fetch videos with sound from DB
+        onValue(ref(db, 'gameplay_clips'), (snap) => {
+            if(snap.exists()) {
+                snap.forEach(child => {
+                    const data = child.val();
+                    // Show item only if it's music or video
+                    const item = document.createElement('div');
+                    item.className = 'sound-item';
+                    item.innerHTML = `
+                        <div class="sound-icon"><i class="fas fa-music"></i></div>
+                        <div>
+                            <div style="font-weight:bold; font-size:14px;">${data.caption || "Original Sound"}</div>
+                            <div style="font-size:12px; color:#666;">@${data.uploader}</div>
+                        </div>
+                    `;
+                    item.onclick = () => selectSound(data.videoUrl, data.caption);
+                    list.appendChild(item);
+                });
+            }
+        });
+    };
+
+    window.closeSoundLibrary = () => document.getElementById('soundModal').style.display = 'none';
+
+    window.selectSound = (url, name) => {
+        selectedSoundUrl = url;
+        document.getElementById('soundName').innerText = name.substring(0, 15) + "...";
+        
+        // Setup Remix Player
+        const audio = document.getElementById('remixAudio');
+        audio.src = url;
+        audio.volume = 1.0;
+        
+        // Mute Main Video
+        document.getElementById('mainVideo').muted = true;
+        
+        closeSoundLibrary();
+        alert("Sound Added! Video is now muted.");
+    };
+
+    // 4. SMART TRIM LOGIC
+    window.toggleTrimmer = () => {
+        const box = document.getElementById('trimmerBox');
+        box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+    };
+
+    window.updateTrim = () => {
+        const val = document.getElementById('startSlider').value;
+        trimStart = parseFloat(val);
+        document.getElementById('startTimeDisplay').innerText = trimStart + "s";
+        
+        // Seek video to trim point
+        const vid = document.getElementById('mainVideo');
+        vid.currentTime = trimStart;
+    };
+
+    // 5. THUMBNAIL GENERATOR
+    window.captureThumbnail = () => {
+        const vid = document.getElementById('mainVideo');
+        const canvas = document.getElementById('thumbCanvas');
+        canvas.width = vid.videoWidth;
+        canvas.height = vid.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to blob
+        canvas.toBlob(blob => {
+            thumbnailBlob = blob;
+            document.getElementById('thumbPreview').src = URL.createObjectURL(blob);
+        }, 'image/jpeg', 0.7);
+    };
+
+    // 6. UPLOAD EVERYTHING
+    window.uploadPost = async () => {
+        if (!videoFile) return alert("Please select a video");
+        
+        document.getElementById('loader').style.display = 'flex';
         const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-        const realName = uSnap.exists() ? uSnap.val().username : "User";
-        let isHD = false;
-
-        const performUpload = () => {
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("upload_preset", UPLOAD_PRESET);
-            if(isAudio) fd.append("resource_type", "video"); // Trick to allow standard upload
-
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${isAudio ? 'video' : 'video'}/upload`);
-
-            xhr.upload.onprogress = e => {
-                const percent = Math.round((e.loaded / e.total) * 100);
-                bar.style.width = percent + "%";
-                btn.innerText = `Uploading... ${percent}%`;
-            };
-
-            xhr.onload = async () => {
-                if(xhr.status === 200) {
-                    const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), {
-                        videoUrl: data.secure_url,
-                        caption: document.getElementById('caption').value,
-                        isHD: isHD,
-                        isAudio: isAudio,
-                        uploader: realName,
-                        uid: currentUser.uid,
-                        timestamp: Date.now()
-                    });
-                    window.location.href = 'index.html'; // Go back to feed
-                } else {
-                    alert("Upload Failed");
-                    btn.disabled = false;
-                }
-            };
-            xhr.send(fd);
+        const username = uSnap.exists() ? uSnap.val().username : "User";
+        
+        // A. Upload Video to Cloudinary
+        const fd = new FormData();
+        fd.append("file", videoFile);
+        fd.append("upload_preset", "paravideo");
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+        
+        xhr.upload.onprogress = e => {
+            const p = Math.round((e.loaded / e.total) * 100);
+            document.getElementById('uploadStatus').innerText = `Uploading Video ${p}%`;
         };
 
-        if(!isAudio && currentTab !== 'camera') {
-            const v = document.createElement('video');
-            v.preload = 'metadata';
-            v.onloadedmetadata = () => {
-                isHD = (v.videoWidth >= 1280 || v.videoHeight >= 720);
-                performUpload();
-            };
-            v.src = URL.createObjectURL(file);
-        } else {
-            performUpload();
-        }
-    };
-</script>
+        xhr.onload = async () => {
+            if (xhr.status === 200) {
+                const vidData = JSON.parse(xhr.responseText);
+                
+                // B. Upload Thumbnail to Firebase Storage (Cleaner)
+                let thumbUrl = "";
+                if (thumbnailBlob) {
+                    document.getElementById('uploadStatus').innerText = "Saving Thumbnail...";
+                    const thumbRef = sRef(storage, `thumbnails/${Date.now()}.jpg`);
+                    await uploadBytes(thumbRef, thumbnailBlob);
+                    thumbUrl = await getDownloadURL(thumbRef);
+                }
 
-<style>@keyframes spin { 100% { transform: rotate(360deg); } } @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
+                // C. Save ALL Metadata to DB
+                await push(ref(db, 'gameplay_clips'), {
+                    videoUrl: vidData.secure_url,
+                    thumbnail: thumbUrl,
+                    caption: document.getElementById('caption').value,
+                    visibility: document.getElementById('visibility').value,
+                    remixUrl: selectedSoundUrl || "", // Saved Sound
+                    trimStart: trimStart,             // Saved Trim Time
+                    uploader: username,
+                    uid: currentUser.uid,
+                    timestamp: Date.now(),
+                    isHD: true
+                });
+
+                window.location.href = 'index.html';
+            } else {
+                alert("Upload Failed");
+                document.getElementById('loader').style.display = 'none';
+            }
+        };
+        xhr.send(fd);
+    };
+
+</script>
+<style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
 </body>
 </html>
