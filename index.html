@@ -196,10 +196,7 @@
                     if(snap.exists()) {
                         siteSettings = snap.val();
                         if(siteSettings.favicon) {
-                            // Add Time to URL to bypass Cache
                             const newFav = siteSettings.favicon + "?t=" + new Date().getTime();
-                            
-                            // Update ALL icon tags
                             document.getElementById('fav1').href = newFav;
                             document.getElementById('fav2').href = newFav;
                             document.getElementById('fav3').href = newFav;
@@ -327,26 +324,64 @@
                 mediaRecorder.start(); btn.style.background = "white";
             } else { mediaRecorder.stop(); btn.style.background = "red"; }
         };
+
+        // --- UPDATED UPLOAD FUNCTION (With Progress % & Size Limit) ---
         window.uploadVideo = async () => {
             const file = camFile || document.getElementById('videoFile').files[0];
             if(!file) return alert("Select video");
-            if(file.size < 400000) return alert("❌ Quality too low!");
+            
+            // 1. Minimum Quality Check
+            if(file.size < 400000) return alert("❌ Quality too low! Please upload HD clips.");
+            
+            // 2. Maximum Size Check (100MB Limit)
+            if(file.size > 100000000) return alert("❌ Video is too large! Max limit is 100MB.");
+
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
             const realName = uSnap.exists() ? uSnap.val().username : "User";
             const vidMeta = document.createElement('video'); vidMeta.preload = 'metadata';
+            
             vidMeta.onloadedmetadata = () => {
                 const isHD = (vidMeta.videoWidth >= 1280 || vidMeta.videoHeight >= 720);
-                const btn = document.getElementById('postBtn'); btn.disabled = true; btn.innerText = "Uploading...";
+                const btn = document.getElementById('postBtn'); 
+                const progressBar = document.getElementById('bar');
+                
+                btn.disabled = true; 
+                document.getElementById('progress').style.display = 'block';
+
                 const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
-                const xhr = new XMLHttpRequest(); xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
-                xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
+                const xhr = new XMLHttpRequest(); 
+                xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+                
+                // Progress Handler
+                xhr.upload.onprogress = e => {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = percent + "%";
+                    btn.innerText = `Uploading... ${percent}%`; // Shows Percentage on Button
+                };
+                
+                // Success Handler
                 xhr.onload = async () => {
-                    const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realName, uid: currentUser.uid, timestamp: Date.now() });
-                    location.reload();
-                }; xhr.send(fd);
+                    if (xhr.status === 200) {
+                        btn.innerText = "Processing...";
+                        const data = JSON.parse(xhr.responseText);
+                        await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realName, uid: currentUser.uid, timestamp: Date.now() });
+                        location.reload();
+                    } else {
+                        btn.disabled = false; btn.innerText = "POST VIDEO";
+                        alert("Upload Failed! Server Error.");
+                    }
+                };
+
+                // Error Handler
+                xhr.onerror = () => {
+                    btn.disabled = false; btn.innerText = "POST VIDEO";
+                    alert("Network Error! Check internet.");
+                };
+
+                xhr.send(fd);
             }; vidMeta.src = URL.createObjectURL(file);
         };
+
         window.openUpload = () => document.getElementById('uploadModal').style.display = 'flex';
         window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
         window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
