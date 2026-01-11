@@ -3,313 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ParaVideo - Feed</title>
+    <title>ParaVideo</title>
     
     <link rel="icon" id="fav1" href="https://ibb.co/ZsDDGHQ" sizes="32x32">
-    <link rel="icon" id="fav2" href="https://ibb.co/ZsDDGHQ" sizes="192x192">
-    <link rel="apple-touch-icon" id="fav3" href="https://ibb.co/ZsDDGHQ">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        * { box-sizing: border-box; }
-        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
+        /* --- GLOBAL PERFORMANCE (NO LAG) --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 0; overflow: hidden; 
+            transform: translateZ(0); /* Force GPU */
+        }
 
         @media (min-width: 768px) {
             body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
             #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
-            header, .comments-modal, .modal { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        header { background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); padding: 10px 15px; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .header-logo { font-size: 20px; font-weight: bold; color: white; }
+        /* --- HEADER --- */
+        header { 
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); 
+            display: flex; justify-content: space-between; align-items: center; pointer-events: none; 
+        }
+        header * { pointer-events: auto; }
+        .tab-switch { font-size: 16px; font-weight: bold; color: #aaa; cursor: pointer; margin: 0 10px; text-shadow: 1px 1px 2px black; }
+        .tab-switch.active { color: white; border-bottom: 2px solid white; padding-bottom: 3px; }
 
-        .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-        .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
+        /* --- FEED --- */
+        .feed-container { 
+            width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; 
+            scroll-behavior: auto; -webkit-overflow-scrolling: touch; 
+        }
+        .feed-container::-webkit-scrollbar { display: none; }
+
+        .video-card { 
+            background: #000; width: 100%; height: 100vh; position: relative; 
+            scroll-snap-align: start; display: flex; align-items: center; justify-content: center; overflow: hidden; 
+            will-change: transform; 
+        }
         
-        /* --- MUSIC ANIMATION STYLES --- */
-        .vinyl-wrapper { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; display: flex; justify-content: center; align-items: center; z-index: 5; pointer-events: none; }
-        .vinyl-disc { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #111 10%, #333 30%, #000 31%, #111 100%); border: 4px solid #222; box-shadow: 0 0 20px rgba(138, 43, 226, 0.5); animation: spin 5s linear infinite; animation-play-state: paused; }
-        .playing .vinyl-disc { animation-play-state: running; }
-        .vinyl-cover { position: absolute; width: 100px; height: 100px; border-radius: 50%; background-size: cover; background-position: center; border: 3px solid #111; }
-        .music-waves { position: absolute; bottom: 180px; left: 0; width: 100%; height: 60px; display: flex; justify-content: center; align-items: flex-end; gap: 5px; z-index: 5; }
-        .wave-bar { width: 8px; background: #8a2be2; animation: wave 1s ease-in-out infinite; }
-        .wave-bar:nth-child(odd) { animation-duration: 0.8s; background: #fff; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 50px; } }
+        video { width: 100%; height: 100%; object-fit: cover; transform: translateZ(0); }
         
-        /* --- ADMIN AD CARD --- */
-        .admin-ad-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; border-bottom: 2px solid #222; }
-        .ad-tag { position: absolute; top: 80px; left: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
-        .top-mute-btn { position: absolute; top: 80px; right: 15px; background: rgba(0,0,0,0.6); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 30; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+        /* FILTERS */
+        .f-normal { filter: none; }
+        .f-vivid { filter: contrast(1.1) saturate(1.2); }
+        .f-mono { filter: grayscale(1); }
+        .f-dramatic { filter: contrast(1.2) brightness(0.9); }
 
-        .invisible-play-layer { position: absolute; top: 0; left: 0; width: 100%; height: 85%; z-index: 5; background: transparent; }
-        .ad-cta-btn { background: #8a2be2; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; margin-top: 10px; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); animation: pulse 2s infinite; pointer-events: auto; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-        .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
-        .audio-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #8a2be2; border: 1px solid #8a2be2; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
+        /* --- SIDEBAR ICONS --- */
+        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; text-shadow: 1px 1px 2px black; }
+        .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .action-btn span { font-size: 12px; margin-top: 5px; font-weight: 600; }
+        .liked { color: #FE2C55 !important; animation: pop 0.3s ease; }
+        @keyframes pop { 50% { transform: scale(1.2); } }
 
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; text-shadow: 1px 1px 2px black; }
-        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .action-btn span { font-size: 12px; margin-top: 3px; font-weight: 600; }
-        .liked { color: #ff0055 !important; }
-
-        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; z-index: 28; }
+        /* --- VIDEO INFO & SCROLLING TEXT --- */
+        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; padding-bottom: 20px; z-index: 20; pointer-events: none; }
         .video-info * { pointer-events: auto; }
-        .user-row { display: flex; align-items: center; gap: 10px; }
-        .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
-        .uploader-name { font-weight: bold; color: white; font-size: 16px; cursor: pointer; }
-        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 6px; opacity: 0.9; cursor: pointer; }
+        .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; }
+        .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; }
+        
+        /* SCROLLING MARQUEE */
+        .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 14px; overflow: hidden; white-space: nowrap; width: 60%; }
+        .music-icon-anim { animation: pulse 2s infinite; }
+        .marquee-track { display: inline-block; animation: marquee 6s linear infinite; will-change: transform; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 1500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease; border-top: 1px solid #333; display: flex; flex-direction: column; }
-        .comments-modal.active { bottom: 0; }
-        .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .profile-dropdown { position: absolute; top: 50px; right: 15px; background: #222; border: 1px solid #444; border-radius: 10px; width: 150px; display: none; flex-direction: column; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-        .dropdown-item { padding: 12px 15px; font-size: 14px; color: white; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; }
-        .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
-        .mute-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: rgba(255,255,255,0.8); pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 15; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 50%; }
+        /* --- SPINNING DISC (THUMBNAIL) --- */
+        .disc-area { position: absolute; bottom: 20px; right: 10px; width: 50px; height: 50px; z-index: 35; }
+        .disc-bg { 
+            width: 100%; height: 100%; border-radius: 50%; background: #111; 
+            border: 8px solid #222; display: flex; justify-content: center; align-items: center; 
+            animation: spin 5s linear infinite; will-change: transform;
+            background-image: url('https://ibb.co/ZsDDGHQ'); background-size: cover;
+        }
+        .playing .disc-bg { animation-play-state: running; }
+        .paused .disc-bg { animation-play-state: paused; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- PLAY ICON --- */
+        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; opacity: 0; pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: black; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { color: #888; font-size: 22px; cursor: pointer; }
+        .nav-item.active { color: white; }
+        .add-btn-nav { width: 45px; height: 30px; background: white; border-radius: 8px; display: flex; justify-content: center; align-items: center; position: relative; }
+        .add-btn-nav::before { content:''; position: absolute; left: -4px; width: 4px; height: 100%; background: #00f2ea; border-radius: 8px 0 0 8px; }
+        .add-btn-nav::after { content:''; position: absolute; right: -4px; width: 4px; height: 100%; background: #ff0050; border-radius: 0 8px 8px 0; }
+
     </style>
 </head>
 <body>
 
     <div id="appScreen">
+        
         <header>
-            <div class="header-logo">PARA<span style="color:#8a2be2;">VIDEO</span></div>
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="fas fa-plus-square" onclick="window.location.href='upload.html'" style="font-size:26px; cursor:pointer;"></i>
-                <i class="fas fa-search" onclick="window.location.href='search.html'" style="font-size:20px; cursor:pointer;"></i>
-                <img src="" id="myPic" onclick="window.toggleProfileMenu(event)" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
+            <div style="font-weight: bold; font-size: 18px; color: #ccc;"><i class="fas fa-tv"></i> Live</div>
+            <div>
+                <span class="tab-switch">Following</span>
+                <span class="tab-switch active">For You</span>
             </div>
+            <div onclick="window.location.href='search.html'"><i class="fas fa-search" style="font-size: 20px;"></i></div>
         </header>
-
-        <div id="profileDropdown" class="profile-dropdown">
-            <div class="dropdown-item" onclick="window.location.href='profile.html'"><i class="fas fa-user"></i> Profile</div>
-            <div class="dropdown-item" style="color:#ff4444;" onclick="window.logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</div>
-        </div>
 
         <div class="feed-container" id="feed">
             <p style="text-align:center; color:#555; margin-top:50vh;">Loading...</p>
         </div>
 
-        <div class="comments-modal" id="commentsModal">
-            <div style="padding:15px; border-bottom:1px solid #333; display:flex; justify-content:space-between; font-weight:bold;"><span>Comments</span><i class="fas fa-times" onclick="window.closeComments()"></i></div>
-            <div class="comments-list" id="commentsList"></div>
-            <div style="padding:10px; display:flex; gap:10px; background:#000; border-top:1px solid #333;">
-                <input type="text" id="commentInput" placeholder="Add a comment..." style="flex:1; background:#222; border:none; padding:12px; color:white; border-radius:20px; outline:none; margin-bottom:0;">
-                <button onclick="window.postComment()" style="color:#8a2be2; background:none; border:none; font-weight:bold;">Post</button>
+        <div class="bottom-nav">
+            <i class="fas fa-home nav-item active"></i>
+            <i class="fas fa-user-friends nav-item"></i>
+            <div class="add-btn-nav" onclick="window.location.href='upload.html'">
+                <i class="fas fa-plus" style="color: black; font-size: 16px;"></i>
             </div>
+            <i class="fas fa-inbox nav-item"></i>
+            <i class="fas fa-user nav-item" onclick="window.location.href='profile.html'"></i>
         </div>
+
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        let currentUser = null, currentVideoKeyForComments = null;
-        let globalAds = []; 
-        let siteSettings = { favicon: "https://ibb.co/ZsDDGHQ", defaultProfile: "https://ibb.co/ZsDDGHQ" };
+        let currentUser = null;
 
-        window.toggleProfileMenu = (e) => { e.stopPropagation(); const m = document.getElementById('profileDropdown'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; };
-        window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
-        window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
-
-        window.togglePlay = (overlay) => {
-            const card = overlay.parentElement;
-            // Check if audio or video
-            const media = card.querySelector('video') || card.querySelector('audio');
-            
-            if(media.paused) { 
-                media.play(); 
-                card.classList.add('playing'); // For animation
-            } else { 
-                media.pause(); 
-                card.classList.remove('playing');
-            }
-        };
-
-        window.toggleMute = (btn) => {
-            const card = btn.parentElement;
-            const media = card.querySelector('video') || card.querySelector('audio');
-            media.muted = !media.muted;
-            btn.innerHTML = media.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) { 
-                currentUser = user; 
-                const uSnap = await get(ref(db, 'users/' + user.uid));
-                if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
-                
-                onValue(ref(db, 'site_settings'), snap => {
-                    if(snap.exists()) {
-                        siteSettings = snap.val();
-                        if(siteSettings.favicon) {
-                            const newFav = siteSettings.favicon + "?t=" + new Date().getTime();
-                            document.getElementById('fav1').href = newFav;
-                            document.getElementById('fav2').href = newFav;
-                            document.getElementById('fav3').href = newFav;
-                        }
-                    }
-                });
-
-                onValue(ref(db, 'admin_ads'), (snap) => {
-                    globalAds = snap.exists() ? Object.values(snap.val()) : [];
-                });
-
-                loadVideos();
-            } else { signInWithPopup(auth, new GoogleAuthProvider()); }
+        onAuthStateChanged(auth, user => {
+            if (user) { currentUser = user; loadVideos(); }
         });
 
         function loadVideos() {
-            const urlParams = new URLSearchParams(window.location.search);
-            let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
-
+            const feed = document.getElementById('feed');
+            
             onValue(ref(db, 'gameplay_clips'), (snap) => {
-                const feed = document.getElementById('feed'); feed.innerHTML = "";
                 if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                 
-                if (globalAds.length > 0) { renderAd(feed, globalAds[0]); }
-
+                feed.innerHTML = "";
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
+                videos.sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
-                    const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
-                    
-                    let mediaHtml = "";
-                    let badgeHtml = "";
+                    const div = document.createElement('div');
+                    div.className = "video-card";
+                    div.setAttribute('data-id', item.key);
 
-                    // --- CHECK IF AUDIO OR VIDEO ---
-                    if (item.isAudio) {
-                        badgeHtml = `<div class="audio-tag">MUSIC</div>`;
-                        mediaHtml = `
-                            <div class="vinyl-wrapper">
-                                <div class="vinyl-disc"></div>
-                                <div class="vinyl-cover" style="background-image: url('${siteSettings.defaultProfile}');"></div>
-                            </div>
-                            <div class="music-waves">
-                                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
-                            </div>
-                            <audio src="${item.videoUrl}" loop class="reel-audio" style="display:none;"></audio>
-                        `;
-                    } else {
-                        let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
-                        badgeHtml = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
-                        const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
-                        mediaHtml = `
-                            <div class="video-loader" id="loader-${item.key}"></div>
-                            <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
-                            ${musicHtml ? musicHtml.replace('div', 'span style="display:none"') : ''} 
-                        `;
-                    }
+                    // --- SMART LOGIC ---
+                    let videoUrl = item.videoUrl;
+                    if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_80,w_720/"); 
                     
+                    const filterClass = item.filter ? `f-${item.filter}` : '';
+                    const isRemix = item.remixUrl ? true : false; 
+                    
+                    // --- HTML STRUCTURE ---
                     div.innerHTML = `
-                        ${badgeHtml}
-                        ${mediaHtml}
-                        <div class="invisible-play-layer" onclick="window.togglePlay(this)"></div>
-                        <div id="mute-icon-${item.key}" class="mute-indicator"><i class="fas fa-volume-mute"></i></div>
+                        <video src="${videoUrl}" class="${filterClass}" loop playsinline preload="metadata"></video>
+                        ${isRemix ? `<audio src="${item.remixUrl}" loop></audio>` : ''}
+                        
+                        <div class="touch-layer" onclick="togglePlay(this)"></div>
+                        <div class="play-icon"><i class="fas fa-play"></i></div>
 
                         <div class="sidebar">
-                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
-                            <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
-                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
+                            <div class="action-btn" onclick="window.location.href='profile.html?uid=${item.uid}'">
+                                <img src="https://via.placeholder.com/40" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white;">
+                            </div>
+                            <button class="action-btn" onclick="handleLike('${item.key}')">
+                                <i class="fas fa-heart" id="like-icon-${item.key}"></i>
+                                <span id="like-count-${item.key}">0</span>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-comment-dots"></i>
+                                <span>0</span>
+                            </button>
+                            <button class="action-btn" onclick="useSound('${item.remixUrl || item.videoUrl}')">
+                                <i class="fas fa-compact-disc"></i>
+                                <span>Remix</span>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-share"></i>
+                                <span>Share</span>
+                            </button>
                         </div>
+
                         <div class="video-info">
-                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
-                            <div style="font-size:14px; color:#eee;">${item.caption}</div>
+                            <div class="username" id="name-${item.key}">@...</div>
+                            <div class="caption">${item.caption}</div>
+                            <div class="music-marquee">
+                                <i class="fas fa-music music-icon-anim"></i> 
+                                <span class="marquee-track">${item.caption ? item.caption : 'Original Sound'} - ${item.uploader} &nbsp;&nbsp;&nbsp;&nbsp; ${item.caption ? item.caption : 'Original Sound'}</span>
+                            </div>
+                        </div>
+
+                        <div class="disc-area" id="disc-anim-${item.key}">
+                            <div class="disc-bg" id="disc-bg-${item.key}"></div>
                         </div>
                     `;
-                    onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
-                        if(uSnap.exists()) {
-                            const u = uSnap.val();
-                            document.getElementById(`pic-${item.key}`).src = u.photo || siteSettings.defaultProfile;
-                            document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
-                            // Set Vinyl Cover if Audio
-                            if(item.isAudio) {
-                                const cover = div.querySelector('.vinyl-cover');
-                                if(cover) cover.style.backgroundImage = `url('${u.photo || siteSettings.defaultProfile}')`;
-                            }
-                        } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
+
+                    // Load User Info & Update Disc
+                    onValue(ref(db, 'users/' + item.uid), uSnap => {
+                        const u = uSnap.val() || {};
+                        const pic = u.photo || "https://ibb.co/ZsDDGHQ";
+                        document.getElementById(`pic-${item.key}`).src = pic;
+                        document.getElementById(`name-${item.key}`).innerText = `@${u.username || item.uploader}`;
+                        // Set Disc Image
+                        document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
                     });
-                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-                    onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
+
+                    // Likes Logic
+                    onValue(ref(db, `gameplay_likes/${item.key}`), s => {
+                        document.getElementById(`like-count-${item.key}`).innerText = s.size || 0;
+                        document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
+                    });
+
                     feed.appendChild(div);
                 });
+
                 setupObserver();
             });
         }
 
-        function renderAd(feed, ad) {
-            const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
-            adDiv.innerHTML = `
-                <div class="ad-tag">SPONSORED</div>
-                <div class="top-mute-btn" onclick="window.toggleMute(this)"><i class="fas fa-volume-mute"></i></div>
-                <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
-                <div class="invisible-play-layer" onclick="window.togglePlay(this)"></div>
-                <div class="video-info">
-                    <div class="user-row">
-                        <img src="" id="ad-pic-top" class="feed-profile-pic">
-                        <div class="uploader-name" id="ad-name-top">...</div>
-                    </div>
-                    <div style="font-size:14px; color:#eee;">${ad.caption}</div>
-                    <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
-                </div>
-            `;
-            const sponsorUid = ad.uid;
-            if(sponsorUid && sponsorUid !== 'admin') {
-                onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
-                    if(uSnap.exists()) {
-                        const u = uSnap.val();
-                        document.getElementById('ad-pic-top').src = u.photo || siteSettings.defaultProfile;
-                        document.getElementById('ad-name-top').innerText = `@${u.username}`;
-                    } else { setAdminProfile(); }
+        // --- GLOBAL FUNCTIONS ---
+        window.togglePlay = (layer) => {
+            const card = layer.parentElement;
+            const video = card.querySelector('video');
+            const audio = card.querySelector('audio');
+            const icon = card.querySelector('.play-icon');
+            const discAnim = card.querySelector('.disc-bg');
+
+            if (video.paused) {
+                video.play();
+                if(audio) { video.muted = true; audio.play(); } 
+                icon.style.opacity = 0;
+                card.classList.add('playing');
+                card.classList.remove('paused');
+            } else {
+                video.pause();
+                if(audio) audio.pause();
+                icon.style.opacity = 0.8;
+                card.classList.add('paused');
+                card.classList.remove('playing');
+            }
+        };
+
+        window.handleLike = (key) => {
+            const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`);
+            get(r).then(s => s.exists() ? remove(r) : set(r, true));
+        };
+        
+        window.useSound = (url) => {
+            alert("Use this Sound feature coming soon in Studio!");
+            // Future logic: Redirect to upload.html?sound=url
+        };
+
+        // --- OBSERVER (AUTO SCROLL PLAY) ---
+        function setupObserver() {
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const card = entry.target;
+                    const video = card.querySelector('video');
+                    const audio = card.querySelector('audio');
+                    
+                    if (entry.isIntersecting) {
+                        video.play().catch(()=>{});
+                        if(audio) { video.muted = true; audio.play().catch(()=>{}); }
+                        card.classList.add('playing');
+                    } else {
+                        video.pause();
+                        video.currentTime = 0;
+                        if(audio) { audio.pause(); audio.currentTime = 0; }
+                        card.classList.remove('playing');
+                    }
                 });
-            } else { setAdminProfile(); }
-            feed.appendChild(adDiv);
+            }, { threshold: 0.6 }); 
+
+            document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
         }
 
-        function setAdminProfile() {
-            setTimeout(() => {
-                const img = document.getElementById('ad-pic-top');
-                const name = document.getElementById('ad-name-top');
-                if(img) img.src = siteSettings.defaultProfile;
-                if(name) name.innerText = "ParaVideo Team";
-            }, 100);
-        }
-
-        function setupObserver() { 
-            const obs = new IntersectionObserver(entries => { 
-                entries.forEach(entry => { 
-                    const media = entry.target.querySelector('video') || entry.target.querySelector('audio');
-                    if(entry.isIntersecting) { 
-                        if(media) {
-                            media.play();
-                            entry.target.classList.add('playing');
-                        }
-                        window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`); 
-                    } else { 
-                        if(media) {
-                            media.pause();
-                            entry.target.classList.remove('playing');
-                        }
-                    } 
-                }); 
-            }, {threshold: 0.6}); 
-            document.querySelectorAll('.video-card').forEach(card => obs.observe(card)); 
-        }
-
-        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
-        window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = async () => { const t = document.getElementById('commentInput').value; if(t) { const uSnap = await get(ref(db, 'users/' + currentUser.uid)); const realName = uSnap.exists() ? uSnap.val().username : "User"; push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
-        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
-        window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); };
     </script>
 </body>
 </html>
