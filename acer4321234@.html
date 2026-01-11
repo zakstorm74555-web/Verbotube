@@ -2,361 +2,225 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ParaVideo - Short Video Platform</title>
-    <link rel="icon" id="dynamicFavicon" href="https://ibb.co/ZsDDGHQ">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParaVideo - Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
-        * { box-sizing: border-box; }
-        body { background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow: hidden; }
-
-        @media (min-width: 768px) {
-            body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-            #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
-            header, .comments-modal, .modal { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
-        }
-
-        header { background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); padding: 10px 15px; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .header-logo { font-size: 20px; font-weight: bold; color: white; }
-
-        .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-        .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: contain; cursor: pointer; background: #000; }
-        
-        /* --- ADMIN AD CARD --- */
-        .admin-ad-card { 
-            background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
-            display: flex; align-items: center; justify-content: center;
-            border-bottom: 2px solid #222;
-        }
-        
-        /* Sponsored Tag (Moved to Top Left) */
-        .ad-tag { position: absolute; top: 80px; left: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
-        
-        /* Top Mute Button (Moved to Top Right) */
-        .top-mute-btn {
-            position: absolute; top: 80px; right: 15px;
-            background: rgba(0,0,0,0.6); color: white;
-            width: 35px; height: 35px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px; z-index: 30; cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        /* Invisible Play Overlay (Center) */
-        .invisible-play-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 85%; /* Leaves bottom 15% for buttons */
-            z-index: 25; background: transparent;
-        }
-
-        /* Center Play Status Icon (Fades in/out) */
-        .center-status-icon {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 50px; color: rgba(255,255,255,0.8); pointer-events: none;
-            opacity: 0; transition: opacity 0.3s; z-index: 26;
-            background: rgba(0,0,0,0.4); padding: 20px; border-radius: 50%;
-        }
-
-        .ad-cta-btn {
-            background: #8a2be2; color: white; border: none;
-            padding: 10px; width: 100%; border-radius: 5px;
-            font-weight: bold; font-size: 14px; cursor: pointer;
-            text-transform: uppercase; margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4);
-            animation: pulse 2s infinite; pointer-events: auto;
-        }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-
-        .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
-        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .action-btn span { font-size: 12px; margin-top: 3px; font-weight: 600; }
-        .liked { color: #ff0055 !important; }
-
-        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; z-index: 28; }
-        .video-info * { pointer-events: auto; }
-        .user-row { display: flex; align-items: center; gap: 10px; }
-        .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
-        .uploader-name { font-weight: bold; color: white; font-size: 16px; cursor: pointer; }
-        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 6px; opacity: 0.9; cursor: pointer; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: #1a1a1a; width: 95%; max-width: 420px; padding: 20px; border-radius: 15px; text-align: center; }
-        .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 1500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease; border-top: 1px solid #333; display: flex; flex-direction: column; }
-        .comments-modal.active { bottom: 0; }
-        .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .profile-dropdown { position: absolute; top: 50px; right: 15px; background: #222; border: 1px solid #444; border-radius: 10px; width: 150px; display: none; flex-direction: column; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-        .dropdown-item { padding: 12px 15px; font-size: 14px; color: white; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; }
-        .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .active-tab { background: #8a2be2; }
-        input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; outline: none; }
-        .btn-main { width: 100%; background: #8a2be2; border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; }
-        .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
-        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        body { background: #111; color: white; font-family: 'Segoe UI', monospace; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; }
+        .title { font-size: 24px; color: #8a2be2; font-weight: bold; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 10px 20px; cursor: pointer; }
+        .tab-btn.active { background: #8a2be2; color: white; border-color: #8a2be2; font-weight: bold; }
+        .section { display: none; background: #1a1a1a; padding: 20px; border: 1px solid #333; }
+        .section.active { display: block; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding: 12px 0; }
+        .user-info { display: flex; gap: 10px; align-items: center; }
+        .u-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #444; }
+        input, select { background: #000; border: 1px solid #444; color: white; padding: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .action-btn { background: #8a2be2; border: none; color: white; padding: 8px 15px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .btn-del { background: #333; color: #ff4444; border: 1px solid #555; margin-left: 5px; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index: 2000; }
+        .modal-box { background:#222; padding:20px; width:90%; max-width: 400px; border-radius: 10px; border: 1px solid #8a2be2; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
+        label { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="appScreen">
-        <header>
-            <div class="header-logo">PARA<span style="color:#8a2be2;">VIDEO</span></div>
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="fas fa-plus-square" onclick="window.openUpload()" style="font-size:26px; cursor:pointer;"></i>
-                <i class="fas fa-search" onclick="window.location.href='search.html'" style="font-size:20px; cursor:pointer;"></i>
-                <img src="" id="myPic" onclick="window.toggleProfileMenu(event)" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
-            </div>
-        </header>
-
-        <div id="profileDropdown" class="profile-dropdown">
-            <div class="dropdown-item" onclick="window.location.href='profile.html'"><i class="fas fa-user"></i> Profile</div>
-            <div class="dropdown-item" style="color:#ff4444;" onclick="window.logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    <div class="container">
+        <div class="header">
+            <div class="title">PARA<span style="color:white;">VIDEO</span> ADMIN</div>
+            <div id="status" style="color:gray;">Checking...</div>
         </div>
 
-        <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading...</p>
+        <div id="loginWarning" style="text-align:center; margin-top:50px; display:none;">
+            <h2>ACCESS DENIED</h2>
+            <button onclick="login()" class="action-btn">Login Admin</button>
         </div>
 
-        <div id="uploadModal" class="modal">
-            <div class="modal-content">
-                <span style="position:absolute; top:15px; right:20px; cursor:pointer; font-size:24px;" onclick="window.closeUpload()">&times;</span>
-                <h3 style="color:#8a2be2;">Create Post</h3>
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <button id="galTab" class="tab-btn active-tab" onclick="window.switchTab('gallery')">Gallery</button>
-                    <button id="camTab" class="tab-btn" onclick="window.switchTab('camera')">Camera</button>
-                </div>
-                <div id="gallery-section"><input type="file" id="videoFile" accept="video/*" style="color:white; width:100%;"></div>
-                <div id="camera-section" style="display:none;">
-                    <video id="camera-preview" autoplay muted playsinline style="width:100%; height:180px; background:black; border-radius:10px; margin-bottom:10px;"></video>
-                    <div id="recBtn" style="width:45px; height:45px; background:red; border-radius:50%; margin:0 auto 10px; cursor:pointer; border:2px solid white;" onclick="window.toggleRecording()"></div>
-                </div>
-                <input type="text" id="caption" placeholder="Caption...">
-                <input type="text" id="ytLink" placeholder="YouTube Music Link (Optional)">
-                <input type="number" id="startTime" placeholder="Music Start Time (Seconds)">
-                <div id="progress" style="display:none; width:100%; height:5px; background:#333; margin-bottom:10px;"><div id="bar" style="height:100%; width:0%; background:#8a2be2;"></div></div>
-                <button class="btn-main" id="postBtn" onclick="window.uploadVideo()">POST VIDEO</button>
+        <div id="adminPanel" style="display:none;">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('users', this)">Users & Badges</button>
+                <button class="tab-btn" onclick="switchTab('ads', this)">Ads Manager</button>
+                <button class="tab-btn" onclick="switchTab('settings', this)">Site Settings</button>
+            </div>
+
+            <div id="users" class="section active">
+                <h3>Manage Users</h3>
+                <input type="text" id="userSearch" placeholder="Search..." onkeyup="filterUsers()">
+                <div id="userList">Loading users...</div>
+            </div>
+
+            <div id="ads" class="section">
+                <h3>Create Ad</h3>
+                <label>Sponsored By (Select User):</label>
+                <select id="adSponsor"><option value="admin">ParaVideo Team (Default)</option></select>
+                <input type="file" id="adFile" accept="video/*">
+                <input type="text" id="adCaption" placeholder="Ad Caption">
+                <input type="text" id="adBtnText" placeholder="Button Text">
+                <input type="text" id="adLink" placeholder="Link URL">
+                <input type="number" id="adTime" placeholder="24" value="24">
+                <div id="progress" style="width:0%; height:5px; background:#8a2be2; margin-bottom:10px;"></div>
+                <button class="action-btn" style="width:100%;" onclick="postAd()">LAUNCH AD</button>
+                <h4 style="margin-top:20px;">Active Ads</h4>
+                <div id="activeAdsList"></div>
+            </div>
+
+            <div id="settings" class="section">
+                <h3>Site Settings</h3>
+                <label>Admin/Team Profile Picture:</label>
+                <input type="file" id="settingProfile" accept="image/*">
+                <button class="action-btn" onclick="uploadSetting('profile')">Update Profile Pic</button>
+                <img id="previewProfile" style="width:50px; height:50px; border-radius:50%; margin-top:5px; border:1px solid white; display:block;">
+
+                <hr style="border-color:#333; margin:20px 0;">
+
+                <label>Site Favicon (Browser Icon):</label>
+                <input type="file" id="settingFavicon" accept="image/*">
+                <button class="action-btn" onclick="uploadSetting('favicon')">Update Favicon</button>
+                <img id="previewFavicon" style="width:32px; height:32px; margin-top:5px; display:block;">
             </div>
         </div>
+    </div>
 
-        <div class="comments-modal" id="commentsModal">
-            <div style="padding:15px; border-bottom:1px solid #333; display:flex; justify-content:space-between; font-weight:bold;"><span>Comments</span><i class="fas fa-times" onclick="window.closeComments()"></i></div>
-            <div class="comments-list" id="commentsList"></div>
-            <div style="padding:10px; display:flex; gap:10px; background:#000; border-top:1px solid #333;">
-                <input type="text" id="commentInput" placeholder="Add a comment..." style="flex:1; background:#222; border:none; padding:12px; color:white; border-radius:20px; outline:none; margin-bottom:0;">
-                <button onclick="window.postComment()" style="color:#8a2be2; background:none; border:none; font-weight:bold;">Post</button>
-            </div>
+    <div id="badgeModal" class="modal">
+        <div class="modal-box">
+            <span class="close-btn" onclick="closeBadgeModal()">&times;</span>
+            <h3>Set Badge</h3>
+            <input type="hidden" id="targetUid">
+            <select id="badgeType"><option value="text">Text Badge</option></select>
+            <input type="text" id="badgeText" maxlength="10" placeholder="Text Label">
+            <input type="color" id="badgeColor" value="#8a2be2" style="height:40px;">
+            <button onclick="saveBadge()" class="action-btn" style="width:100%; margin-top:10px;">SAVE BADGE</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, set, onValue, get, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
+        
+        const ADMIN_EMAIL = "elitegamer859650@gmail.com";
+        const CLOUD_NAME = "dusj0vpsi"; const UPLOAD_PRESET = "paravideo";
 
-        let currentUser = null, currentVideoKeyForComments = null;
-        let globalAds = []; 
-        let siteSettings = { favicon: "https://ibb.co/ZsDDGHQ", defaultProfile: "https://ibb.co/ZsDDGHQ" };
+        window.login = () => signInWithPopup(auth, new GoogleAuthProvider());
 
-        window.toggleProfileMenu = (e) => { e.stopPropagation(); const m = document.getElementById('profileDropdown'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; };
-        window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
-        window.logoutUser = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
-
-        // --- NEW: PLAY/PAUSE LOGIC (INVISIBLE BTN) ---
-        window.togglePlay = (overlay) => {
-            const card = overlay.parentElement;
-            const video = card.querySelector('video');
-            const icon = card.querySelector('.center-status-icon');
-            
-            if(video.paused) {
-                video.play();
-                icon.innerHTML = '<i class="fas fa-play"></i>';
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email.toLowerCase() === ADMIN_EMAIL) {
+                document.getElementById('status').innerText = "ONLINE";
+                document.getElementById('status').style.color = "#00ff00";
+                document.getElementById('adminPanel').style.display = "block";
+                document.getElementById('loginWarning').style.display = "none";
+                loadUsersAndSponsors();
+                loadAds();
+                loadSettings(); // NEW
             } else {
-                video.pause();
-                icon.innerHTML = '<i class="fas fa-pause"></i>';
+                document.getElementById('status').innerText = "Access Denied";
+                document.getElementById('loginWarning').style.display = "block";
+                document.getElementById('adminPanel').style.display = "none";
             }
-            // Show Icon briefly
-            icon.style.opacity = 1;
-            setTimeout(() => icon.style.opacity = 0, 800);
-        };
-
-        // --- NEW: MUTE TOGGLE (TOP RIGHT BTN) ---
-        window.toggleMute = (btn) => {
-            const card = btn.parentElement;
-            const video = card.querySelector('video');
-            video.muted = !video.muted;
-            btn.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) { 
-                currentUser = user; 
-                const uSnap = await get(ref(db, 'users/' + user.uid));
-                if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
-                
-                onValue(ref(db, 'site_settings'), snap => {
-                    if(snap.exists()) {
-                        siteSettings = snap.val();
-                        if(siteSettings.favicon) document.getElementById('dynamicFavicon').href = siteSettings.favicon;
-                    }
-                });
-
-                onValue(ref(db, 'admin_ads'), (snap) => {
-                    globalAds = snap.exists() ? Object.values(snap.val()) : [];
-                });
-
-                loadVideos();
-            } else { signInWithPopup(auth, new GoogleAuthProvider()); }
         });
 
-        function loadVideos() {
-            const urlParams = new URLSearchParams(window.location.search);
-            let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
+        // --- NEW: SETTINGS LOGIC ---
+        window.uploadSetting = (type) => {
+            const fileInput = document.getElementById(type === 'profile' ? 'settingProfile' : 'settingFavicon');
+            const file = fileInput.files[0];
+            if(!file) return alert("Select Image!");
 
-            onValue(ref(db, 'gameplay_clips'), (snap) => {
-                const feed = document.getElementById('feed'); feed.innerHTML = "";
-                if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+            const btn = event.target; btn.disabled = true; btn.innerText = "Uploading...";
+            const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
+
+            fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: fd })
+            .then(res => res.json())
+            .then(data => {
+                const updates = {};
+                if(type === 'profile') updates.defaultProfile = data.secure_url;
+                if(type === 'favicon') updates.favicon = data.secure_url;
                 
-                // --- AD AT TOP ---
-                if (globalAds.length > 0) { renderAd(feed, globalAds[0]); }
-
-                let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
-
-                videos.forEach(item => {
-                    const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
-                    let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
-                    const hdBadge = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
-                    const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
-                    
-                    div.innerHTML = `
-                        <div class="video-loader" id="loader-${item.key}"></div>
-                        ${hdBadge}
-                        <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
-                        
-                        <div class="invisible-play-layer" onclick="window.togglePlay(this)"></div>
-                        <div class="center-status-icon"><i class="fas fa-play"></i></div>
-
-                        <div class="sidebar">
-                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
-                            <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
-                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
-                        </div>
-                        <div class="video-info">
-                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
-                            <div style="font-size:14px; color:#eee;">${item.caption}</div>
-                            ${musicHtml}
-                        </div>
-                    `;
-                    onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
-                        if(uSnap.exists()) {
-                            const u = uSnap.val();
-                            document.getElementById(`pic-${item.key}`).src = u.photo || siteSettings.defaultProfile;
-                            document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
-                        } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
-                    });
-                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-                    onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
-                    feed.appendChild(div);
+                update(ref(db, 'site_settings'), updates).then(() => {
+                    alert("Updated!");
+                    btn.disabled = false; btn.innerText = "Update";
                 });
-                setupObserver();
+            });
+        };
+
+        function loadSettings() {
+            onValue(ref(db, 'site_settings'), snap => {
+                if(snap.exists()) {
+                    const v = snap.val();
+                    if(v.defaultProfile) document.getElementById('previewProfile').src = v.defaultProfile;
+                    if(v.favicon) document.getElementById('previewFavicon').src = v.favicon;
+                }
             });
         }
 
-        function renderAd(feed, ad) {
-            const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
-            adDiv.innerHTML = `
-                <div class="ad-tag">SPONSORED</div>
-                <div class="top-mute-btn" onclick="window.toggleMute(this)"><i class="fas fa-volume-mute"></i></div>
-                
-                <video src="${ad.videoUrl}" autoplay loop muted playsinline class="ad-img"></video>
-                
-                <div class="invisible-play-layer" onclick="window.togglePlay(this)"></div>
-                <div class="center-status-icon"><i class="fas fa-play"></i></div>
-
-                <div class="video-info">
-                    <div class="user-row">
-                        <img src="" id="ad-pic-top" class="feed-profile-pic">
-                        <div class="uploader-name" id="ad-name-top">...</div>
-                    </div>
-                    <div style="font-size:14px; color:#eee;">${ad.caption}</div>
-                    <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
-                </div>
-            `;
-            const sponsorUid = ad.uid;
-            if(sponsorUid && sponsorUid !== 'admin') {
-                onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
-                    if(uSnap.exists()) {
-                        const u = uSnap.val();
-                        document.getElementById('ad-pic-top').src = u.photo || siteSettings.defaultProfile;
-                        document.getElementById('ad-name-top').innerText = `@${u.username}`;
-                    } else { setAdminProfile(); }
-                });
-            } else { setAdminProfile(); }
-            feed.appendChild(adDiv);
+        // ... (Keep existing Users/Ads functions: postAd, deleteAd, loadUsersAndSponsors, etc.) ...
+        // Note: For brevity, I assumed you kept the previous functions. 
+        // Ensure switchTab works:
+        window.switchTab = (t, btn) => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+            btn.classList.add('active');
         }
-
-        function setAdminProfile() {
-            setTimeout(() => {
-                const img = document.getElementById('ad-pic-top');
-                const name = document.getElementById('ad-name-top');
-                if(img) img.src = siteSettings.defaultProfile;
-                if(name) name.innerText = "ParaVideo Team";
-            }, 100);
-        }
-
-        function setupObserver() { const obs = new IntersectionObserver(entries => { entries.forEach(entry => { const v = entry.target.querySelector('video'); if(entry.isIntersecting) { if(v) v.play(); window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`); } else { if(v) v.pause(); } }); }, {threshold: 0.6}); document.querySelectorAll('.video-card').forEach(card => obs.observe(card)); }
         
-        let mediaRecorder, chunks = [], stream, camFile = null;
-        window.switchTab = async (tab) => {
-            document.getElementById('galTab').className = tab === 'gallery' ? 'tab-btn active-tab' : 'tab-btn';
-            document.getElementById('camTab').className = tab === 'camera' ? 'tab-btn active-tab' : 'tab-btn';
-            document.getElementById('gallery-section').style.display = tab === 'gallery' ? 'block' : 'none';
-            document.getElementById('camera-section').style.display = tab === 'camera' ? 'block' : 'none';
-            if(tab === 'camera') { stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); document.getElementById('camera-preview').srcObject = stream; } 
-            else if(stream) stream.getTracks().forEach(t => t.stop());
+        // Re-adding postAd/deleteAd/loadAds for completeness if you replaced the whole file:
+        window.postAd = () => {
+            const file = document.getElementById('adFile').files[0];
+            const sponsorUid = document.getElementById('adSponsor').value;
+            if(!file) return alert("Select Video");
+            const btn = event.target; btn.disabled = true; btn.innerText = "Uploading...";
+            const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+            xhr.upload.onprogress = e => document.getElementById('progress').style.width = (e.loaded/e.total)*100+"%";
+            xhr.onload = async () => {
+                const url = JSON.parse(xhr.responseText).secure_url;
+                await push(ref(db, 'admin_ads'), {
+                    uid: sponsorUid,
+                    videoUrl: url,
+                    caption: document.getElementById('adCaption').value,
+                    btnText: document.getElementById('adBtnText').value || "Visit",
+                    link: document.getElementById('adLink').value,
+                    expiry: Date.now() + (document.getElementById('adTime').value * 3600000)
+                });
+                alert("Ad Launched!"); location.reload();
+            };
+            xhr.send(fd);
         };
-        window.toggleRecording = () => {
-            const btn = document.getElementById('recBtn');
-            if(!mediaRecorder || mediaRecorder.state === "inactive") {
-                mediaRecorder = new MediaRecorder(stream); chunks = [];
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => { camFile = new File([new Blob(chunks, {type: 'video/mp4'})], "cam.mp4", {type:'video/mp4'}); alert("Recorded!"); };
-                mediaRecorder.start(); btn.style.background = "white";
-            } else { mediaRecorder.stop(); btn.style.background = "red"; }
-        };
-        window.uploadVideo = async () => {
-            const file = camFile || document.getElementById('videoFile').files[0];
-            if(!file) return alert("Select video");
-            if(file.size < 400000) return alert("❌ Quality too low!");
-            const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const realName = uSnap.exists() ? uSnap.val().username : "User";
-            const vidMeta = document.createElement('video'); vidMeta.preload = 'metadata';
-            vidMeta.onloadedmetadata = () => {
-                const isHD = (vidMeta.videoWidth >= 1280 || vidMeta.videoHeight >= 720);
-                const btn = document.getElementById('postBtn'); btn.disabled = true; btn.innerText = "Uploading...";
-                const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
-                const xhr = new XMLHttpRequest(); xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
-                xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
-                xhr.onload = async () => {
-                    const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realName, uid: currentUser.uid, timestamp: Date.now() });
-                    location.reload();
-                }; xhr.send(fd);
-            }; vidMeta.src = URL.createObjectURL(file);
-        };
-        window.openUpload = () => document.getElementById('uploadModal').style.display = 'flex';
-        window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
-        window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
-        window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = async () => { const t = document.getElementById('commentInput').value; if(t) { const uSnap = await get(ref(db, 'users/' + currentUser.uid)); const realName = uSnap.exists() ? uSnap.val().username : "User"; push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
-        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
-        window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); };
+        window.deleteAd = async (key) => { if(confirm("Stop Ad?")) await remove(ref(db, `admin_ads/${key}`)); };
+        function loadAds() {
+            onValue(ref(db, 'admin_ads'), snap => {
+                const div = document.getElementById('activeAdsList'); div.innerHTML = "";
+                if(!snap.exists()) { div.innerHTML = "<p>No active ads.</p>"; return; }
+                snap.forEach(c => div.innerHTML += `<div class="user-item"><div>${c.val().caption || "Ad"}</div><button class="action-btn btn-del" onclick="window.deleteAd('${c.key}')">STOP</button></div>`);
+            });
+        }
+        function loadUsersAndSponsors() {
+             onValue(ref(db, 'users'), (snap) => {
+                const list = document.getElementById('userList');
+                const sponsorSelect = document.getElementById('adSponsor');
+                list.innerHTML = "";
+                sponsorSelect.innerHTML = '<option value="admin">ParaVideo Team (Default)</option>';
+                if(!snap.exists()) return;
+                snap.forEach(child => {
+                    const u = child.val();
+                    const option = document.createElement('option');
+                    option.value = child.key;
+                    option.innerText = u.username;
+                    sponsorSelect.appendChild(option);
+                    list.innerHTML += `<div class="user-item"><div class="user-info"><img src="${u.photo||''}" class="u-pic"><div><b>${u.username}</b></div></div></div>`;
+                });
+            });
+        }
     </script>
 </body>
 </html>
