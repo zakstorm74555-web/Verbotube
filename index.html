@@ -18,7 +18,7 @@
         }
 
         header { background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); padding: 10px 15px; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
-        .header-logo { font-size: 20px; font-weight: bold; color: white; }
+        .header-logo { font-size: 20px; font-weight: bold; color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
         .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         .video-card { background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
@@ -28,52 +28,53 @@
         .admin-ad-card { 
             background: #000; width: 100%; height: 100vh; position: relative; scroll-snap-align: start; 
             display: flex; align-items: center; justify-content: center;
-            border-bottom: 2px solid #222;
+            border-bottom: 1px solid #222;
         }
-        .ad-tag { position: absolute; top: 80px; right: 15px; background: #ffcc00; color: #000; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; z-index: 20; box-shadow: 0 0 5px rgba(255, 204, 0, 0.8); }
+        .ad-tag { position: absolute; top: 70px; right: 15px; background: #ffcc00; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; z-index: 20; }
         .ad-cta-btn {
             background: #8a2be2; color: white; border: none;
-            padding: 10px; width: 100%; border-radius: 5px;
-            font-weight: bold; font-size: 14px; cursor: pointer;
-            text-transform: uppercase; margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4);
+            padding: 8px 12px; width: 100%; border-radius: 4px;
+            font-weight: bold; font-size: 13px; cursor: pointer;
+            text-transform: uppercase; margin-top: 8px;
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        /* Volume Icon Overlay for Ad */
-        .unmute-hint {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.6); padding: 15px; border-radius: 50%;
-            font-size: 30px; pointer-events: none; opacity: 0; transition: opacity 0.3s;
-        }
-
-        .hd-tag { position: absolute; top: 80px; left: 15px; background: rgba(0,0,0,0.5); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
-        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .action-btn span { font-size: 12px; margin-top: 3px; font-weight: 600; }
+        /* UI ELEMENTS */
+        .hd-tag { position: absolute; top: 70px; left: 15px; background: rgba(0,0,0,0.6); color: #00FF00; border: 1px solid #00FF00; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10; }
+        
+        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 10; text-shadow: 1px 1px 2px black; }
+        .action-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 0; }
+        .action-btn span { font-size: 11px; margin-top: 2px; font-weight: 600; }
         .liked { color: #ff0055 !important; }
 
-        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 20px; padding-bottom: 40px; pointer-events: none; }
+        .video-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 15px; padding-bottom: 25px; pointer-events: none; }
         .video-info * { pointer-events: auto; }
-        .user-row { display: flex; align-items: center; gap: 10px; }
-        .feed-profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
-        .uploader-name { font-weight: bold; color: white; font-size: 16px; cursor: pointer; }
-        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 6px; opacity: 0.9; cursor: pointer; }
+        .user-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+        .feed-profile-pic { width: 32px; height: 32px; border-radius: 50%; border: 1px solid white; object-fit: cover; }
+        .uploader-name { font-weight: bold; color: white; font-size: 15px; cursor: pointer; }
+        .music-bar { font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 6px; margin-top: 5px; opacity: 0.9; cursor: pointer; }
 
+        /* LOADING SPINNER */
+        .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* MODALS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1a1a1a; width: 95%; max-width: 420px; padding: 20px; border-radius: 15px; text-align: center; }
+        
         .comments-modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 60vh; background: #111; z-index: 1500; border-radius: 20px 20px 0 0; transition: bottom 0.3s ease; border-top: 1px solid #333; display: flex; flex-direction: column; }
         .comments-modal.active { bottom: 0; }
         .comments-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .profile-dropdown { position: absolute; top: 50px; right: 15px; background: #222; border: 1px solid #444; border-radius: 10px; width: 150px; display: none; flex-direction: column; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-        .dropdown-item { padding: 12px 15px; font-size: 14px; color: white; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 10px; }
+        
+        .profile-dropdown { position: absolute; top: 50px; right: 15px; background: #222; border: 1px solid #444; border-radius: 10px; width: 140px; display: none; flex-direction: column; z-index: 2000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .dropdown-item { padding: 12px 15px; font-size: 13px; color: white; cursor: pointer; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 8px; }
+        
+        /* FORM ELEMENTS */
         .tab-btn { flex: 1; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .active-tab { background: #8a2be2; }
         input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; margin-bottom: 10px; outline: none; }
         .btn-main { width: 100%; background: #8a2be2; border: none; padding: 12px; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; }
-        .video-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.1); border-left-color: #8a2be2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 5; }
-        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -82,9 +83,9 @@
         <header>
             <div class="header-logo">PARA<span style="color:#8a2be2;">VIDEO</span></div>
             <div style="display:flex; gap:15px; align-items:center;">
-                <i class="fas fa-plus-square" onclick="window.openUpload()" style="font-size:26px; cursor:pointer;"></i>
-                <i class="fas fa-search" onclick="window.location.href='search.html'" style="font-size:20px; cursor:pointer;"></i>
-                <img src="" id="myPic" onclick="window.toggleProfileMenu(event)" style="width:32px; height:32px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
+                <i class="fas fa-plus-square" onclick="window.openUpload()" style="font-size:24px; cursor:pointer;"></i>
+                <i class="fas fa-search" onclick="window.location.href='search.html'" style="font-size:18px; cursor:pointer;"></i>
+                <img src="" id="myPic" onclick="window.toggleProfileMenu(event)" style="width:30px; height:30px; border-radius:50%; border:2px solid #8a2be2; cursor:pointer;">
             </div>
         </header>
 
@@ -94,13 +95,13 @@
         </div>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading...</p>
+            <p style="text-align:center; color:#555; margin-top:50vh;">Loading Videos...</p>
         </div>
 
         <div id="uploadModal" class="modal">
             <div class="modal-content">
                 <span style="position:absolute; top:15px; right:20px; cursor:pointer; font-size:24px;" onclick="window.closeUpload()">&times;</span>
-                <h3 style="color:#8a2be2;">Create Post</h3>
+                <h3 style="color:#8a2be2;">New Post</h3>
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
                     <button id="galTab" class="tab-btn active-tab" onclick="window.switchTab('gallery')">Gallery</button>
                     <button id="camTab" class="tab-btn" onclick="window.switchTab('camera')">Camera</button>
@@ -138,11 +139,10 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         const CLOUD_NAME = "dusj0vpsi", UPLOAD_PRESET = "paravideo";
+        const DEFAULT_FAVICON = "https://ibb.co/ZsDDGHQ";
 
         let currentUser = null, currentVideoKeyForComments = null;
-        
-        // --- FAVICON URL FOR DEFAULT ADMIN PIC ---
-        const DEFAULT_FAVICON = "https://ibb.co/ZsDDGHQ";
+        let globalAds = []; // Store ads globally
 
         window.toggleProfileMenu = (e) => { e.stopPropagation(); const m = document.getElementById('profileDropdown'); m.style.display = (m.style.display === 'flex') ? 'none' : 'flex'; };
         window.onclick = (e) => { if (!e.target.closest('.profile-dropdown') && e.target.id !== 'myPic') document.getElementById('profileDropdown').style.display = 'none'; };
@@ -153,107 +153,112 @@
                 currentUser = user; 
                 const uSnap = await get(ref(db, 'users/' + user.uid));
                 if(uSnap.exists()) document.getElementById('myPic').src = uSnap.val().photo || user.photoURL;
-                loadSmartFeed(); 
+                
+                // 1. Fetch Ads FIRST (Independently)
+                onValue(ref(db, 'admin_ads'), (snap) => {
+                    globalAds = snap.exists() ? Object.values(snap.val()) : [];
+                    console.log("Ads loaded:", globalAds.length);
+                    // If feed is already loaded, we might need to refresh, but for now let's just let the video listener handle render
+                    loadVideos(); 
+                });
+                
             } else { signInWithPopup(auth, new GoogleAuthProvider()); }
         });
 
-        async function loadSmartFeed() {
+        // Separated Video Loader so it doesn't wait for Ads
+        function loadVideos() {
             const urlParams = new URLSearchParams(window.location.search);
             let targetId = urlParams.get('v') || window.location.hash.replace('#v=', '');
-            
-            onValue(ref(db, 'admin_ads'), (adsSnap) => {
-                const currentAds = adsSnap.exists() ? Object.values(adsSnap.val()) : [];
 
-                onValue(ref(db, 'gameplay_clips'), (snap) => {
-                    const feed = document.getElementById('feed'); feed.innerHTML = "";
-                    if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+            onValue(ref(db, 'gameplay_clips'), (snap) => {
+                const feed = document.getElementById('feed'); feed.innerHTML = "";
+                if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+                
+                // --- RENDER AD AT TOP (Safe Check) ---
+                if (globalAds.length > 0) {
+                    renderAd(feed, globalAds[0]);
+                }
+
+                let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
+                videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
+
+                videos.forEach(item => {
+                    const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
+                    let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
+                    const hdBadge = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
+                    const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
                     
-                    // --- 1. SHOW AD AT TOP ---
-                    if (currentAds.length > 0) {
-                        const ad = currentAds[0]; 
-                        const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
-                        
-                        // SOUND FIX: Removed 'muted', added click toggle
-                        adDiv.innerHTML = `
-                            <div class="ad-tag">SPONSORED</div>
-                            <video src="${ad.videoUrl}" autoplay loop playsinline class="ad-img" onclick="this.muted = !this.muted; this.play();"></video>
-                            <div class="unmute-hint"><i class="fas fa-volume-up"></i></div>
-                            
-                            <div class="video-info">
-                                <div class="user-row">
-                                    <img src="" id="ad-pic-top" class="feed-profile-pic">
-                                    <div class="uploader-name" id="ad-name-top">Loading...</div>
-                                </div>
-                                <div style="font-size:14px; color:#eee;">${ad.caption}</div>
-                                <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
-                            </div>
-                        `;
-                        
-                        // PROFILE PIC FIX: Use Favicon if Admin/Default
-                        const sponsorUid = ad.uid;
-                        if(sponsorUid && sponsorUid !== 'admin') {
-                            onValue(ref(db, 'users/' + sponsorUid), (uSnap) => {
-                                if(uSnap.exists()) {
-                                    const u = uSnap.val();
-                                    document.getElementById('ad-pic-top').src = u.photo || DEFAULT_FAVICON;
-                                    document.getElementById('ad-name-top').innerText = `@${u.username}`;
-                                } else {
-                                    document.getElementById('ad-pic-top').src = DEFAULT_FAVICON;
-                                    document.getElementById('ad-name-top').innerText = "ParaVideo Team";
-                                }
-                            });
-                        } else {
-                            // Default Admin Case
-                            document.getElementById('ad-pic-top').src = DEFAULT_FAVICON;
-                            document.getElementById('ad-name-top').innerText = "ParaVideo Team";
-                        }
-
-                        feed.appendChild(adDiv);
-                    }
-
-                    // --- 2. SHOW VIDEOS ---
-                    let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                    videos.sort((a, b) => (targetId && a.key === targetId) ? -1 : (targetId && b.key === targetId) ? 1 : b.timestamp - a.timestamp);
-
-                    videos.forEach(item => {
-                        const div = document.createElement('div'); div.className = "video-card"; div.setAttribute('data-id', item.key);
-                        let hdUrl = item.videoUrl.replace("/upload/", "/upload/q_80,w_480/");
-                        const hdBadge = (item.isHD === true) ? `<div class="hd-tag">HD</div>` : "";
-                        const musicHtml = item.musicLink ? `<div class="music-bar" onclick="window.open('${item.musicLink}&t=${item.startTime || 0}s', '_blank')"><i class="fas fa-compact-disc"></i> Sound</div>` : '';
-                        
-                        div.innerHTML = `
-                            <div class="video-loader" id="loader-${item.key}"></div>
-                            ${hdBadge}
-                            <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
-                            <div class="sidebar">
-                                <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
-                                <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
-                                <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
-                            </div>
-                            <div class="video-info">
-                                <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
-                                <div style="font-size:14px; color:#eee;">${item.caption}</div>
-                                ${musicHtml}
-                            </div>
-                        `;
-                        onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
-                            if(uSnap.exists()) {
-                                const u = uSnap.val();
-                                document.getElementById(`pic-${item.key}`).src = u.photo || "";
-                                document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
-                            } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
-                        });
-                        onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-                        onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
-                        feed.appendChild(div);
+                    div.innerHTML = `
+                        <div class="video-loader" id="loader-${item.key}"></div>
+                        ${hdBadge}
+                        <video src="${hdUrl}" loop playsinline class="reel-video" onplaying="document.getElementById('loader-${item.key}').style.display='none'"></video>
+                        <div class="sidebar">
+                            <button class="action-btn" onclick="window.handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></button>
+                            <button class="action-btn" onclick="window.openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="comment-count-${item.key}">0</span></button>
+                            <button class="action-btn" onclick="window.shareVideo('${item.key}')"><i class="fas fa-share"></i></button>
+                        </div>
+                        <div class="video-info">
+                            <div class="user-row"><img src="" id="pic-${item.key}" class="feed-profile-pic"><div class="uploader-name" id="name-${item.key}" onclick="window.location.href='profile.html?uid=${item.uid}'">...</div></div>
+                            <div style="font-size:14px; color:#eee;">${item.caption}</div>
+                            ${musicHtml}
+                        </div>
+                    `;
+                    // Fetch Real Username
+                    onValue(ref(db, 'users/' + item.uid), (uSnap) => { 
+                        if(uSnap.exists()) {
+                            const u = uSnap.val();
+                            document.getElementById(`pic-${item.key}`).src = u.photo || "";
+                            document.getElementById(`name-${item.key}`).innerText = `@${u.username || "User"}`;
+                        } else { document.getElementById(`name-${item.key}`).innerText = `@${item.uploader || "User"}`; }
                     });
-                    setupObserver();
+                    onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
+                    onValue(ref(db, `gameplay_comments/${item.key}`), s => document.getElementById(`comment-count-${item.key}`).innerText = s.size || 0);
+                    feed.appendChild(div);
                 });
+                setupObserver();
             });
+        }
+
+        function renderAd(feed, ad) {
+            const adDiv = document.createElement('div'); adDiv.className = "admin-ad-card";
+            adDiv.innerHTML = `
+                <div class="ad-tag">SPONSORED</div>
+                <video src="${ad.videoUrl}" autoplay loop playsinline class="ad-img" onclick="this.muted = !this.muted"></video>
+                <div class="video-info">
+                    <div class="user-row">
+                        <img src="" id="ad-pic-top" class="feed-profile-pic">
+                        <div class="uploader-name" id="ad-name-top">...</div>
+                    </div>
+                    <div style="font-size:14px; color:#eee;">${ad.caption}</div>
+                    <button class="ad-cta-btn" onclick="window.open('${ad.link}', '_blank')">${ad.btnText || 'Learn More'}</button>
+                </div>
+            `;
+            // Fetch Sponsor Logic
+            if(ad.uid && ad.uid !== 'admin') {
+                onValue(ref(db, 'users/' + ad.uid), (uSnap) => {
+                    if(uSnap.exists()) {
+                        const u = uSnap.val();
+                        document.getElementById('ad-pic-top').src = u.photo || DEFAULT_FAVICON;
+                        document.getElementById('ad-name-top').innerText = `@${u.username}`;
+                    } else { setDefaultAdProfile(); }
+                });
+            } else { setDefaultAdProfile(); }
+
+            feed.appendChild(adDiv);
+        }
+
+        function setDefaultAdProfile() {
+            setTimeout(() => {
+                const img = document.getElementById('ad-pic-top');
+                const name = document.getElementById('ad-name-top');
+                if(img) img.src = DEFAULT_FAVICON;
+                if(name) name.innerText = "ParaVideo Team";
+            }, 100);
         }
 
         function setupObserver() { const obs = new IntersectionObserver(entries => { entries.forEach(entry => { const v = entry.target.querySelector('video'); if(entry.isIntersecting) { if(v) v.play(); window.history.replaceState(null, null, `#v=${entry.target.getAttribute('data-id')}`); } else { if(v) v.pause(); } }); }, {threshold: 0.6}); document.querySelectorAll('.video-card').forEach(card => obs.observe(card)); }
         
+        // --- FUNCTIONS (Restored) ---
         let mediaRecorder, chunks = [], stream, camFile = null;
         window.switchTab = async (tab) => {
             document.getElementById('galTab').className = tab === 'gallery' ? 'tab-btn active-tab' : 'tab-btn';
@@ -276,20 +281,19 @@
             const file = camFile || document.getElementById('videoFile').files[0];
             if(!file) return alert("Select video");
             if(file.size < 400000) return alert("❌ Quality too low!");
-            
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const realUploaderName = uSnap.exists() ? uSnap.val().username : "User";
-
+            const realName = uSnap.exists() ? uSnap.val().username : "User";
             const vidMeta = document.createElement('video'); vidMeta.preload = 'metadata';
             vidMeta.onloadedmetadata = () => {
                 const isHD = (vidMeta.videoWidth >= 1280 || vidMeta.videoHeight >= 720);
                 const btn = document.getElementById('postBtn'); btn.disabled = true; btn.innerText = "Uploading...";
+                document.getElementById('progress').style.display = 'block';
                 const fd = new FormData(); fd.append("file", file); fd.append("upload_preset", UPLOAD_PRESET);
                 const xhr = new XMLHttpRequest(); xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
                 xhr.upload.onprogress = e => document.getElementById('bar').style.width = (e.loaded/e.total)*100 + "%";
                 xhr.onload = async () => {
                     const data = JSON.parse(xhr.responseText);
-                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realUploaderName, uid: currentUser.uid, timestamp: Date.now() });
+                    await push(ref(db, 'gameplay_clips'), { videoUrl: data.secure_url, caption: document.getElementById('caption').value, isHD: isHD, musicLink: document.getElementById('ytLink').value, startTime: document.getElementById('startTime').value || 0, uploader: realName, uid: currentUser.uid, timestamp: Date.now() });
                     location.reload();
                 }; xhr.send(fd);
             }; vidMeta.src = URL.createObjectURL(file);
@@ -298,15 +302,7 @@
         window.closeUpload = () => { document.getElementById('uploadModal').style.display = 'none'; if(stream) stream.getTracks().forEach(t => t.stop()); };
         window.openComments = (key) => { currentVideoKeyForComments = key; document.getElementById('commentsModal').classList.add('active'); onValue(ref(db, `gameplay_comments/${key}`), s => { const l = document.getElementById('commentsList'); l.innerHTML = s.exists() ? "" : "<p style='text-align:center;color:#666;'>No comments.</p>"; s.forEach(c => { l.innerHTML += `<div style="margin-bottom:10px;"><b>${c.val().u}:</b> ${c.val().t}</div>`; }); }); };
         window.closeComments = () => document.getElementById('commentsModal').classList.remove('active');
-        window.postComment = async () => { 
-            const t = document.getElementById('commentInput').value;
-            if(t) { 
-                const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-                const realName = uSnap.exists() ? uSnap.val().username : "User";
-                push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); 
-                document.getElementById('commentInput').value = ""; 
-            }
-        };
+        window.postComment = async () => { const t = document.getElementById('commentInput').value; if(t) { const uSnap = await get(ref(db, 'users/' + currentUser.uid)); const realName = uSnap.exists() ? uSnap.val().username : "User"; push(ref(db, `gameplay_comments/${currentVideoKeyForComments}`), { u: realName, t: t, uid: currentUser.uid }); document.getElementById('commentInput').value = ""; } };
         window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
         window.shareVideo = (id) => { const link = `https://paravideo-sand.vercel.app/#v=${id}`; navigator.clipboard.writeText(link).then(() => alert("Link Copied!")); };
     </script>
