@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://paravideo-sand.vercel.app/</loc>
-    <lastmod>2024-05-20</lastmod>
+    <loc>https://starmagic.vercel.app/</loc>
+    <lastmod>2026-01-12</lastmod>
     <priority>1.0</priority>
   </url>
+  
   <url>
-    <loc>https://paravideo-sand.vercel.app/search.html</loc>
+    <loc>https://starmagic.vercel.app/search.html</loc>
     <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://starmagic.vercel.app/upload.html</loc>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://starmagic.vercel.app/profile.html</loc>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://starmagic.vercel.app/friends.html</loc>
+    <priority>0.7</priority>
   </url>
 </urlset>
