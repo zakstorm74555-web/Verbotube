@@ -3,9 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ParaVideo</title>
     
-    <link rel="icon" id="fav1" href="https://ibb.co/ZsDDGHQ" sizes="32x32">
+    <title>ParaVideo - Short Video Platform</title>
+    <meta name="description" content="ParaVideo is the best short video app for gamers. Watch clips, remix songs, and share with friends.">
+    <meta name="application-name" content="ParaVideo">
+    <meta property="og:site_name" content="ParaVideo">
+    <meta property="og:title" content="ParaVideo">
+    <meta property="og:type" content="website">
+    
+    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "ParaVideo",
+      "url": "https://paravideo-sand.vercel.app/",
+      "alternateName": ["Para Video", "ParaVideo App"]
+    }
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -17,6 +35,7 @@
             transform: translateZ(0);
         }
 
+        /* --- LAPTOP/DESKTOP CONSTRAINT --- */
         @media (min-width: 768px) {
             body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
             #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
@@ -33,7 +52,6 @@
         .header-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
         .tab-btn { cursor: pointer; transition: 0.3s; }
         .tab-btn.active { color: white; border-bottom: 2px solid white; padding-bottom: 3px; }
-        
         .search-icon { position: absolute; right: 15px; top: 15px; font-size: 20px; cursor: pointer; color: white; }
 
         /* --- FEED --- */
@@ -52,7 +70,7 @@
         
         video { 
             width: 100%; height: 100%; 
-            object-fit: contain; 
+            object-fit: contain; /* Landscape videos fix */
             background: #000; 
             transform: translateZ(0); 
         }
@@ -66,7 +84,7 @@
         /* --- SIDEBAR --- */
         .sidebar { 
             position: absolute; right: 10px; 
-            bottom: 170px; /* Moved UP so it doesn't touch menu */
+            bottom: 170px; /* Share button visibility fix */
             display: flex; flex-direction: column; gap: 20px; align-items: center; 
             z-index: 30; text-shadow: 1px 1px 2px black; 
         }
@@ -78,7 +96,7 @@
         /* --- VIDEO INFO --- */
         .video-info { 
             position: absolute; 
-            bottom: 65px; /* Sits exactly above Menu */
+            bottom: 65px; /* Above Bottom Nav */
             left: 0; width: 100%; 
             background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
             padding: 20px; padding-bottom: 20px; 
@@ -99,7 +117,7 @@
             width: 100%; height: 100%; border-radius: 50%; background: #111; 
             border: 8px solid #222; display: flex; justify-content: center; align-items: center; 
             animation: spin 5s linear infinite; will-change: transform;
-            background-image: url('https://ibb.co/ZsDDGHQ'); background-size: cover;
+            background-image: url('https://i.ibb.co/fvz5S9J/ZsDDGHQ.png'); background-size: cover;
         }
         .playing .disc-bg { animation-play-state: running; }
         .paused .disc-bg { animation-play-state: paused; }
@@ -113,13 +131,12 @@
             pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); 
         }
 
-        /* --- BOTTOM NAV (FIXED Z-INDEX) --- */
+        /* --- BOTTOM NAV (Z-INDEX FIXED) --- */
         .bottom-nav { 
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
-            background: #000; /* Solid Black */
-            border-top: 1px solid #222; 
+            background: #000; border-top: 1px solid #222; 
             display: flex; justify-content: space-around; align-items: center; 
-            z-index: 1000; /* Highest Priority - Won't Hide */
+            z-index: 1000; /* Priority */
         }
         .nav-item { color: #888; font-size: 22px; cursor: pointer; transition: 0.2s; }
         .nav-item.active { color: #8a2be2; text-shadow: 0 0 10px #8a2be2; }
