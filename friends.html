@@ -3,32 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Following - ParaVideo</title>
+    <title>Friends - Star Magic</title>
+    
+    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- STAR MAGIC THEME --- */
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
-        .header { padding: 15px; background: #111; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; }
+        
+        .header { 
+            padding: 15px; background: #111; border-bottom: 1px solid #333; 
+            display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 10;
+        }
         .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-        h2 { margin: 0; font-size: 18px; color: #8a2be2; }
+        
+        /* Gold Title */
+        h2 { margin: 0; font-size: 18px; color: #FFD700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
         
         .user-list { padding: 10px; }
-        .user-card { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        
+        .user-card { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; 
+        }
         .user-card:active { background: #111; }
         
         .user-info { display: flex; align-items: center; gap: 12px; }
-        .profile-pic { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #8a2be2; }
+        
+        /* Gold Border for Profile Pic */
+        .profile-pic { 
+            width: 45px; height: 45px; border-radius: 50%; object-fit: cover; 
+            border: 2px solid #FFD700; 
+        }
+        
         .names { display: flex; flex-direction: column; }
         .username { font-weight: bold; font-size: 16px; }
         .status { font-size: 12px; color: #aaa; }
         
-        .chat-btn { background: #8a2be2; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; }
+        /* Yellow-Red Gradient Button */
+        .chat-btn { 
+            background: linear-gradient(135deg, #FFD700, #FF0000); 
+            color: black; /* Black text reads better on yellow */
+            border: none; padding: 8px 15px; border-radius: 20px; 
+            font-weight: bold; font-size: 12px; 
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></button>
-        <h2>Following</h2>
+        <h2>Find Friends</h2>
     </div>
 
     <div class="user-list" id="list">
@@ -51,8 +79,7 @@
         });
 
         function loadFollowing(myUid) {
-            // Note: Assuming you have a 'following' node. If not, this shows All Users for testing.
-            // Replace 'users' with `users/${myUid}/following` when ready.
+            // Shows ALL USERS so you can find friends easily
             const userRef = ref(db, 'users'); 
             
             onValue(userRef, (snap) => {
