@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
     <title>Star Magic - Short Video Platform</title>
     
     <meta name="description" content="Star Magic is the ultimate short video app. Watch viral clips, gaming moments, and share your magic with the world.">
@@ -12,8 +13,8 @@
     <meta property="og:title" content="Star Magic">
     <meta property="og:type" content="website">
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
     
     <script type="application/ld+json">
     {
@@ -21,14 +22,14 @@
       "@type": "WebSite",
       "name": "Star Magic",
       "url": "https://starmagic.vercel.app/",
-      "alternateName": ["Star Magic App", "StarMagic", "Magic Video"]
+      "alternateName": ["Star Magic App", "StarMagic"]
     }
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- GLOBAL PERFORMANCE --- */
+        /* --- STAR MAGIC THEME --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; 
@@ -36,33 +37,28 @@
             transform: translateZ(0);
         }
 
-        /* --- LAPTOP/DESKTOP CONSTRAINT --- */
         @media (min-width: 768px) {
             body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
             #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
             .bottom-nav { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
         }
 
-        /* --- HEADER --- */
+        /* HEADER */
         header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
             display: flex; justify-content: center; align-items: center; pointer-events: auto;
         }
-        
         .header-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
         .tab-btn { cursor: pointer; transition: 0.3s; }
-        
-        /* THEME CHANGE: Active Tab Yellow */
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 3px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        
         .search-icon { position: absolute; right: 15px; top: 15px; font-size: 20px; cursor: pointer; color: white; }
 
-        /* --- FEED --- */
+        /* FEED */
         .feed-container { 
             width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; 
             scroll-behavior: auto; -webkit-overflow-scrolling: touch; 
-            padding-bottom: 60px; /* Space for menu */
+            padding-bottom: 60px; 
         }
         .feed-container::-webkit-scrollbar { display: none; }
 
@@ -72,12 +68,7 @@
             will-change: transform; 
         }
         
-        video { 
-            width: 100%; height: 100%; 
-            object-fit: contain; 
-            background: #000; 
-            transform: translateZ(0); 
-        }
+        video { width: 100%; height: 100%; object-fit: contain; background: #000; transform: translateZ(0); }
         
         /* FILTERS */
         .f-normal { filter: none; }
@@ -85,71 +76,85 @@
         .f-mono { filter: grayscale(1); }
         .f-dramatic { filter: contrast(1.2) brightness(0.9); }
 
-        /* --- SIDEBAR --- */
+        /* SEEK BAR (New) */
+        .seek-container {
+            position: absolute; bottom: 62px; left: 0; width: 100%; z-index: 50; padding: 0 10px;
+        }
+        .video-seeker {
+            width: 100%; -webkit-appearance: none; height: 3px; background: rgba(255,255,255,0.3);
+            border-radius: 5px; outline: none; cursor: pointer;
+        }
+        .video-seeker::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
+            background: #FFD700; cursor: pointer; box-shadow: 0 0 5px #FFD700;
+        }
+
+        /* SIDEBAR */
         .sidebar { 
-            position: absolute; right: 10px; 
-            bottom: 170px; 
+            position: absolute; right: 10px; bottom: 170px; 
             display: flex; flex-direction: column; gap: 20px; align-items: center; 
             z-index: 30; text-shadow: 1px 1px 2px black; 
         }
         .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 12px; margin-top: 5px; font-weight: 600; }
-        
-        /* THEME CHANGE: Heart is Red (Standard) */
         .liked { color: #FF0000 !important; animation: pop 0.3s ease; text-shadow: 0 0 10px rgba(255, 0, 0, 0.6); }
         @keyframes pop { 50% { transform: scale(1.2); } }
 
-        /* --- VIDEO INFO --- */
+        /* INFO */
         .video-info { 
-            position: absolute; 
-            bottom: 65px; 
-            left: 0; width: 100%; 
+            position: absolute; bottom: 70px; left: 0; width: 100%; 
             background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-            padding: 20px; padding-bottom: 20px; 
-            z-index: 20; pointer-events: none; 
+            padding: 20px; padding-bottom: 25px; z-index: 20; pointer-events: none; 
         }
         .video-info * { pointer-events: auto; }
         .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; text-shadow: 1px 1px 2px black; }
         .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; text-shadow: 1px 1px 2px black; }
-        
         .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 14px; overflow: hidden; white-space: nowrap; width: 60%; }
-        .music-icon-anim { animation: pulse 2s infinite; color: #FFD700; } /* Yellow Music Icon */
+        .music-icon-anim { animation: pulse 2s infinite; color: #FFD700; }
         .marquee-track { display: inline-block; animation: marquee 6s linear infinite; will-change: transform; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* --- SPINNING DISC --- */
+        /* DISC */
         .disc-area { position: absolute; bottom: 85px; right: 10px; width: 50px; height: 50px; z-index: 35; }
         .disc-bg { 
             width: 100%; height: 100%; border-radius: 50%; background: #111; 
             border: 8px solid #333; display: flex; justify-content: center; align-items: center; 
             animation: spin 5s linear infinite; will-change: transform;
-            background-image: url('https://i.ibb.co/fvz5S9J/ZsDDGHQ.png'); background-size: cover;
+            background-image: url('icon.png'); background-size: cover;
         }
         .playing .disc-bg { animation-play-state: running; }
         .paused .disc-bg { animation-play-state: paused; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* --- PLAY ICON --- */
+        /* PLAY ICON */
         .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         .play-icon { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 60px; opacity: 0.8; color: #FFD700; /* Yellow Play Icon */
+            font-size: 60px; opacity: 0.8; color: #FFD700; 
             pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); 
         }
 
-        /* --- BOTTOM NAV (Z-INDEX FIXED) --- */
+        /* SHARE SHEET */
+        .share-sheet {
+            position: fixed; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000;
+            border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700;
+        }
+        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
+        .share-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: white; cursor: pointer; }
+        .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .s-whatsapp { background: #25D366; }
+        .s-copy { background: #333; border: 1px solid #555; }
+        .s-download { background: #FFD700; color: black; }
+        .close-share { margin-top: 20px; width: 100%; padding: 12px; background: #222; border: none; color: white; border-radius: 10px; font-weight: bold; }
+
+        /* BOTTOM NAV */
         .bottom-nav { 
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
             background: #000; border-top: 1px solid #222; 
-            display: flex; justify-content: space-around; align-items: center; 
-            z-index: 1000; 
+            display: flex; justify-content: space-around; align-items: center; z-index: 1000; 
         }
         .nav-item { color: #888; font-size: 22px; cursor: pointer; transition: 0.2s; }
-        
-        /* THEME CHANGE: Active Item Yellow */
         .nav-item.active { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
-        
-        /* THEME CHANGE: Add Button (Yellow to Red Gradient) */
         .add-btn-nav { 
             width: 45px; height: 30px; 
             background: linear-gradient(135deg, #FFD700, #FF0000); 
@@ -159,16 +164,14 @@
         .add-btn-nav i { color: black; font-size: 16px; }
 
     </style>
-    <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
 </head>
 <body>
 
     <div id="appScreen">
-        
         <header>
             <div class="header-tabs">
-                <span class="tab-btn" id="tabFollowing" onclick="switchFeed('following')">Following</span>
                 <span class="tab-btn active" id="tabForYou" onclick="switchFeed('foryou')">For You</span>
+                <span class="tab-btn" id="tabFollowing" onclick="switchFeed('following')">Following</span>
             </div>
             <div class="search-icon" onclick="window.location.href='search.html'"><i class="fas fa-search"></i></div>
         </header>
@@ -180,13 +183,29 @@
         <div class="bottom-nav">
             <i class="fas fa-home nav-item active"></i>
             <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends.html'"></i>
-            <div class="add-btn-nav" onclick="window.location.href='upload.html'">
-                <i class="fas fa-plus"></i>
-            </div>
+            <div class="add-btn-nav" onclick="window.location.href='upload.html'"><i class="fas fa-plus"></i></div>
             <i class="fas fa-inbox nav-item" onclick="window.location.href='friends.html'"></i>
             <i class="fas fa-user nav-item" onclick="window.location.href='profile.html'"></i>
         </div>
 
+        <div class="share-sheet" id="shareSheet">
+            <h3 style="margin:0; text-align:center; color:#FFD700;">Share to</h3>
+            <div class="share-grid">
+                <div class="share-item" onclick="shareToWhatsapp()">
+                    <div class="share-icon-box s-whatsapp"><i class="fab fa-whatsapp"></i></div>
+                    <span style="font-size:12px;">WhatsApp</span>
+                </div>
+                <div class="share-item" onclick="copyLink()">
+                    <div class="share-icon-box s-copy"><i class="fas fa-link"></i></div>
+                    <span style="font-size:12px;">Copy Link</span>
+                </div>
+                <div class="share-item" onclick="downloadVideo()">
+                    <div class="share-icon-box s-download"><i class="fas fa-download"></i></div>
+                    <span style="font-size:12px;">Save</span>
+                </div>
+            </div>
+            <button class="close-share" onclick="closeShare()">Cancel</button>
+        </div>
     </div>
 
     <script type="module">
@@ -201,48 +220,26 @@
 
         let currentUser = null;
         let activeTab = 'foryou';
-        let followingList = [];
-
+        let currentShareUrl = "";
+        
         onAuthStateChanged(auth, user => {
-            if (user) { 
-                currentUser = user; 
-                loadFollowingList().then(() => loadVideos());
-            }
+            if (user) { currentUser = user; loadVideos(); }
         });
-
-        async function loadFollowingList() {
-            const fRef = ref(db, `users/${currentUser.uid}/following`);
-            const snap = await get(fRef);
-            followingList = snap.exists() ? Object.keys(snap.val()) : [];
-        }
 
         window.switchFeed = (type) => {
             activeTab = type;
-            document.getElementById('tabFollowing').className = type === 'following' ? 'tab-btn active' : 'tab-btn';
-            document.getElementById('tabForYou').className = type === 'foryou' ? 'tab-btn active' : 'tab-btn';
-            
-            const feed = document.getElementById('feed');
-            feed.innerHTML = "<p style='text-align:center; color:#555; margin-top:50vh;'>Loading...</p>";
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(type === 'foryou' ? 'tabForYou' : 'tabFollowing').classList.add('active');
             loadVideos();
         };
 
         function loadVideos() {
             const feed = document.getElementById('feed');
-            
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
                 if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                
-                if(activeTab === 'following') {
-                    videos = videos.filter(v => followingList.includes(v.uid));
-                    if(videos.length === 0) {
-                        feed.innerHTML = `<div style="text-align:center; padding-top:40vh; color:#666;">No following videos.</div>`;
-                        return;
-                    }
-                }
-
                 videos.sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
@@ -256,32 +253,29 @@
                     const filterClass = item.filter ? `f-${item.filter}` : '';
                     const isRemix = item.remixUrl ? true : false; 
                     
+                    // NOTE: Removed 'loop' attribute from video tag
                     div.innerHTML = `
-                        <video src="${videoUrl}" class="${filterClass}" loop playsinline preload="metadata" ${isRemix ? 'muted' : ''}></video>
-                        ${isRemix ? `<audio src="${item.remixUrl}" loop></audio>` : ''}
+                        <video src="${videoUrl}" class="${filterClass}" playsinline preload="metadata" ${isRemix ? 'muted' : ''}></video>
+                        ${isRemix ? `<audio src="${item.remixUrl}"></audio>` : ''}
                         
                         <div class="touch-layer" onclick="togglePlay(this)"></div>
                         <div class="play-icon"><i class="fas fa-play"></i></div>
 
                         <div class="sidebar">
                             <div class="action-btn" onclick="window.location.href='profile.html?uid=${item.uid}'">
-                                <img src="https://via.placeholder.com/40" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white;">
+                                <img src="icon.png" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white;">
                             </div>
                             <button class="action-btn" onclick="handleLike('${item.key}')">
                                 <i class="fas fa-heart" id="like-icon-${item.key}"></i>
                                 <span id="like-count-${item.key}">0</span>
                             </button>
-                            <button class="action-btn">
-                                <i class="fas fa-comment-dots"></i>
-                                <span>0</span>
+                            <button class="action-btn" onclick="openShare('${item.videoUrl}')">
+                                <i class="fas fa-share"></i>
+                                <span>Share</span>
                             </button>
                             <button class="action-btn" onclick="useSound('${item.remixUrl || item.videoUrl}')">
                                 <i class="fas fa-compact-disc"></i>
                                 <span>Remix</span>
-                            </button>
-                            <button class="action-btn">
-                                <i class="fas fa-share"></i>
-                                <span>Share</span>
                             </button>
                         </div>
 
@@ -290,18 +284,47 @@
                             <div class="caption">${item.caption}</div>
                             <div class="music-marquee">
                                 <i class="fas fa-music music-icon-anim"></i> 
-                                <span class="marquee-track">${item.caption ? item.caption : 'Original Sound'} - ${item.uploader} &nbsp;&nbsp;&nbsp;&nbsp; ${item.caption ? item.caption : 'Original Sound'}</span>
+                                <span class="marquee-track">${item.caption ? item.caption : 'Original Sound'} - ${item.uploader}</span>
                             </div>
                         </div>
 
-                        <div class="disc-area" id="disc-anim-${item.key}">
-                            <div class="disc-bg" id="disc-bg-${item.key}"></div>
+                        <div class="seek-container">
+                            <input type="range" class="video-seeker" min="0" max="100" value="0" step="0.1" oninput="handleSeek(this)">
                         </div>
+
+                        <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
+
+                    // --- NEW LOGIC: SYNC AUDIO & SEEKER & ENDING ---
+                    const video = div.querySelector('video');
+                    const audio = div.querySelector('audio');
+                    const seeker = div.querySelector('.video-seeker');
+                    const icon = div.querySelector('.play-icon');
+
+                    // 1. UPDATE SEEKER WHILE PLAYING
+                    video.addEventListener('timeupdate', () => {
+                        const val = (video.currentTime / video.duration) * 100;
+                        seeker.value = val || 0;
+                        
+                        // Sync Audio if remix
+                        if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) {
+                            audio.currentTime = video.currentTime;
+                        }
+                    });
+
+                    // 2. STOP & REFRESH ON END (No Loop)
+                    video.addEventListener('ended', () => {
+                        video.pause();
+                        video.currentTime = 0;
+                        if(audio) { audio.pause(); audio.currentTime = 0; }
+                        icon.style.opacity = 0.8;
+                        div.classList.remove('playing');
+                        seeker.value = 0; // Reset slider
+                    });
 
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
                         const u = uSnap.val() || {};
-                        const pic = u.photo || "https://i.ibb.co/fvz5S9J/ZsDDGHQ.png";
+                        const pic = u.photo || "icon.png";
                         document.getElementById(`pic-${item.key}`).src = pic;
                         document.getElementById(`name-${item.key}`).innerText = `${u.username || item.uploader}`;
                         document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
@@ -314,40 +337,76 @@
 
                     feed.appendChild(div);
                 });
-
                 setupObserver();
             });
         }
 
+        // --- GLOBAL FUNCTIONS ---
         window.togglePlay = (layer) => {
             const card = layer.parentElement;
             const video = card.querySelector('video');
             const audio = card.querySelector('audio');
             const icon = card.querySelector('.play-icon');
-            const discAnim = card.querySelector('.disc-bg');
 
             if (!video.paused) {
                 video.pause();
                 if(audio) audio.pause();
                 icon.style.opacity = 0.8;
-                card.classList.add('paused');
                 card.classList.remove('playing');
             } else {
                 video.play();
                 if(audio) { video.muted = true; audio.play(); } 
                 icon.style.opacity = 0;
                 card.classList.add('playing');
-                card.classList.remove('paused');
             }
+        };
+
+        window.handleSeek = (slider) => {
+            const card = slider.closest('.video-card');
+            const video = card.querySelector('video');
+            const audio = card.querySelector('audio');
+            
+            const time = (slider.value / 100) * video.duration;
+            video.currentTime = time;
+            if(audio) audio.currentTime = time;
         };
 
         window.handleLike = (key) => {
             const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`);
             get(r).then(s => s.exists() ? remove(r) : set(r, true));
         };
-        
-        window.useSound = (url) => {
-            window.location.href = `upload.html?sound=${encodeURIComponent(url)}`;
+        window.useSound = (url) => window.location.href = `upload.html?sound=${encodeURIComponent(url)}`;
+
+        // --- SHARE FUNCTIONS ---
+        window.openShare = (url) => {
+            currentShareUrl = url;
+            document.getElementById('shareSheet').style.bottom = "0";
+        };
+        window.closeShare = () => document.getElementById('shareSheet').style.bottom = "-100%";
+
+        window.shareToWhatsapp = () => {
+            window.open(`whatsapp://send?text=Check out this video on Star Magic! ${currentShareUrl}`);
+        };
+        window.copyLink = () => {
+            navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
+        };
+        window.downloadVideo = async () => {
+            alert("Downloading started... Please wait.");
+            try {
+                const res = await fetch(currentShareUrl);
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'starmagic_video.mp4';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch(e) {
+                alert("Download failed (CORS issue). Opening in new tab instead.");
+                window.open(currentShareUrl, '_blank');
+            }
         };
 
         function setupObserver() {
@@ -359,6 +418,7 @@
                     const icon = card.querySelector('.play-icon');
                     
                     if (entry.isIntersecting) {
+                        // User must tap to play remix (Browser Policy)
                         if(audio) {
                             video.pause();
                             icon.style.opacity = 0.8;
@@ -368,8 +428,8 @@
                         }
                     } else {
                         video.pause();
-                        video.currentTime = 0;
-                        if(audio) { audio.pause(); audio.currentTime = 0; }
+                        if(audio) audio.pause();
+                        icon.style.opacity = 0.8;
                         card.classList.remove('playing');
                     }
                 });
