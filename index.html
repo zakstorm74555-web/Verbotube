@@ -16,6 +16,8 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
+
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -76,7 +78,7 @@
         .f-mono { filter: grayscale(1); }
         .f-dramatic { filter: contrast(1.2) brightness(0.9); }
 
-        /* SEEK BAR (New) */
+        /* SEEK BAR */
         .seek-container {
             position: absolute; bottom: 62px; left: 0; width: 100%; z-index: 50; padding: 0 10px;
         }
@@ -193,15 +195,15 @@
             <div class="share-grid">
                 <div class="share-item" onclick="shareToWhatsapp()">
                     <div class="share-icon-box s-whatsapp"><i class="fab fa-whatsapp"></i></div>
-                    <span style="font-size:12px;">WhatsApp</span>
+                    <span>WhatsApp</span>
                 </div>
                 <div class="share-item" onclick="copyLink()">
                     <div class="share-icon-box s-copy"><i class="fas fa-link"></i></div>
-                    <span style="font-size:12px;">Copy Link</span>
+                    <span>Copy Link</span>
                 </div>
                 <div class="share-item" onclick="downloadVideo()">
                     <div class="share-icon-box s-download"><i class="fas fa-download"></i></div>
-                    <span style="font-size:12px;">Save</span>
+                    <span>Save</span>
                 </div>
             </div>
             <button class="close-share" onclick="closeShare()">Cancel</button>
@@ -212,6 +214,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // ✅ 2. CLOUDINARY CONFIGURATION (Added as requested)
+        const cloudName = "dusj0vpsi";
+        const uploadPreset = "paravideo";
+        const cl = cloudinary.Cloudinary.new({ cloud_name: cloudName });
+        console.log("Cloudinary Connected:", cloudName);
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
@@ -253,7 +261,6 @@
                     const filterClass = item.filter ? `f-${item.filter}` : '';
                     const isRemix = item.remixUrl ? true : false; 
                     
-                    // NOTE: Removed 'loop' attribute from video tag
                     div.innerHTML = `
                         <video src="${videoUrl}" class="${filterClass}" playsinline preload="metadata" ${isRemix ? 'muted' : ''}></video>
                         ${isRemix ? `<audio src="${item.remixUrl}"></audio>` : ''}
@@ -295,31 +302,23 @@
                         <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
 
-                    // --- NEW LOGIC: SYNC AUDIO & SEEKER & ENDING ---
                     const video = div.querySelector('video');
                     const audio = div.querySelector('audio');
                     const seeker = div.querySelector('.video-seeker');
                     const icon = div.querySelector('.play-icon');
 
-                    // 1. UPDATE SEEKER WHILE PLAYING
                     video.addEventListener('timeupdate', () => {
                         const val = (video.currentTime / video.duration) * 100;
                         seeker.value = val || 0;
-                        
-                        // Sync Audio if remix
-                        if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) {
-                            audio.currentTime = video.currentTime;
-                        }
+                        if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) audio.currentTime = video.currentTime;
                     });
 
-                    // 2. STOP & REFRESH ON END (No Loop)
                     video.addEventListener('ended', () => {
-                        video.pause();
-                        video.currentTime = 0;
+                        video.pause(); video.currentTime = 0;
                         if(audio) { audio.pause(); audio.currentTime = 0; }
                         icon.style.opacity = 0.8;
                         div.classList.remove('playing');
-                        seeker.value = 0; // Reset slider
+                        seeker.value = 0;
                     });
 
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
@@ -341,7 +340,6 @@
             });
         }
 
-        // --- GLOBAL FUNCTIONS ---
         window.togglePlay = (layer) => {
             const card = layer.parentElement;
             const video = card.querySelector('video');
@@ -365,7 +363,6 @@
             const card = slider.closest('.video-card');
             const video = card.querySelector('video');
             const audio = card.querySelector('audio');
-            
             const time = (slider.value / 100) * video.duration;
             video.currentTime = time;
             if(audio) audio.currentTime = time;
@@ -377,31 +374,22 @@
         };
         window.useSound = (url) => window.location.href = `upload.html?sound=${encodeURIComponent(url)}`;
 
-        // --- SHARE FUNCTIONS ---
         window.openShare = (url) => {
             currentShareUrl = url;
             document.getElementById('shareSheet').style.bottom = "0";
         };
         window.closeShare = () => document.getElementById('shareSheet').style.bottom = "-100%";
 
-        window.shareToWhatsapp = () => {
-            window.open(`whatsapp://send?text=Check out this video on Star Magic! ${currentShareUrl}`);
-        };
-        window.copyLink = () => {
-            navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
-        };
+        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Star Magic! ${currentShareUrl}`);
+        window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
         window.downloadVideo = async () => {
             alert("Downloading started... Please wait.");
             try {
                 const res = await fetch(currentShareUrl);
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'starmagic_video.mp4';
-                document.body.appendChild(a);
-                a.click();
+                const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'starmagic_video.mp4';
+                document.body.appendChild(a); a.click();
                 window.URL.revokeObjectURL(url);
             } catch(e) {
                 alert("Download failed (CORS issue). Opening in new tab instead.");
@@ -418,14 +406,8 @@
                     const icon = card.querySelector('.play-icon');
                     
                     if (entry.isIntersecting) {
-                        // User must tap to play remix (Browser Policy)
-                        if(audio) {
-                            video.pause();
-                            icon.style.opacity = 0.8;
-                        } else {
-                            video.play().catch(()=>{});
-                            icon.style.opacity = 0;
-                        }
+                        if(audio) { video.pause(); icon.style.opacity = 0.8; } 
+                        else { video.play().catch(()=>{}); icon.style.opacity = 0; }
                     } else {
                         video.pause();
                         if(audio) audio.pause();
