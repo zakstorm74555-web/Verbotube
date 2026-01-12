@@ -2,66 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Search - Star Magic</title>
+    
+    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        body { background: #000; color: white; font-family: sans-serif; padding: 10px; margin: 0; }
-        .search-bar { width: 100%; padding: 10px; background: #222; border: none; color: white; border-radius: 20px; outline: none; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 15px; }
-        .vid-thumb { width: 100%; aspect-ratio: 9/16; background: #111; object-fit: cover; border-radius: 5px; }
-        .user-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #333; }
-        .u-pic { width: 40px; height: 40px; border-radius: 50%; }
-        .back-btn { color: white; text-decoration: none; font-size: 20px; margin-bottom: 10px; display: block; }
+        /* --- STAR MAGIC THEME --- */
+        * { box-sizing: border-box; }
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
+        
+        .header { display: flex; align-items: center; margin-bottom: 20px; gap: 15px; }
+        .back-btn { color: #FFD700; text-decoration: none; font-size: 24px; }
+        
+        /* Search Bar */
+        .search-container { 
+            flex: 1; position: relative; 
+            background: #111; border-radius: 25px; border: 1px solid #333; 
+            display: flex; align-items: center; padding: 0 15px; 
+        }
+        .search-bar { 
+            width: 100%; padding: 12px; background: transparent; border: none; 
+            color: white; outline: none; font-size: 16px; 
+        }
+        .search-icon { color: #888; }
+        .search-container:focus-within { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+
+        /* Results Area */
+        h4 { color: #FFD700; margin: 20px 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Video Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .vid-thumb { 
+            width: 100%; aspect-ratio: 9/16; background: #111; object-fit: cover; 
+            border-radius: 8px; cursor: pointer; border: 1px solid #333; 
+        }
+        
+        /* User List */
+        .user-item { 
+            display: flex; align-items: center; gap: 15px; padding: 15px; 
+            border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; 
+        }
+        .user-item:active { background: #111; }
+        .u-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #FFD700; object-fit: cover; }
+        .u-info div:first-child { font-weight: bold; font-size: 16px; }
+        .u-info div:last-child { color: #888; font-size: 12px; }
+
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-btn">← Back</a>
-    <input type="text" class="search-bar" id="search" placeholder="Search Users or Videos..." onkeyup="doSearch()">
+
+    <div class="header">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-bar" id="search" placeholder="Search Users..." onkeyup="doSearch()">
+        </div>
+    </div>
     
     <div id="results">
-        <h4 style="color:#777;">Trending Videos</h4>
-        <div class="grid" id="vidGrid">Loading...</div>
+        <h4>Trending Now</h4>
+        <div class="grid" id="vidGrid">
+            <p style="color:#555;">Loading...</p>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33", measurementId: "G-QNFHZ1CDLY" };
-        const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        // LOAD POPULAR VIDEOS INITIALLY
+        // 1. LOAD TRENDING VIDEOS (Initial View)
         onValue(ref(db, 'gameplay_clips'), snap => {
-            const grid = document.getElementById('vidGrid'); grid.innerHTML = "";
+            const grid = document.getElementById('vidGrid');
+            grid.innerHTML = "";
+            
             if(snap.exists()) {
-                let vids = Object.values(snap.val());
-                // Simple Sort by Time (Newest First) as Proxy for now. Real logic needs view counts in DB.
+                // Convert to array and include Key (ID)
+                let vids = Object.entries(snap.val()).map(([key, val]) => ({ key, ...val }));
+                
+                // Sort by Newest
                 vids.sort((a,b) => b.timestamp - a.timestamp); 
+                
                 vids.forEach(v => {
-                    grid.innerHTML += `<video src="${v.videoUrl}" class="vid-thumb" onclick="window.location.href='index.html'"></video>`;
+                    const vidEl = document.createElement('video');
+                    vidEl.src = v.videoUrl;
+                    vidEl.className = 'vid-thumb';
+                    vidEl.muted = true; // Thumbnails should be mute
+                    
+                    // Click opens Index with Video ID
+                    vidEl.onclick = () => { window.location.href = `index.html#v=${v.key}`; };
+                    
+                    grid.appendChild(vidEl);
                 });
+            } else {
+                grid.innerHTML = "<p style='color:#555;'>No videos found.</p>";
             }
         });
 
+        // 2. SEARCH LOGIC
         window.doSearch = () => {
-            const q = document.getElementById('search').value.toLowerCase();
+            const q = document.getElementById('search').value.toLowerCase().trim();
             const res = document.getElementById('results');
             
+            // If empty, reload page (simplest way to reset to trending)
+            if(q.length === 0) { location.reload(); return; }
             if(q.length < 2) return;
 
-            // Search Users
+            // Search Users in Firebase
             onValue(ref(db, 'users'), snap => {
                 res.innerHTML = "<h4>Users</h4>";
+                let found = false;
+                
                 snap.forEach(c => {
                     const u = c.val();
-                    if(u.username.toLowerCase().includes(q)) {
-                        res.innerHTML += `<div class="user-item" onclick="window.location.href='profile.html?uid=${c.key}'">
-                            <img src="${u.photo}" class="u-pic">
-                            <div>${u.username}</div>
-                        </div>`;
+                    // Search by Username (Case Insensitive)
+                    if(u.username && u.username.toLowerCase().includes(q)) {
+                        found = true;
+                        res.innerHTML += `
+                            <div class="user-item" onclick="window.location.href='profile.html?uid=${c.key}'">
+                                <img src="${u.photo || 'https://via.placeholder.com/50'}" class="u-pic">
+                                <div class="u-info">
+                                    <div>${u.username}</div>
+                                    <div>Tap to view profile</div>
+                                </div>
+                            </div>
+                        `;
                     }
                 });
+
+                if(!found) res.innerHTML += "<p style='color:#555; text-align:center; margin-top:20px;'>No users found.</p>";
             }, {onlyOnce: true});
         }
     </script>
