@@ -49,12 +49,13 @@
         header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
-            display: flex; justify-content: center; align-items: center; pointer-events: auto;
+            display: flex; justify-content: space-between; align-items: center; pointer-events: auto;
         }
         .header-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
         .tab-btn { cursor: pointer; transition: 0.3s; }
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 3px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        .search-icon { position: absolute; right: 15px; top: 15px; font-size: 20px; cursor: pointer; color: white; }
+        .search-icon { font-size: 20px; cursor: pointer; color: white; }
+        .auth-btn-header { font-size: 12px; background: #222; padding: 5px 12px; border-radius: 20px; border: 1px solid #FFD700; color: #FFD700; cursor: pointer; display: none; }
 
         /* FEED */
         .feed-container { 
@@ -72,6 +73,21 @@
         
         video { width: 100%; height: 100%; object-fit: contain; background: #000; transform: translateZ(0); }
         
+        /* ✅ LOADING SPINNER (New) */
+        .loader-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 15; display: none; /* Hidden by default */
+            pointer-events: none;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #FFD700; /* Gold Color */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* FILTERS */
         .f-normal { filter: none; }
         .f-vivid { filter: contrast(1.1) saturate(1.2); }
@@ -175,7 +191,10 @@
                 <span class="tab-btn active" id="tabForYou" onclick="switchFeed('foryou')">For You</span>
                 <span class="tab-btn" id="tabFollowing" onclick="switchFeed('following')">Following</span>
             </div>
-            <div class="search-icon" onclick="window.location.href='search.html'"><i class="fas fa-search"></i></div>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <div class="search-icon" onclick="window.location.href='search'"><i class="fas fa-search"></i></div>
+                <div id="authBtn" class="auth-btn-header" onclick="goToLogin()">Login</div>
+            </div>
         </header>
 
         <div class="feed-container" id="feed">
@@ -184,10 +203,10 @@
 
         <div class="bottom-nav">
             <i class="fas fa-home nav-item active"></i>
-            <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends.html'"></i>
-            <div class="add-btn-nav" onclick="window.location.href='upload.html'"><i class="fas fa-plus"></i></div>
-            <i class="fas fa-inbox nav-item" onclick="window.location.href='friends.html'"></i>
-            <i class="fas fa-user nav-item" onclick="window.location.href='profile.html'"></i>
+            <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends'"></i>
+            <div class="add-btn-nav" onclick="checkLoginAndUpload()"><i class="fas fa-plus"></i></div>
+            <i class="fas fa-inbox nav-item" onclick="window.location.href='friends'"></i>
+            <i class="fas fa-user nav-item" onclick="window.location.href='profile'"></i>
         </div>
 
         <div class="share-sheet" id="shareSheet">
@@ -215,11 +234,9 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // ✅ 2. CLOUDINARY CONFIGURATION (Added as requested)
-        const cloudName = "dusj0vpsi";
-        const uploadPreset = "paravideo";
-        const cl = cloudinary.Cloudinary.new({ cloud_name: cloudName });
-        console.log("Cloudinary Connected:", cloudName);
+        // CLOUDINARY CONFIG
+        const cl = cloudinary.Cloudinary.new({ cloud_name: 'dusj0vpsi' }); 
+        console.log("Cloudinary Connected:", 'dusj0vpsi');
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
@@ -230,9 +247,19 @@
         let activeTab = 'foryou';
         let currentShareUrl = "";
         
+        // --- STRICT LOGIN CHECK ---
         onAuthStateChanged(auth, user => {
-            if (user) { currentUser = user; loadVideos(); }
+            if (user) { 
+                currentUser = user; 
+                loadVideos(); 
+            } else {
+                window.location.href = 'login';
+            }
         });
+
+        // --- NAVIGATION & LINKS ---
+        window.goToLogin = () => { window.location.href = 'login'; };
+        window.checkLoginAndUpload = () => { currentUser ? window.location.href = 'upload' : window.location.href = 'login'; };
 
         window.switchFeed = (type) => {
             activeTab = type;
@@ -262,6 +289,8 @@
                     const isRemix = item.remixUrl ? true : false; 
                     
                     div.innerHTML = `
+                        <div class="loader-overlay"><div class="spinner"></div></div>
+
                         <video src="${videoUrl}" class="${filterClass}" playsinline preload="metadata" ${isRemix ? 'muted' : ''}></video>
                         ${isRemix ? `<audio src="${item.remixUrl}"></audio>` : ''}
                         
@@ -269,7 +298,7 @@
                         <div class="play-icon"><i class="fas fa-play"></i></div>
 
                         <div class="sidebar">
-                            <div class="action-btn" onclick="window.location.href='profile.html?uid=${item.uid}'">
+                            <div class="action-btn" onclick="window.location.href='profile?uid=${item.uid}'">
                                 <img src="icon.png" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white;">
                             </div>
                             <button class="action-btn" onclick="handleLike('${item.key}')">
@@ -302,23 +331,54 @@
                         <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
 
+                    // --- VIDEO & AUDIO SYNC LOGIC (REMIX FIX) ---
                     const video = div.querySelector('video');
                     const audio = div.querySelector('audio');
                     const seeker = div.querySelector('.video-seeker');
                     const icon = div.querySelector('.play-icon');
+                    const loader = div.querySelector('.loader-overlay');
 
+                    // Function: Show/Hide Loader
+                    const handleBuffer = (isLoading) => {
+                        if(isLoading) {
+                            loader.style.display = 'block';
+                            icon.style.opacity = 0; // Hide play icon while loading
+                        } else {
+                            loader.style.display = 'none';
+                        }
+                    };
+
+                    // 1. SYNC WAITING EVENTS (Agar ek ruke to dusra bhi ruke)
+                    if(audio) {
+                        // If Audio Buffers -> Pause Video
+                        audio.addEventListener('waiting', () => { video.pause(); handleBuffer(true); });
+                        // If Video Buffers -> Pause Audio
+                        video.addEventListener('waiting', () => { audio.pause(); handleBuffer(true); });
+                        
+                        // When Ready -> Resume Both
+                        audio.addEventListener('playing', () => { if(video.readyState >= 3) { video.play(); handleBuffer(false); } });
+                        video.addEventListener('playing', () => { if(audio.readyState >= 3) { audio.play(); handleBuffer(false); } });
+                    } else {
+                        // Normal Video Buffering
+                        video.addEventListener('waiting', () => handleBuffer(true));
+                        video.addEventListener('playing', () => handleBuffer(false));
+                    }
+
+                    // 2. SEEK BAR UPDATE & SYNC
                     video.addEventListener('timeupdate', () => {
                         const val = (video.currentTime / video.duration) * 100;
                         seeker.value = val || 0;
                         if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) audio.currentTime = video.currentTime;
                     });
 
+                    // 3. STOP ON END (No Loop)
                     video.addEventListener('ended', () => {
                         video.pause(); video.currentTime = 0;
                         if(audio) { audio.pause(); audio.currentTime = 0; }
                         icon.style.opacity = 0.8;
                         div.classList.remove('playing');
                         seeker.value = 0;
+                        handleBuffer(false);
                     });
 
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
@@ -331,7 +391,9 @@
 
                     onValue(ref(db, `gameplay_likes/${item.key}`), s => {
                         document.getElementById(`like-count-${item.key}`).innerText = s.size || 0;
-                        document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
+                        if(currentUser) {
+                            document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
+                        }
                     });
 
                     feed.appendChild(div);
@@ -372,7 +434,8 @@
             const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`);
             get(r).then(s => s.exists() ? remove(r) : set(r, true));
         };
-        window.useSound = (url) => window.location.href = `upload.html?sound=${encodeURIComponent(url)}`;
+        
+        window.useSound = (url) => window.location.href = `upload?sound=${encodeURIComponent(url)}`;
 
         window.openShare = (url) => {
             currentShareUrl = url;
@@ -383,7 +446,7 @@
         window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Star Magic! ${currentShareUrl}`);
         window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
         window.downloadVideo = async () => {
-            alert("Downloading started... Please wait.");
+            alert("Downloading...");
             try {
                 const res = await fetch(currentShareUrl);
                 const blob = await res.blob();
@@ -391,10 +454,7 @@
                 const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'starmagic_video.mp4';
                 document.body.appendChild(a); a.click();
                 window.URL.revokeObjectURL(url);
-            } catch(e) {
-                alert("Download failed (CORS issue). Opening in new tab instead.");
-                window.open(currentShareUrl, '_blank');
-            }
+            } catch(e) { window.open(currentShareUrl, '_blank'); }
         };
 
         function setupObserver() {
@@ -406,8 +466,15 @@
                     const icon = card.querySelector('.play-icon');
                     
                     if (entry.isIntersecting) {
-                        if(audio) { video.pause(); icon.style.opacity = 0.8; } 
-                        else { video.play().catch(()=>{}); icon.style.opacity = 0; }
+                        // User interaction needed for autoplay usually
+                        // We try to play, if buffering, spinner will show
+                        if(audio) { 
+                            video.pause(); 
+                            icon.style.opacity = 0.8; 
+                        } else { 
+                            video.play().catch(()=>{}); 
+                            icon.style.opacity = 0; 
+                        }
                     } else {
                         video.pause();
                         if(audio) audio.pause();
