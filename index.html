@@ -73,17 +73,15 @@
         
         video { width: 100%; height: 100%; object-fit: contain; background: #000; transform: translateZ(0); }
         
-        /* ✅ LOADING SPINNER (New) */
+        /* LOADER SPINNER */
         .loader-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 15; display: none; /* Hidden by default */
-            pointer-events: none;
+            z-index: 15; display: none; pointer-events: none;
         }
         .spinner {
             width: 50px; height: 50px;
             border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid #FFD700; /* Gold Color */
-            border-radius: 50%;
+            border-top: 5px solid #FFD700; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -234,9 +232,8 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CLOUDINARY CONFIG
+        // CLOUDINARY
         const cl = cloudinary.Cloudinary.new({ cloud_name: 'dusj0vpsi' }); 
-        console.log("Cloudinary Connected:", 'dusj0vpsi');
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
@@ -247,7 +244,6 @@
         let activeTab = 'foryou';
         let currentShareUrl = "";
         
-        // --- STRICT LOGIN CHECK ---
         onAuthStateChanged(auth, user => {
             if (user) { 
                 currentUser = user; 
@@ -257,7 +253,6 @@
             }
         });
 
-        // --- NAVIGATION & LINKS ---
         window.goToLogin = () => { window.location.href = 'login'; };
         window.checkLoginAndUpload = () => { currentUser ? window.location.href = 'upload' : window.location.href = 'login'; };
 
@@ -270,11 +265,19 @@
 
         function loadVideos() {
             const feed = document.getElementById('feed');
+            
+            // Check for Deep Link ID (?video=ID)
+            const params = new URLSearchParams(window.location.search);
+            const deepLinkId = params.get('video');
+
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
                 if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
+                
+                // If Deep Link, bring that video to top or just sort normal
+                // Here we just keep standard sort by time
                 videos.sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
@@ -305,6 +308,10 @@
                                 <i class="fas fa-heart" id="like-icon-${item.key}"></i>
                                 <span id="like-count-${item.key}">0</span>
                             </button>
+                            <button class="action-btn">
+                                <i class="fas fa-comment-dots"></i>
+                                <span>0</span>
+                            </button>
                             <button class="action-btn" onclick="openShare('${item.videoUrl}')">
                                 <i class="fas fa-share"></i>
                                 <span>Share</span>
@@ -331,47 +338,38 @@
                         <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
 
-                    // --- VIDEO & AUDIO SYNC LOGIC (REMIX FIX) ---
+                    // --- LOGIC ---
                     const video = div.querySelector('video');
                     const audio = div.querySelector('audio');
                     const seeker = div.querySelector('.video-seeker');
                     const icon = div.querySelector('.play-icon');
                     const loader = div.querySelector('.loader-overlay');
 
-                    // Function: Show/Hide Loader
                     const handleBuffer = (isLoading) => {
                         if(isLoading) {
                             loader.style.display = 'block';
-                            icon.style.opacity = 0; // Hide play icon while loading
+                            icon.style.opacity = 0; 
                         } else {
                             loader.style.display = 'none';
                         }
                     };
 
-                    // 1. SYNC WAITING EVENTS (Agar ek ruke to dusra bhi ruke)
                     if(audio) {
-                        // If Audio Buffers -> Pause Video
                         audio.addEventListener('waiting', () => { video.pause(); handleBuffer(true); });
-                        // If Video Buffers -> Pause Audio
                         video.addEventListener('waiting', () => { audio.pause(); handleBuffer(true); });
-                        
-                        // When Ready -> Resume Both
                         audio.addEventListener('playing', () => { if(video.readyState >= 3) { video.play(); handleBuffer(false); } });
                         video.addEventListener('playing', () => { if(audio.readyState >= 3) { audio.play(); handleBuffer(false); } });
                     } else {
-                        // Normal Video Buffering
                         video.addEventListener('waiting', () => handleBuffer(true));
                         video.addEventListener('playing', () => handleBuffer(false));
                     }
 
-                    // 2. SEEK BAR UPDATE & SYNC
                     video.addEventListener('timeupdate', () => {
                         const val = (video.currentTime / video.duration) * 100;
                         seeker.value = val || 0;
                         if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) audio.currentTime = video.currentTime;
                     });
 
-                    // 3. STOP ON END (No Loop)
                     video.addEventListener('ended', () => {
                         video.pause(); video.currentTime = 0;
                         if(audio) { audio.pause(); audio.currentTime = 0; }
@@ -398,6 +396,15 @@
 
                     feed.appendChild(div);
                 });
+                
+                // SCROLL TO VIDEO IF ID IN URL
+                if(deepLinkId) {
+                    setTimeout(() => {
+                        const target = document.querySelector(`[data-id="${deepLinkId}"]`);
+                        if(target) target.scrollIntoView();
+                    }, 500);
+                }
+
                 setupObserver();
             });
         }
@@ -466,8 +473,10 @@
                     const icon = card.querySelector('.play-icon');
                     
                     if (entry.isIntersecting) {
-                        // User interaction needed for autoplay usually
-                        // We try to play, if buffering, spinner will show
+                        // UPDATE URL ID WHEN VIDEO PLAYS
+                        const vidId = card.getAttribute('data-id');
+                        window.history.replaceState(null, null, "?video=" + vidId);
+
                         if(audio) { 
                             video.pause(); 
                             icon.style.opacity = 0.8; 
