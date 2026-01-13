@@ -3,98 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Studio - Verbotube</title>
+    <title>Pro Studio - Verbotube</title>
     <link rel="icon" type="image/png" href="icon.png">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
+        body { background: #000; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
-        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #111; z-index: 50; }
-        .next-btn { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; padding: 8px 20px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; }
+        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #111; border-bottom: 1px solid #333; z-index: 50; }
+        .title { font-weight: bold; color: #FFD700; letter-spacing: 1px; font-size: 18px; }
+        .next-btn { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; padding: 8px 25px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
 
         /* PREVIEW AREA */
-        .preview-box { flex: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        video { max-width: 100%; max-height: 100%; }
+        .preview-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; position: relative; overflow: hidden; }
+        video { max-width: 100%; max-height: 80vh; box-shadow: 0 0 20px rgba(255, 215, 0, 0.1); }
         
-        /* TEXT OVERLAY */
-        #overlayText { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px black; cursor: grab; user-select: none; display: none; }
+        /* TEXT OVERLAY PREVIEW */
+        #textLayer { 
+            position: absolute; color: white; font-weight: bold; font-size: 24px; 
+            text-shadow: 2px 2px 4px black; font-family: Impact, sans-serif;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            display: none; pointer-events: none; text-align: center;
+        }
 
-        /* TOOLBAR */
-        .toolbar { background: #111; padding: 10px; overflow-x: auto; display: flex; gap: 20px; border-top: 1px solid #333; }
-        .tool { display: flex; flex-direction: column; align-items: center; min-width: 60px; color: #aaa; font-size: 12px; cursor: pointer; }
-        .tool i { font-size: 20px; margin-bottom: 5px; }
-        .tool.active { color: #FFD700; }
-
-        /* CONTROLS PANEL */
-        .controls-panel { background: #1a1a1a; padding: 15px; height: 180px; display: none; flex-direction: column; gap: 15px; overflow-y: auto; border-top: 1px solid #333; }
+        /* EDITOR CONTROLS */
+        .controls { background: #111; padding: 10px; border-top: 1px solid #333; height: 280px; display: flex; flex-direction: column; }
         
-        label { font-size: 12px; color: #888; display: flex; justify-content: space-between; }
-        input[type="range"] { width: 100%; accent-color: #FFD700; }
-        
-        .speed-opts { display: flex; gap: 10px; justify-content: center; }
-        .speed-btn { background: #333; border: 1px solid #555; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        .speed-btn.active { background: #FFD700; color: black; }
+        /* TABS */
+        .tabs { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid #222; margin-bottom: 10px; }
+        .tab { color: #888; font-size: 13px; cursor: pointer; white-space: nowrap; padding: 5px 10px; border-radius: 15px; background: #222; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .tab.active { background: #FFD700; color: black; font-weight: bold; }
+        .tab i { font-size: 14px; }
 
-        /* LOADING */
-        .loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index: 100; display:none; justify-content:center; align-items:center; flex-direction:column; }
+        /* PANELS */
+        .panel { display: none; height: 100%; overflow-y: auto; }
+        .panel.active { display: block; }
+
+        /* FILTER GRID */
+        .effect-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .effect-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .effect-box { width: 50px; height: 50px; background: #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; border: 2px solid transparent; font-size: 20px; color: #ccc; }
+        .effect-item.selected .effect-box { border-color: #FFD700; color: #FFD700; background: #222; }
+        .effect-label { font-size: 10px; margin-top: 5px; color: #888; }
+
+        /* RANGE SLIDERS */
+        .range-wrap { margin-bottom: 15px; }
+        .range-wrap label { display: flex; justify-content: space-between; font-size: 12px; color: #ccc; margin-bottom: 5px; }
+        input[type=range] { width: 100%; accent-color: #FFD700; height: 4px; border-radius: 5px; cursor: pointer; }
+        input[type=text] { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+
+        /* LOADER */
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 200; display:none; justify-content:center; align-items:center; flex-direction:column; }
+        .loading-bar { width: 200px; height: 5px; background: #333; border-radius: 5px; margin-top: 15px; overflow: hidden; }
+        .bar-fill { height: 100%; background: #FFD700; width: 0%; transition: 0.3s; }
+        .loader-text { color: #FFD700; margin-top: 10px; font-size: 14px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
     <div id="fileScreen" style="height:100%; display:flex; justify-content:center; align-items:center; flex-direction:column;">
-        <div onclick="document.getElementById('vidInput').click()" style="width:80px; height:80px; background:#222; border-radius:50%; display:flex; justify-content:center; align-items:center; border:2px dashed #FFD700; cursor:pointer;">
-            <i class="fas fa-plus" style="font-size:30px; color:#FFD700;"></i>
+        <div onclick="document.getElementById('fileInput').click()" style="width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg, #111, #000); border:2px dashed #FFD700; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); animation: float 3s infinite;">
+            <i class="fas fa-plus" style="font-size:40px; color:#FFD700;"></i>
         </div>
-        <p>Select Video</p>
-        <input type="file" id="vidInput" accept="video/*" style="display:none" onchange="loadVideo(this)">
+        <h3 style="margin-top:20px; color:#FFD700; text-transform: uppercase;">Pro Studio</h3>
+        <p style="color:#666; font-size:13px;">Create. Edit. Viral.</p>
+        <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="loadFile(this)">
     </div>
 
-    <div id="editorUI" style="display:none; height:100%; flex-direction:column;">
+    <div id="editorScreen" style="display:none; height:100%; flex-direction:column;">
         <div class="header">
-            <i class="fas fa-times" onclick="location.reload()" style="font-size:20px; cursor:pointer;"></i>
-            <button class="next-btn" onclick="uploadVideo()">POST</button>
+            <i class="fas fa-times" onclick="location.reload()" style="font-size:20px; cursor:pointer; color:#888;"></i>
+            <div class="title">EDITOR</div>
+            <button class="next-btn" onclick="processAndUpload()">POST</button>
         </div>
 
-        <div class="preview-box">
-            <video id="mainVideo" playsinline loop onclick="this.paused ? this.play() : this.pause()"></video>
-            <div id="overlayText">Text Here</div>
+        <div class="preview-area">
+            <video id="mainVideo" playsinline loop onclick="togglePlay()"></video>
+            <div id="textLayer"></div>
         </div>
 
-        <div id="panel-adjust" class="controls-panel">
-            <label>Brightness</label><input type="range" min="0" max="200" value="100" oninput="updateFilter()">
-            <label>Contrast</label><input type="range" min="0" max="200" value="100" oninput="updateFilter()">
-            <label>Saturation</label><input type="range" min="0" max="200" value="100" oninput="updateFilter()">
-        </div>
+        <div class="controls">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('effects', this)"><i class="fas fa-magic"></i> Effects</div>
+                <div class="tab" onclick="switchTab('trim', this)"><i class="fas fa-cut"></i> Trim</div>
+                <div class="tab" onclick="switchTab('text', this)"><i class="fas fa-font"></i> Text</div>
+                <div class="tab" onclick="switchTab('speed', this)"><i class="fas fa-tachometer-alt"></i> Speed</div>
+            </div>
 
-        <div id="panel-speed" class="controls-panel">
-            <p style="text-align:center; margin:0 0 10px;">Playback Speed</p>
-            <div class="speed-opts">
-                <button class="speed-btn" onclick="setSpeed(0.5, this)">0.5x</button>
-                <button class="speed-btn active" onclick="setSpeed(1, this)">1x</button>
-                <button class="speed-btn" onclick="setSpeed(1.5, this)">1.5x</button>
-                <button class="speed-btn" onclick="setSpeed(2, this)">2x</button>
+            <div id="p-effects" class="panel active">
+                <div class="effect-grid">
+                    <div class="effect-item selected" onclick="setEffect('', this)"><div class="effect-box"><i class="fas fa-ban"></i></div><span class="effect-label">None</span></div>
+                    <div class="effect-item" onclick="setEffect('e_art:incognito', this)"><div class="effect-box"><i class="fas fa-user-secret"></i></div><span class="effect-label">Incognito</span></div>
+                    <div class="effect-item" onclick="setEffect('e_vignette:50', this)"><div class="effect-box"><i class="fas fa-circle"></i></div><span class="effect-label">Vignette</span></div>
+                    <div class="effect-item" onclick="setEffect('e_pixelate:10', this)"><div class="effect-box"><i class="fas fa-th"></i></div><span class="effect-label">Pixel</span></div>
+                    <div class="effect-item" onclick="setEffect('e_cartoonify', this)"><div class="effect-box"><i class="fas fa-paint-brush"></i></div><span class="effect-label">Cartoon</span></div>
+                    <div class="effect-item" onclick="setEffect('e_negate', this)"><div class="effect-box"><i class="fas fa-adjust"></i></div><span class="effect-label">Invert</span></div>
+                    <div class="effect-item" onclick="setEffect('e_sepia:80', this)"><div class="effect-box" style="color:#cda434"><i class="fas fa-filter"></i></div><span class="effect-label">Sepia</span></div>
+                    <div class="effect-item" onclick="setEffect('e_grayscale', this)"><div class="effect-box"><i class="fas fa-tint-slash"></i></div><span class="effect-label">B&W</span></div>
+                </div>
+            </div>
+
+            <div id="p-trim" class="panel">
+                <div class="range-wrap">
+                    <label><span>Start</span> <span id="startVal" style="color:#FFD700">0.0s</span></label>
+                    <input type="range" id="startRange" value="0" step="0.1" oninput="updateTrim()">
+                </div>
+                <div class="range-wrap">
+                    <label><span>End</span> <span id="endVal" style="color:#FFD700">End</span></label>
+                    <input type="range" id="endRange" value="100" step="0.1" oninput="updateTrim()">
+                </div>
+                <p style="font-size:12px; color:#555; text-align:center; margin-top:10px;"><i class="fas fa-info-circle"></i> Trim happens on upload.</p>
+            </div>
+
+            <div id="p-text" class="panel">
+                <input type="text" id="overlayInput" placeholder="Enter text to burn on video..." oninput="updateTextPreview()">
+                <div style="margin-top:15px; display:flex; gap:10px;">
+                    <button onclick="setTextPosition('north')" style="flex:1; padding:10px; background:#222; color:white; border:1px solid #444; border-radius:5px;">Top</button>
+                    <button onclick="setTextPosition('center')" style="flex:1; padding:10px; background:#222; color:white; border:1px solid #444; border-radius:5px;">Center</button>
+                    <button onclick="setTextPosition('south')" style="flex:1; padding:10px; background:#222; color:white; border:1px solid #444; border-radius:5px;">Bottom</button>
+                </div>
+                <p style="font-size:11px; color:#666; margin-top:10px;">* Text will be permanently burned into video.</p>
+            </div>
+
+            <div id="p-speed" class="panel">
+                <div class="effect-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="effect-item" onclick="setSpeed('e_accelerate:-50', 0.5, this)"><div class="effect-box">0.5x</div><span class="effect-label">Slow Mo</span></div>
+                    <div class="effect-item selected" onclick="setSpeed('', 1.0, this)"><div class="effect-box">1x</div><span class="effect-label">Normal</span></div>
+                    <div class="effect-item" onclick="setSpeed('e_accelerate:50', 1.5, this)"><div class="effect-box">1.5x</div><span class="effect-label">Fast</span></div>
+                </div>
+                <div style="margin-top:20px; text-align:center;">
+                    <button onclick="setReverse(this)" style="background:#222; color:white; border:1px solid #FFD700; padding:10px 20px; border-radius:20px; font-weight:bold;">
+                        <i class="fas fa-history"></i> Reverse Video
+                    </button>
+                </div>
             </div>
         </div>
-
-        <div id="panel-text" class="controls-panel">
-            <input type="text" id="txtInput" placeholder="Enter text..." style="padding:10px; width:100%; background:#333; border:none; color:white; border-radius:5px;" oninput="updateText()">
-            <label>Color <input type="color" oninput="document.getElementById('overlayText').style.color=this.value"></label>
-            <button onclick="toggleText(false)" style="margin-top:10px; background:red; border:none; color:white; padding:5px; border-radius:5px;">Remove Text</button>
-        </div>
-
-        <div class="toolbar">
-            <div class="tool" onclick="showPanel('adjust')"><i class="fas fa-sliders-h"></i>Adjust</div>
-            <div class="tool" onclick="showPanel('speed')"><i class="fas fa-tachometer-alt"></i>Speed</div>
-            <div class="tool" onclick="showPanel('text')"><i class="fas fa-font"></i>Text</div>
-            <div class="tool" onclick="document.getElementById('mainVideo').muted = !document.getElementById('mainVideo').muted"><i class="fas fa-volume-mute"></i>Mute</div>
-        </div>
     </div>
 
-    <div class="loader" id="loader">
-        <i class="fas fa-circle-notch fa-spin" style="font-size:40px; color:#FFD700;"></i>
-        <p id="progressText">Processing...</p>
+    <div id="loader">
+        <div style="position:relative;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size:50px; color:#FFD700;"></i>
+            <i class="fas fa-video" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:20px; color:white;"></i>
+        </div>
+        <h3 style="margin-top:20px; color:white;">Rendering Video...</h3>
+        <p class="loader-text">Applying Cloud Effects</p>
+        <div class="loading-bar"><div class="bar-fill" id="uploadBar"></div></div>
     </div>
 
     <script type="module">
@@ -107,120 +164,178 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         
-        let currentUser = null;
+        const CLOUD_NAME = "dusj0vpsi";
+        const UPLOAD_PRESET = "paravideo";
+
         let selectedFile = null;
-        let filters = { brightness: 100, contrast: 100, saturate: 100 };
+        let currentUser = null;
+        let videoDuration = 0;
+        
+        // Editor State
+        let currentEffect = "";
+        let currentSpeed = "";
+        let isReverse = false;
+        let textOverlay = "";
+        let textPos = "center";
 
         onAuthStateChanged(auth, user => {
             if(user) currentUser = user;
             else window.location.href = 'login';
         });
 
-        window.loadVideo = (input) => {
-            if(input.files[0]) {
+        window.loadFile = (input) => {
+            if(input.files && input.files[0]) {
                 selectedFile = input.files[0];
+                const vid = document.getElementById('mainVideo');
+                vid.src = URL.createObjectURL(selectedFile);
+                vid.onloadedmetadata = () => {
+                    videoDuration = vid.duration;
+                    document.getElementById('startRange').max = videoDuration;
+                    document.getElementById('endRange').max = videoDuration;
+                    document.getElementById('endRange').value = videoDuration;
+                    document.getElementById('endVal').innerText = videoDuration.toFixed(1) + "s";
+                };
                 document.getElementById('fileScreen').style.display = 'none';
-                document.getElementById('editorUI').style.display = 'flex';
-                document.getElementById('mainVideo').src = URL.createObjectURL(selectedFile);
+                document.getElementById('editorScreen').style.display = 'flex';
+                vid.play();
             }
         };
 
-        window.showPanel = (id) => {
-            document.querySelectorAll('.controls-panel').forEach(p => p.style.display = 'none');
-            const panel = document.getElementById('panel-' + id);
-            if(panel) panel.style.display = 'flex';
-            if(id === 'text') toggleText(true);
+        window.togglePlay = () => {
+            const v = document.getElementById('mainVideo');
+            v.paused ? v.play() : v.pause();
         };
 
-        window.updateFilter = () => {
-            const inputs = document.querySelectorAll('#panel-adjust input');
-            filters.brightness = inputs[0].value;
-            filters.contrast = inputs[1].value;
-            filters.saturate = inputs[2].value;
-            document.getElementById('mainVideo').style.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
-        };
-
-        window.setSpeed = (speed, btn) => {
-            document.getElementById('mainVideo').playbackRate = speed;
-            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        window.switchTab = (name, btn) => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
+            document.getElementById('p-'+name).classList.add('active');
         };
 
-        window.toggleText = (show) => {
-            document.getElementById('overlayText').style.display = show ? 'block' : 'none';
+        // --- EDITING FUNCTIONS ---
+        window.setEffect = (effectCode, el) => {
+            currentEffect = effectCode;
+            // Visual feedback only (Real effect happens on server)
+            document.querySelectorAll('#p-effects .effect-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            // Basic preview using CSS (Not perfect but gives idea)
+            const v = document.getElementById('mainVideo');
+            v.style.filter = "none";
+            if(effectCode.includes("sepia")) v.style.filter = "sepia(0.8)";
+            if(effectCode.includes("grayscale")) v.style.filter = "grayscale(1)";
+            if(effectCode.includes("negate")) v.style.filter = "invert(1)";
         };
 
-        window.updateText = () => {
-            document.getElementById('overlayText').innerText = document.getElementById('txtInput').value || "Text Here";
+        window.setSpeed = (speedCode, playbackRate, el) => {
+            currentSpeed = speedCode;
+            document.getElementById('mainVideo').playbackRate = playbackRate;
+            document.querySelectorAll('#p-speed .effect-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
         };
 
-        // DRAG TEXT LOGIC
-        const textEl = document.getElementById('overlayText');
-        let isDragging = false;
+        window.setReverse = (btn) => {
+            isReverse = !isReverse;
+            btn.style.background = isReverse ? "#FFD700" : "#222";
+            btn.style.color = isReverse ? "black" : "white";
+        };
 
-        textEl.addEventListener('mousedown', () => isDragging = true);
-        window.addEventListener('mouseup', () => isDragging = false);
-        window.addEventListener('mousemove', (e) => {
-            if(isDragging) {
-                const rect = document.querySelector('.preview-box').getBoundingClientRect();
-                textEl.style.left = (e.clientX - rect.left) + 'px';
-                textEl.style.top = (e.clientY - rect.top) + 'px';
-                textEl.style.transform = 'translate(-50%, -50%)';
-            }
-        });
+        window.updateTrim = () => {
+            const start = parseFloat(document.getElementById('startRange').value);
+            const end = parseFloat(document.getElementById('endRange').value);
+            document.getElementById('startVal').innerText = start.toFixed(1) + "s";
+            document.getElementById('endVal').innerText = end.toFixed(1) + "s";
+            
+            const v = document.getElementById('mainVideo');
+            if(v.currentTime < start || v.currentTime > end) v.currentTime = start;
+        };
 
-        // DRAG TEXT (TOUCH)
-        textEl.addEventListener('touchstart', () => isDragging = true);
-        window.addEventListener('touchend', () => isDragging = false);
-        window.addEventListener('touchmove', (e) => {
-            if(isDragging) {
-                const touch = e.touches[0];
-                const rect = document.querySelector('.preview-box').getBoundingClientRect();
-                textEl.style.left = (touch.clientX - rect.left) + 'px';
-                textEl.style.top = (touch.clientY - rect.top) + 'px';
-            }
-        });
+        window.updateTextPreview = () => {
+            textOverlay = document.getElementById('overlayInput').value;
+            const layer = document.getElementById('textLayer');
+            layer.innerText = textOverlay;
+            layer.style.display = textOverlay ? 'block' : 'none';
+        };
 
-        window.uploadVideo = async () => {
+        window.setTextPosition = (pos) => {
+            textPos = pos;
+            const layer = document.getElementById('textLayer');
+            layer.style.top = (pos === 'north') ? '20%' : (pos === 'south') ? '80%' : '50%';
+        };
+
+        // --- UPLOAD & PROCESS LOGIC ---
+        window.processAndUpload = async () => {
             document.getElementById('loader').style.display = 'flex';
             
-            // NOTE: Filters are visual only in this browser version.
-            // To burn filters into video, backend processing (FFmpeg) is needed.
-            // Here we upload raw video but save filter metadata to apply during playback.
-
             const fd = new FormData();
             fd.append("file", selectedFile);
-            fd.append("upload_preset", "paravideo");
+            fd.append("upload_preset", UPLOAD_PRESET);
 
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/dusj0vpsi/video/upload`);
+            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
             
             xhr.upload.onprogress = e => {
-                const p = Math.round((e.loaded / e.total) * 100);
-                document.getElementById('progressText').innerText = `Uploading ${p}%`;
+                const percent = (e.loaded / e.total) * 100;
+                document.getElementById('uploadBar').style.width = percent + "%";
             };
 
             xhr.onload = async () => {
                 if(xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
+                    let finalUrl = data.secure_url;
+
+                    // --- CONSTRUCT TRANSFORMATION STRING ---
+                    // Cloudinary Chain: Trim -> Speed -> Reverse -> Effect -> Text -> Optimize
                     
+                    let transforms = [];
+                    const start = document.getElementById('startRange').value;
+                    const end = document.getElementById('endRange').value;
+
+                    // 1. Trim
+                    if(start > 0) transforms.push(`so_${start}`);
+                    if(end < videoDuration) transforms.push(`eo_${end}`);
+
+                    // 2. Speed & Reverse
+                    if(currentSpeed) transforms.push(currentSpeed);
+                    if(isReverse) transforms.push("e_reverse");
+
+                    // 3. Visual Effects
+                    if(currentEffect) transforms.push(currentEffect);
+
+                    // 4. Text Overlay (Burned In)
+                    if(textOverlay) {
+                        // Safe URL encoding for text
+                        const safeText = encodeURIComponent(textOverlay).replace(/%20/g, "%20");
+                        transforms.push(`l_text:Impact_50:${safeText},g_${textPos},co_white,bo_2px_solid_black`);
+                    }
+
+                    // 5. Optimization (Always last)
+                    transforms.push("q_auto,w_720");
+
+                    // Inject into URL
+                    if(transforms.length > 0) {
+                        const insertionIndex = finalUrl.indexOf("/upload/") + 8;
+                        finalUrl = finalUrl.slice(0, insertionIndex) + transforms.join(",") + "/" + finalUrl.slice(insertionIndex);
+                    }
+
+                    // Save to Firebase
                     const uSnap = await get(ref(db, 'users/' + currentUser.uid));
                     const username = uSnap.exists() ? uSnap.val().username : "User";
 
-                    // Save Metadata including Filters
                     await push(ref(db, 'gameplay_clips'), {
-                        videoUrl: data.secure_url,
-                        caption: document.getElementById('txtInput').value || "My Video",
-                        cssFilter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`, // Saved Filter
+                        videoUrl: finalUrl,
+                        caption: textOverlay || "My Edit",
                         uid: currentUser.uid,
                         uploader: username,
                         timestamp: Date.now(),
-                        isHD: true
+                        isHD: true,
+                        views: 0
                     });
 
                     window.location.href = 'profile';
                 } else {
-                    alert("Upload Failed");
+                    alert("Upload Failed. Check internet.");
                     document.getElementById('loader').style.display = 'none';
                 }
             };
