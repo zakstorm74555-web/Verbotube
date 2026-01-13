@@ -15,6 +15,7 @@
     <meta property="og:type" content="website">
     
     <link rel="icon" type="image/png" href="icon.png">
+    <link rel="shortcut icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
@@ -267,7 +268,6 @@
         function loadVideos() {
             const feed = document.getElementById('feed');
             
-            // Check for Deep Link ID (?video=ID)
             const params = new URLSearchParams(window.location.search);
             const deepLinkId = params.get('video');
 
@@ -276,9 +276,6 @@
                 if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                
-                // If Deep Link, bring that video to top or just sort normal
-                // Here we just keep standard sort by time
                 videos.sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
@@ -339,7 +336,6 @@
                         <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
 
-                    // --- LOGIC ---
                     const video = div.querySelector('video');
                     const audio = div.querySelector('audio');
                     const seeker = div.querySelector('.video-seeker');
@@ -398,7 +394,6 @@
                     feed.appendChild(div);
                 });
                 
-                // SCROLL TO VIDEO IF ID IN URL
                 if(deepLinkId) {
                     setTimeout(() => {
                         const target = document.querySelector(`[data-id="${deepLinkId}"]`);
@@ -451,7 +446,6 @@
         };
         window.closeShare = () => document.getElementById('shareSheet').style.bottom = "-100%";
 
-        // ✅ 4. BRANDING: WHATSAPP TEXT & FILE NAME CHANGED
         window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Verbotube! ${currentShareUrl}`);
         window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
         window.downloadVideo = async () => {
@@ -475,7 +469,6 @@
                     const icon = card.querySelector('.play-icon');
                     
                     if (entry.isIntersecting) {
-                        // UPDATE URL ID WHEN VIDEO PLAYS
                         const vidId = card.getAttribute('data-id');
                         window.history.replaceState(null, null, "?video=" + vidId);
 
