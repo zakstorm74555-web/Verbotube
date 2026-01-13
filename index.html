@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
-    <title>Star Magic - Short Video Platform</title>
     
-    <meta name="description" content="Star Magic is the ultimate short video app. Watch viral clips, gaming moments, and share your magic with the world.">
-    <meta name="application-name" content="Star Magic">
-    <meta property="og:site_name" content="Star Magic">
-    <meta property="og:title" content="Star Magic">
+    <title>Verbotube - Short Video Platform</title>
+    
+    <meta name="description" content="Verbotube is the ultimate short video app. Watch viral clips, gaming moments, and share your magic with the world.">
+    <meta name="application-name" content="Verbotube">
+    <meta property="og:site_name" content="Verbotube">
+    <meta property="og:title" content="Verbotube">
     <meta property="og:type" content="website">
     
     <link rel="icon" type="image/png" href="icon.png">
@@ -22,16 +23,16 @@
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Star Magic",
+      "name": "Verbotube",
       "url": "https://starmagic.vercel.app/",
-      "alternateName": ["Star Magic App", "StarMagic"]
+      "alternateName": ["Verbotube App", "Verbo Tube"]
     }
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- STAR MAGIC THEME --- */
+        /* --- VERBOTUBE THEME --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; 
@@ -450,7 +451,8 @@
         };
         window.closeShare = () => document.getElementById('shareSheet').style.bottom = "-100%";
 
-        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Star Magic! ${currentShareUrl}`);
+        // ✅ 4. BRANDING: WHATSAPP TEXT & FILE NAME CHANGED
+        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Verbotube! ${currentShareUrl}`);
         window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
         window.downloadVideo = async () => {
             alert("Downloading...");
@@ -458,7 +460,7 @@
                 const res = await fetch(currentShareUrl);
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'starmagic_video.mp4';
+                const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'verbotube_video.mp4';
                 document.body.appendChild(a); a.click();
                 window.URL.revokeObjectURL(url);
             } catch(e) { window.open(currentShareUrl, '_blank'); }
