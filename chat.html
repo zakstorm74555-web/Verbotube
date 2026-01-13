@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat - Star Magic</title>
+    <title>Chat - Verbotube</title>
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- STAR MAGIC THEME --- */
+        /* --- VERBOTUBE THEME --- */
         * { box-sizing: border-box; }
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
         
@@ -19,7 +19,7 @@
             background: #111; padding: 15px; display: flex; align-items: center; gap: 15px; 
             border-bottom: 1px solid #333; 
         }
-        .back-btn { color: #FFD700; background: none; border: none; font-size: 22px; cursor: pointer; } /* Gold Arrow */
+        .back-btn { color: #FFD700; background: none; border: none; font-size: 22px; cursor: pointer; } 
         .chat-title { font-weight: bold; font-size: 18px; flex: 1; text-transform: capitalize; color: white; }
         
         /* MESSAGES AREA */
@@ -30,11 +30,11 @@
         
         .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 15px; position: relative; word-wrap: break-word; }
         
-        /* STAR MAGIC COLORS */
+        /* VERBOTUBE COLORS */
         .msg-me { 
             align-self: flex-end; 
-            background: #FFD700; /* Gold Background */
-            color: black; /* Black Text for contrast */
+            background: #FFD700; /* Gold */
+            color: black; 
             border-bottom-right-radius: 4px; 
             font-weight: 500;
         }
@@ -90,7 +90,6 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // CONFIG SAMA RAKHA HAI
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -119,7 +118,8 @@
                     loadMessages();
                 }
             } else {
-                window.location.href = 'index.html';
+                // ✅ CLEAN URL: Redirect to login
+                window.location.href = 'login';
             }
         });
 
@@ -177,7 +177,7 @@
             if (Notification.permission === "granted") {
                 new Notification(`Message from ${otherName || 'User'}`, {
                     body: text,
-                    icon: "https://i.ibb.co/fvz5S9J/ZsDDGHQ.png" // Updated Logo Link
+                    icon: "icon.png" // ✅ LOCAL ICON
                 });
             }
         }
