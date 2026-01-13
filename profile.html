@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profile - Star Magic</title>
+    <title>Profile - Verbotube</title>
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- STAR MAGIC DARK THEME --- */
+        /* --- VERBOTUBE THEME --- */
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 50px; }
         
@@ -33,7 +33,7 @@
         .name { font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
         .bio { color: #aaa; font-size: 14px; margin-top: 5px; }
         
-        /* Gold Tick for Star Magic */
+        /* Gold Tick */
         .blue-tick { color: #FFD700; font-size: 16px; margin-left: 5px; text-shadow: 0 0 5px #FFD700; }
 
         .stats { display: flex; gap: 10px; margin: 15px 0; background: #111; padding: 15px; border-radius: 10px; justify-content: space-around; border: 1px solid #333; }
@@ -43,7 +43,7 @@
 
         .btn { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 14px; transition: all 0.2s; }
         
-        /* Primary Button (Follow/Edit) - Gold/Red Gradient */
+        /* Primary Button */
         .btn-follow { 
             background: linear-gradient(135deg, #FFD700, #FF0000); 
             color: black; 
@@ -51,7 +51,7 @@
             box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
         } 
         
-        /* Secondary Button (Following) - Black with Gold Border */
+        /* Secondary Button */
         .btn-following { 
             background: #000; 
             color: #FFD700; 
@@ -83,7 +83,7 @@
 
     <div class="container">
         <div class="nav-bar">
-            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
             <div class="page-title" id="pageTitle">Profile</div>
         </div>
 
@@ -169,7 +169,10 @@
                 const params = new URLSearchParams(window.location.search);
                 profileUID = params.get('uid') || user.uid;
                 loadProfile(user);
-            } else { window.location.href = 'index.html'; }
+            } else { 
+                // ✅ CLEAN URL: Redirect to login
+                window.location.href = 'login'; 
+            }
         });
 
         async function loadProfile(currentUser) {
@@ -209,7 +212,8 @@
                         const delBtn = (myUID === profileUID) ? `<div class="del-btn" onclick="window.deleteVideo(event, '${k}')"><i class="fas fa-trash"></i></div>` : '';
                         
                         div.innerHTML = `<video src="${vid.videoUrl}"></video>${delBtn}`;
-                        div.onclick = () => { window.location.href = `index.html#v=${k}`; };
+                        // ✅ CLEAN URL LINKING
+                        div.onclick = () => { window.location.href = `index?video=${k}`; };
                         
                         grid.appendChild(div);
                     });
