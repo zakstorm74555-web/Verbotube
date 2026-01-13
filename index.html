@@ -310,7 +310,7 @@
                                 <i class="fas fa-comment-dots"></i>
                                 <span>0</span>
                             </button>
-                            <button class="action-btn" onclick="openShare('${item.videoUrl}')">
+                            <button class="action-btn" onclick="openShare('https://verbotube.vercel.app/?video=${item.key}')">
                                 <i class="fas fa-share"></i>
                                 <span>Share</span>
                             </button>
@@ -371,7 +371,6 @@
                         if(audio) { audio.currentTime = 0; audio.play(); }
                     });
 
-                    // ✅ PROFILE PIC & DISC IMAGE FIX
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
                         const u = uSnap.val();
                         if (u) {
@@ -446,16 +445,26 @@
 
         window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Verbotube! ${currentShareUrl}`);
         window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
+        
+        // ✅ Download function still uses the raw video link which is fine
         window.downloadVideo = async () => {
             alert("Downloading...");
             try {
-                const res = await fetch(currentShareUrl);
+                // Here we fetch the RAW video URL because we need the file
+                const videoElement = document.querySelector('.video-card.playing video'); 
+                const rawUrl = videoElement ? videoElement.src : currentShareUrl; // Fallback
+
+                const res = await fetch(rawUrl);
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'verbotube_video.mp4';
                 document.body.appendChild(a); a.click();
                 window.URL.revokeObjectURL(url);
-            } catch(e) { window.open(currentShareUrl, '_blank'); }
+            } catch(e) { 
+                // If blob fails, just open the raw link
+                const videoElement = document.querySelector('.video-card.playing video');
+                window.open(videoElement ? videoElement.src : currentShareUrl, '_blank'); 
+            }
         };
 
         function setupObserver() {
