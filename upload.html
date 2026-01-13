@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Studio - Star Magic</title>
+    <title>Studio - Verbotube</title>
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- STAR MAGIC STUDIO THEME --- */
+        /* --- VERBOTUBE STUDIO THEME --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
@@ -155,7 +155,7 @@
 
     <div class="post-sheet" id="postSheet">
         <div class="sheet-header">Post Settings</div>
-        <textarea id="caption" placeholder="Describe your magic... #StarMagic"></textarea>
+        <textarea id="caption" placeholder="Describe your magic... #Verbotube"></textarea>
         
         <div style="display:flex; justify-content:space-between; padding:10px; background:#222; border-radius:10px;">
             <span>Who can watch?</span>
@@ -204,7 +204,7 @@
 
         onAuthStateChanged(auth, user => {
             if (user) { currentUser = user; }
-            else window.location.href = 'index.html';
+            else window.location.href = 'login';
         });
 
         window.loadVideo = (input) => {
@@ -227,7 +227,6 @@
             }
         };
 
-        // --- AUDIO SYNC FIX ---
         window.togglePlay = () => {
             const vid = document.getElementById('mainVideo');
             const aud = document.getElementById('remixAudio');
@@ -272,7 +271,6 @@
             elem.classList.add('selected');
         };
 
-        // --- SOUND LOGIC ---
         window.openSounds = () => {
             document.getElementById('soundModal').style.display = 'flex';
             document.getElementById('btnSound').classList.add('active');
@@ -314,7 +312,6 @@
             document.getElementById('soundName').innerText = name.substring(0,15) + "...";
         }
 
-        // --- POST LOGIC ---
         window.openPostSheet = () => {
             document.getElementById('mainVideo').pause();
             document.getElementById('remixAudio').pause();
@@ -357,7 +354,8 @@
                         timestamp: Date.now()
                     });
 
-                    window.location.href = 'index.html';
+                    // ✅ REDIRECT TO PROFILE (Clean URL)
+                    window.location.href = 'profile';
                 } else {
                     alert("Upload Failed");
                     document.getElementById('loader').style.display = 'none';
