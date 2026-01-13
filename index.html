@@ -232,7 +232,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // ✅ IMPORTED runTransaction to count views
+        import { getDatabase, ref, onValue, get, set, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // CLOUDINARY
         const cl = cloudinary.Cloudinary.new({ cloud_name: 'dusj0vpsi' }); 
@@ -283,7 +284,7 @@
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
 
-                    // ✅ FIX 1: Use 'q_auto' instead of 'q_80' for faster streaming of long videos
+                    // Use 'q_auto' for fast streaming
                     let videoUrl = item.videoUrl;
                     if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
                     
@@ -368,13 +369,8 @@
                         if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) audio.currentTime = video.currentTime;
                     });
 
-                    // Loop Handling (Manual for sync)
                     video.addEventListener('ended', () => {
-                        if(audio) { 
-                            audio.currentTime = 0; 
-                            audio.play(); 
-                        }
-                        // Video loops automatically due to attribute, but seek bar needs reset visually if needed
+                        if(audio) { audio.currentTime = 0; audio.play(); }
                     });
 
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
@@ -462,7 +458,6 @@
         };
 
         function setupObserver() {
-            // ✅ FIX 3: Reduced threshold to 0.5 for smoother experience
             const obs = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     const card = entry.target;
@@ -474,6 +469,7 @@
                         const vidId = card.getAttribute('data-id');
                         window.history.replaceState(null, null, "?video=" + vidId);
 
+                        // ✅ PLAY VIDEO & COUNT VIEW
                         if(audio) { 
                             video.pause(); 
                             icon.style.opacity = 0.8; 
@@ -481,6 +477,18 @@
                             video.play().catch(()=>{}); 
                             icon.style.opacity = 0; 
                         }
+
+                        // 👁️ VIEW COUNTING LOGIC (With Local Session Check)
+                        if (!sessionStorage.getItem('viewed_' + vidId)) {
+                            sessionStorage.setItem('viewed_' + vidId, 'true');
+                            
+                            // Increase View Count in DB
+                            const viewRef = ref(db, `gameplay_clips/${vidId}/views`);
+                            runTransaction(viewRef, (currentViews) => {
+                                return (currentViews || 0) + 1;
+                            });
+                        }
+
                     } else {
                         video.pause();
                         if(audio) audio.pause();
