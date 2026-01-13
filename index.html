@@ -283,8 +283,9 @@
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
 
+                    // ✅ FIX 1: Use 'q_auto' instead of 'q_80' for faster streaming of long videos
                     let videoUrl = item.videoUrl;
-                    if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_80,w_720/"); 
+                    if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
                     
                     const filterClass = item.filter ? `f-${item.filter}` : '';
                     const isRemix = item.remixUrl ? true : false; 
@@ -292,7 +293,7 @@
                     div.innerHTML = `
                         <div class="loader-overlay"><div class="spinner"></div></div>
 
-                        <video src="${videoUrl}" class="${filterClass}" playsinline preload="metadata" ${isRemix ? 'muted' : ''}></video>
+                        <video src="${videoUrl}" class="${filterClass}" playsinline loop preload="auto" ${isRemix ? 'muted' : ''}></video>
                         ${isRemix ? `<audio src="${item.remixUrl}"></audio>` : ''}
                         
                         <div class="touch-layer" onclick="togglePlay(this)"></div>
@@ -367,13 +368,13 @@
                         if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) audio.currentTime = video.currentTime;
                     });
 
+                    // Loop Handling (Manual for sync)
                     video.addEventListener('ended', () => {
-                        video.pause(); video.currentTime = 0;
-                        if(audio) { audio.pause(); audio.currentTime = 0; }
-                        icon.style.opacity = 0.8;
-                        div.classList.remove('playing');
-                        seeker.value = 0;
-                        handleBuffer(false);
+                        if(audio) { 
+                            audio.currentTime = 0; 
+                            audio.play(); 
+                        }
+                        // Video loops automatically due to attribute, but seek bar needs reset visually if needed
                     });
 
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
@@ -461,6 +462,7 @@
         };
 
         function setupObserver() {
+            // ✅ FIX 3: Reduced threshold to 0.5 for smoother experience
             const obs = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     const card = entry.target;
@@ -486,7 +488,7 @@
                         card.classList.remove('playing');
                     }
                 });
-            }, { threshold: 0.6 }); 
+            }, { threshold: 0.5 }); 
             document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
         }
     </script>
