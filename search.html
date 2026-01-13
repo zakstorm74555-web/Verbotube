@@ -78,7 +78,7 @@
         <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="search" placeholder="Search Users or Videos..." onkeyup="doSearch()">
+            <input type="text" class="search-bar" id="search" placeholder="Search Users (e.g. 𝕸𝖔𝖍𝖘𝖎𝖓)..." onkeyup="doSearch()">
         </div>
     </div>
     
@@ -97,19 +97,18 @@
         const auth = getAuth(app);
 
         let myUid = null;
-        let myFollowing = new Set(); // Stores UIDs I follow for fast lookup
+        let myFollowing = new Set(); 
 
         onAuthStateChanged(auth, user => {
             if(user) {
                 myUid = user.uid;
                 loadMyFollowing();
-                loadTrending(); // Show trending initially
+                loadTrending(); 
             } else {
                 window.location.href = 'login';
             }
         });
 
-        // 1. LOAD FOLLOWING LIST (To show correct button state)
         function loadMyFollowing() {
             onValue(ref(db, `following/${myUid}`), snap => {
                 myFollowing.clear();
@@ -119,13 +118,15 @@
             });
         }
 
-        // 2. HELPER: SMART FONT CLEANER (𝕸𝖔𝖍𝖘𝖎𝖓 -> mohsin)
+        // ✅ FIX: CHANGED NFD TO NFKC (HANDLES FANCY FONTS)
         function cleanText(str) {
             if(!str) return "";
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+            // NFKC normalizes compatibility characters (Like 𝕸 -> M)
+            return str.normalize("NFKC")
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]/g, ""); 
         }
 
-        // 3. LOAD TRENDING (Default View)
         function loadTrending() {
             onValue(ref(db, 'gameplay_clips'), snap => {
                 const res = document.getElementById('results');
@@ -136,23 +137,17 @@
                     let vids = Object.entries(snap.val()).map(([key, val]) => ({ key, ...val }));
                     vids.sort((a,b) => b.timestamp - a.timestamp);
                     
-                    vids.slice(0, 6).forEach(v => { // Show top 6
+                    vids.slice(0, 6).forEach(v => { 
                         renderVideoCard(v, grid);
                     });
                 }
             }, {onlyOnce: true});
         }
 
-        // 4. RENDER VIDEO CARD (TikTok Style)
         function renderVideoCard(v, container) {
-            // Fetch User Pic for the video card
             let userPic = "icon.png";
-            get(ref(db, `users/${v.uid}`)).then(uSnap => {
-                if(uSnap.exists() && uSnap.val().photo) {
-                    document.getElementById(`v-pic-${v.key}`).src = uSnap.val().photo;
-                }
-            });
-
+            
+            // Create Elements First
             const div = document.createElement('div');
             div.className = 'vid-card';
             div.innerHTML = `
@@ -167,18 +162,25 @@
             `;
             div.onclick = () => window.location.href = `index?video=${v.key}`;
             container.appendChild(div);
+
+            // Fetch User Pic Async
+            get(ref(db, `users/${v.uid}`)).then(uSnap => {
+                if(uSnap.exists()) {
+                    const u = uSnap.val();
+                    if(u.photo) document.getElementById(`v-pic-${v.key}`).src = u.photo;
+                }
+            });
         }
 
-        // 5. SEARCH LOGIC (Smart & Polished)
         window.doSearch = () => {
             const rawQ = document.getElementById('search').value;
-            const q = cleanText(rawQ); // Smart Clean
+            const q = cleanText(rawQ); 
             const res = document.getElementById('results');
             
             if(rawQ.length === 0) { loadTrending(); return; }
             if(rawQ.length < 2) return;
 
-            res.innerHTML = ""; // Clear
+            res.innerHTML = ""; 
 
             // --- SEARCH USERS ---
             onValue(ref(db, 'users'), snap => {
@@ -187,9 +189,10 @@
                 
                 snap.forEach(c => {
                     const u = c.val();
+                    // Clean Database Name
                     const uNameClean = cleanText(u.username);
                     
-                    // Match Cleaned Name OR Original Name (Case Insensitive)
+                    // ✅ MATCH LOGIC: Clean vs Clean OR Original vs Original (Contains)
                     if(uNameClean.includes(q) || (u.username && u.username.toLowerCase().includes(rawQ.toLowerCase()))) {
                         foundUser = true;
                         const isFollowing = myFollowing.has(c.key);
@@ -230,7 +233,7 @@
                     const v = c.val();
                     const vCapClean = cleanText(v.caption);
                     
-                    if(v.caption && vCapClean.includes(q)) {
+                    if(v.caption && (vCapClean.includes(q) || v.caption.toLowerCase().includes(rawQ.toLowerCase()))) {
                         foundVideo = true;
                         renderVideoCard({ key: c.key, ...v }, vidContainer);
                     }
@@ -246,26 +249,20 @@
             }, {onlyOnce: true});
         }
 
-        // 6. TOGGLE FOLLOW FUNCTION
         window.toggleFollow = async (targetUid, btn) => {
             if(!myUid) return;
-            
-            // Check current state based on button class
             const isFollowing = btn.classList.contains('btn-following');
             
-            // Optimistic UI Update (Turant Change)
             if(isFollowing) {
                 btn.className = "f-btn btn-follow";
                 btn.innerText = "Follow";
                 myFollowing.delete(targetUid);
-                // Database Update
                 await remove(ref(db, `followers/${targetUid}/${myUid}`));
                 await remove(ref(db, `following/${myUid}/${targetUid}`));
             } else {
                 btn.className = "f-btn btn-following";
                 btn.innerText = "Following";
                 myFollowing.add(targetUid);
-                // Database Update
                 await set(ref(db, `followers/${targetUid}/${myUid}`), true);
                 await set(ref(db, `following/${myUid}/${targetUid}`), true);
             }
