@@ -13,17 +13,20 @@
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 50px; }
         
-        .nav-bar { display: flex; align-items: center; margin-bottom: 20px; }
-        .back-btn { color: #FFD700; text-decoration: none; font-size: 20px; margin-right: 15px; } /* Gold Back Arrow */
+        /* ✅ NAV BAR UPDATED FOR LOGOUT */
+        .nav-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .nav-left { display: flex; align-items: center; }
+        .back-btn { color: #FFD700; text-decoration: none; font-size: 20px; margin-right: 15px; } 
         .page-title { font-weight: bold; font-size: 18px; color: #FFD700; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* ✅ LOGOUT BUTTON STYLE */
+        .logout-btn { background: none; border: none; color: #FF4444; font-size: 20px; cursor: pointer; display: none; }
 
         .header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; position: relative; z-index: 1; }
         .pic-wrapper { position: relative; width: 80px; height: 80px; flex-shrink: 0; z-index: 5; }
         
-        /* Gold Border for Profile Pic */
         .pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #FFD700; object-fit: cover; cursor: pointer; position: relative; z-index: 6; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
         
-        /* BADGE STYLES */
         #badge-display { position: absolute; top: -10px; right: -10px; background: #ff0055; color: white; display: none; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; box-shadow: 0 0 5px rgba(0,0,0,0.8); border: 2px solid #000; z-index: 200; cursor: pointer; pointer-events: auto; }
         .badge-is-image { width: 35px !important; height: 35px !important; border-radius: 50%; padding: 0; overflow: hidden; background: white; }
         .badge-is-image img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -32,8 +35,6 @@
         .info { flex: 1; }
         .name { font-size: 22px; font-weight: bold; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
         .bio { color: #aaa; font-size: 14px; margin-top: 5px; }
-        
-        /* Gold Tick */
         .blue-tick { color: #FFD700; font-size: 16px; margin-left: 5px; text-shadow: 0 0 5px #FFD700; }
 
         .stats { display: flex; gap: 10px; margin: 15px 0; background: #111; padding: 15px; border-radius: 10px; justify-content: space-around; border: 1px solid #333; }
@@ -42,21 +43,8 @@
         .stat-label { font-size: 12px; color: #888; }
 
         .btn { width: 100%; padding: 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; margin-bottom: 10px; font-size: 14px; transition: all 0.2s; }
-        
-        /* Primary Button */
-        .btn-follow { 
-            background: linear-gradient(135deg, #FFD700, #FF0000); 
-            color: black; 
-            border: none; 
-            box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
-        } 
-        
-        /* Secondary Button */
-        .btn-following { 
-            background: #000; 
-            color: #FFD700; 
-            border: 1px solid #FFD700; 
-        } 
+        .btn-follow { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; border: none; box-shadow: 0 0 8px rgba(255, 0, 0, 0.4); } 
+        .btn-following { background: #000; color: #FFD700; border: 1px solid #FFD700; } 
 
         h3 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 20px; color: #FFD700; text-transform: uppercase; font-size: 16px; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
@@ -83,8 +71,13 @@
 
     <div class="container">
         <div class="nav-bar">
-            <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <div class="page-title" id="pageTitle">Profile</div>
+            <div class="nav-left">
+                <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+                <div class="page-title" id="pageTitle">Profile</div>
+            </div>
+            <button id="logoutBtn" class="logout-btn" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
         </div>
 
         <div class="header">
@@ -138,7 +131,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // ✅ ADDED signOut IMPORT
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, get, update, remove, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
@@ -170,15 +164,31 @@
                 profileUID = params.get('uid') || user.uid;
                 loadProfile(user);
             } else { 
-                // ✅ CLEAN URL: Redirect to login
                 window.location.href = 'login'; 
             }
         });
+
+        // ✅ LOGOUT FUNCTION
+        window.handleLogout = () => {
+            if(confirm("Are you sure you want to logout?")) {
+                signOut(auth).then(() => {
+                    window.location.href = 'login';
+                }).catch((error) => {
+                    alert("Error logging out: " + error.message);
+                });
+            }
+        };
 
         async function loadProfile(currentUser) {
             onValue(ref(db, 'users/' + profileUID), (snap) => {
                 const u = snap.val() || {};
                 let isMe = (myUID === profileUID), isOwner = (isMe ? currentUser.email : (u.email || "")).toLowerCase() === ADMIN_EMAIL;
+                
+                // Show Logout Button ONLY if it's my profile
+                if(isMe) {
+                    document.getElementById('logoutBtn').style.display = 'block';
+                }
+
                 let tickHTML = isOwner ? `<i class="fas fa-check-circle blue-tick"></i>` : "";
                 const badgeDiv = document.getElementById('badge-display'); currentBadgeData = u.customBadge;
                 if(u.customBadge) {
@@ -212,7 +222,6 @@
                         const delBtn = (myUID === profileUID) ? `<div class="del-btn" onclick="window.deleteVideo(event, '${k}')"><i class="fas fa-trash"></i></div>` : '';
                         
                         div.innerHTML = `<video src="${vid.videoUrl}"></video>${delBtn}`;
-                        // ✅ CLEAN URL LINKING
                         div.onclick = () => { window.location.href = `index?video=${k}`; };
                         
                         grid.appendChild(div);
