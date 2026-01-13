@@ -31,7 +31,7 @@
         .search-container:focus-within { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
 
         /* Results Area */
-        h4 { color: #FFD700; margin: 20px 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        h4 { color: #FFD700; margin: 20px 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         
         /* Video Grid */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -58,7 +58,7 @@
         <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="search" placeholder="Search Users..." onkeyup="doSearch()">
+            <input type="text" class="search-bar" id="search" placeholder="Search Users or Videos..." onkeyup="doSearch()">
         </div>
     </div>
     
@@ -92,10 +92,7 @@
                     vidEl.src = v.videoUrl;
                     vidEl.className = 'vid-thumb';
                     vidEl.muted = true; 
-                    
-                    // ✅ UPDATED LINKING: Uses 'index' and query param
                     vidEl.onclick = () => { window.location.href = `index?video=${v.key}`; };
-                    
                     grid.appendChild(vidEl);
                 });
             } else {
@@ -103,7 +100,7 @@
             }
         });
 
-        // 2. SEARCH LOGIC
+        // 2. SEARCH LOGIC (Users + Videos)
         window.doSearch = () => {
             const q = document.getElementById('search').value.toLowerCase().trim();
             const res = document.getElementById('results');
@@ -111,15 +108,18 @@
             if(q.length === 0) { location.reload(); return; }
             if(q.length < 2) return;
 
+            res.innerHTML = ""; // Clear previous results
+
+            // --- SEARCH USERS ---
             onValue(ref(db, 'users'), snap => {
-                res.innerHTML = "<h4>Users</h4>";
-                let found = false;
+                let userHTML = "";
+                let foundUser = false;
                 
                 snap.forEach(c => {
                     const u = c.val();
                     if(u.username && u.username.toLowerCase().includes(q)) {
-                        found = true;
-                        res.innerHTML += `
+                        foundUser = true;
+                        userHTML += `
                             <div class="user-item" onclick="window.location.href='profile?uid=${c.key}'">
                                 <img src="${u.photo || 'icon.png'}" class="u-pic">
                                 <div class="u-info">
@@ -131,7 +131,33 @@
                     }
                 });
 
-                if(!found) res.innerHTML += "<p style='color:#555; text-align:center; margin-top:20px;'>No users found.</p>";
+                if(foundUser) {
+                    res.innerHTML += `<h4>Users</h4><div>${userHTML}</div>`;
+                }
+            }, {onlyOnce: true});
+
+            // --- SEARCH VIDEOS ---
+            onValue(ref(db, 'gameplay_clips'), snap => {
+                let videoHTML = "";
+                let foundVideo = false;
+
+                snap.forEach(c => {
+                    const v = c.val();
+                    // Search in Caption
+                    if(v.caption && v.caption.toLowerCase().includes(q)) {
+                        foundVideo = true;
+                        videoHTML += `
+                            <video src="${v.videoUrl}" class="vid-thumb" muted onclick="window.location.href='index?video=${c.key}'"></video>
+                        `;
+                    }
+                });
+
+                if(foundVideo) {
+                    res.innerHTML += `<h4>Videos</h4><div class="grid">${videoHTML}</div>`;
+                } else if (!res.innerHTML.includes("Users")) {
+                    // Only show "No results" if users were also not found
+                    res.innerHTML += "<p style='color:#555; text-align:center; margin-top:20px;'>No results found.</p>";
+                }
             }, {onlyOnce: true});
         }
     </script>
