@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friends - Star Magic</title>
+    <title>Friends - Verbotube</title>
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- STAR MAGIC THEME --- */
+        /* --- VERBOTUBE THEME --- */
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
         .header { 
@@ -45,7 +45,7 @@
         /* Yellow-Red Gradient Button */
         .chat-btn { 
             background: linear-gradient(135deg, #FFD700, #FF0000); 
-            color: black; /* Black text reads better on yellow */
+            color: black; 
             border: none; padding: 8px 15px; border-radius: 20px; 
             font-weight: bold; font-size: 12px; 
             box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
@@ -55,7 +55,7 @@
 <body>
 
     <div class="header">
-        <button class="back-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></button>
+        <button class="back-btn" onclick="window.location.href='index'"><i class="fas fa-arrow-left"></i></button>
         <h2>Find Friends</h2>
     </div>
 
@@ -75,11 +75,11 @@
 
         onAuthStateChanged(auth, user => {
             if (user) loadFollowing(user.uid);
-            else window.location.href = 'index.html';
+            // ✅ CLEAN URL: Redirects to 'login' not 'index.html' or 'login.html'
+            else window.location.href = 'login';
         });
 
         function loadFollowing(myUid) {
-            // Shows ALL USERS so you can find friends easily
             const userRef = ref(db, 'users'); 
             
             onValue(userRef, (snap) => {
@@ -90,12 +90,12 @@
 
                 snap.forEach(child => {
                     const u = child.val();
-                    if(child.key !== auth.currentUser.uid) { // Don't show myself
+                    if(child.key !== auth.currentUser.uid) { 
                         const div = document.createElement('div');
                         div.className = "user-card";
                         div.innerHTML = `
                             <div class="user-info">
-                                <img src="${u.photo || 'https://via.placeholder.com/50'}" class="profile-pic">
+                                <img src="${u.photo || 'icon.png'}" class="profile-pic">
                                 <div class="names">
                                     <span class="username">${u.username || 'User'}</span>
                                     <span class="status">Tap to chat</span>
@@ -103,8 +103,9 @@
                             </div>
                             <button class="chat-btn"><i class="fas fa-comment"></i> Chat</button>
                         `;
+                        // ✅ CLEAN URL: chat.html -> chat
                         div.onclick = () => {
-                            window.location.href = `chat.html?uid=${child.key}&name=${u.username || 'User'}`;
+                            window.location.href = `chat?uid=${child.key}&name=${u.username || 'User'}`;
                         };
                         list.appendChild(div);
                     }
