@@ -11,8 +11,8 @@
     
     <style>
         /* --- VERBOTUBE THEME --- */
-        * { box-sizing: border-box; }
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #000; color: white; margin: 0; padding: 15px; padding-bottom: 80px; }
         
         .header { display: flex; align-items: center; margin-bottom: 20px; gap: 15px; }
         .back-btn { color: #FFD700; text-decoration: none; font-size: 24px; }
@@ -30,25 +30,45 @@
         .search-icon { color: #888; }
         .search-container:focus-within { border-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
 
-        /* Results Area */
-        h4 { color: #FFD700; margin: 20px 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        /* Section Titles */
+        h4 { color: #FFD700; margin: 25px 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         
-        /* Video Grid */
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .vid-thumb { 
-            width: 100%; aspect-ratio: 9/16; background: #111; object-fit: cover; 
-            border-radius: 8px; cursor: pointer; border: 1px solid #333; 
-        }
-        
-        /* User List */
+        /* --- PRO USER CARD (With Follow Btn) --- */
         .user-item { 
-            display: flex; align-items: center; gap: 15px; padding: 15px; 
-            border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 12px; background: #111; border-radius: 12px;
+            margin-bottom: 10px; border: 1px solid #222; transition: 0.2s;
         }
-        .user-item:active { background: #111; }
-        .u-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #FFD700; object-fit: cover; }
-        .u-info div:first-child { font-weight: bold; font-size: 16px; }
+        .user-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .u-pic { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #FFD700; object-fit: cover; }
+        .u-info div:first-child { font-weight: bold; font-size: 15px; }
         .u-info div:last-child { color: #888; font-size: 12px; }
+
+        /* Follow Button Styles */
+        .f-btn { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; min-width: 80px; }
+        .btn-follow { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; }
+        .btn-following { background: #000; color: #FFD700; border: 1px solid #FFD700; }
+
+        /* --- TIKTOK STYLE VIDEO GRID --- */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .vid-card { 
+            position: relative; width: 100%; aspect-ratio: 9/16; 
+            border-radius: 10px; overflow: hidden; cursor: pointer; 
+            border: 1px solid #222;
+        }
+        .vid-card video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Overlay Gradient */
+        .vid-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 10px; pointer-events: none;
+        }
+        .vid-caption { font-size: 12px; color: white; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 1px 1px 2px black; }
+        .vid-user { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #ccc; }
+        .vid-user img { width: 20px; height: 20px; border-radius: 50%; border: 1px solid #FFD700; }
 
     </style>
 </head>
@@ -63,52 +83,102 @@
     </div>
     
     <div id="results">
-        <h4>Trending Now</h4>
-        <div class="grid" id="vidGrid">
-            <p style="color:#555;">Loading...</p>
-        </div>
+        <p style="color:#555; text-align: center; margin-top: 50px;">Type to search...</p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
-        // 1. LOAD TRENDING VIDEOS (Initial View)
-        onValue(ref(db, 'gameplay_clips'), snap => {
-            const grid = document.getElementById('vidGrid');
-            grid.innerHTML = "";
-            
-            if(snap.exists()) {
-                let vids = Object.entries(snap.val()).map(([key, val]) => ({ key, ...val }));
-                
-                vids.sort((a,b) => b.timestamp - a.timestamp); 
-                
-                vids.forEach(v => {
-                    const vidEl = document.createElement('video');
-                    vidEl.src = v.videoUrl;
-                    vidEl.className = 'vid-thumb';
-                    vidEl.muted = true; 
-                    vidEl.onclick = () => { window.location.href = `index?video=${v.key}`; };
-                    grid.appendChild(vidEl);
-                });
+        let myUid = null;
+        let myFollowing = new Set(); // Stores UIDs I follow for fast lookup
+
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                myUid = user.uid;
+                loadMyFollowing();
+                loadTrending(); // Show trending initially
             } else {
-                grid.innerHTML = "<p style='color:#555;'>No videos found.</p>";
+                window.location.href = 'login';
             }
         });
 
-        // 2. SEARCH LOGIC (Users + Videos)
+        // 1. LOAD FOLLOWING LIST (To show correct button state)
+        function loadMyFollowing() {
+            onValue(ref(db, `following/${myUid}`), snap => {
+                myFollowing.clear();
+                if(snap.exists()) {
+                    Object.keys(snap.val()).forEach(key => myFollowing.add(key));
+                }
+            });
+        }
+
+        // 2. HELPER: SMART FONT CLEANER (𝕸𝖔𝖍𝖘𝖎𝖓 -> mohsin)
+        function cleanText(str) {
+            if(!str) return "";
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        }
+
+        // 3. LOAD TRENDING (Default View)
+        function loadTrending() {
+            onValue(ref(db, 'gameplay_clips'), snap => {
+                const res = document.getElementById('results');
+                res.innerHTML = "<h4>Trending Now</h4><div class='grid' id='trendGrid'></div>";
+                const grid = document.getElementById('trendGrid');
+                
+                if(snap.exists()) {
+                    let vids = Object.entries(snap.val()).map(([key, val]) => ({ key, ...val }));
+                    vids.sort((a,b) => b.timestamp - a.timestamp);
+                    
+                    vids.slice(0, 6).forEach(v => { // Show top 6
+                        renderVideoCard(v, grid);
+                    });
+                }
+            }, {onlyOnce: true});
+        }
+
+        // 4. RENDER VIDEO CARD (TikTok Style)
+        function renderVideoCard(v, container) {
+            // Fetch User Pic for the video card
+            let userPic = "icon.png";
+            get(ref(db, `users/${v.uid}`)).then(uSnap => {
+                if(uSnap.exists() && uSnap.val().photo) {
+                    document.getElementById(`v-pic-${v.key}`).src = uSnap.val().photo;
+                }
+            });
+
+            const div = document.createElement('div');
+            div.className = 'vid-card';
+            div.innerHTML = `
+                <video src="${v.videoUrl}" muted onmouseover="this.play()" onmouseout="this.pause()"></video>
+                <div class="vid-overlay">
+                    <div class="vid-caption">${v.caption || 'No Caption'}</div>
+                    <div class="vid-user">
+                        <img src="icon.png" id="v-pic-${v.key}">
+                        <span>${v.uploader}</span>
+                    </div>
+                </div>
+            `;
+            div.onclick = () => window.location.href = `index?video=${v.key}`;
+            container.appendChild(div);
+        }
+
+        // 5. SEARCH LOGIC (Smart & Polished)
         window.doSearch = () => {
-            const q = document.getElementById('search').value.toLowerCase().trim();
+            const rawQ = document.getElementById('search').value;
+            const q = cleanText(rawQ); // Smart Clean
             const res = document.getElementById('results');
             
-            if(q.length === 0) { location.reload(); return; }
-            if(q.length < 2) return;
+            if(rawQ.length === 0) { loadTrending(); return; }
+            if(rawQ.length < 2) return;
 
-            res.innerHTML = ""; // Clear previous results
+            res.innerHTML = ""; // Clear
 
             // --- SEARCH USERS ---
             onValue(ref(db, 'users'), snap => {
@@ -117,49 +187,90 @@
                 
                 snap.forEach(c => {
                     const u = c.val();
-                    if(u.username && u.username.toLowerCase().includes(q)) {
+                    const uNameClean = cleanText(u.username);
+                    
+                    // Match Cleaned Name OR Original Name (Case Insensitive)
+                    if(uNameClean.includes(q) || (u.username && u.username.toLowerCase().includes(rawQ.toLowerCase()))) {
                         foundUser = true;
+                        const isFollowing = myFollowing.has(c.key);
+                        const isMe = (c.key === myUid);
+                        
+                        let btnHtml = "";
+                        if(!isMe) {
+                            btnHtml = isFollowing 
+                                ? `<button class="f-btn btn-following" onclick="toggleFollow('${c.key}', this)">Following</button>`
+                                : `<button class="f-btn btn-follow" onclick="toggleFollow('${c.key}', this)">Follow</button>`;
+                        }
+
                         userHTML += `
-                            <div class="user-item" onclick="window.location.href='profile?uid=${c.key}'">
-                                <img src="${u.photo || 'icon.png'}" class="u-pic">
-                                <div class="u-info">
-                                    <div>${u.username}</div>
-                                    <div>Tap to view profile</div>
+                            <div class="user-item">
+                                <div class="user-left" onclick="window.location.href='profile?uid=${c.key}'">
+                                    <img src="${u.photo || 'icon.png'}" class="u-pic">
+                                    <div class="u-info">
+                                        <div>${u.username}</div>
+                                        <div>View Profile</div>
+                                    </div>
                                 </div>
+                                ${btnHtml}
                             </div>
                         `;
                     }
                 });
 
-                if(foundUser) {
-                    res.innerHTML += `<h4>Users</h4><div>${userHTML}</div>`;
-                }
+                if(foundUser) res.innerHTML += `<h4>Users</h4><div>${userHTML}</div>`;
             }, {onlyOnce: true});
 
             // --- SEARCH VIDEOS ---
             onValue(ref(db, 'gameplay_clips'), snap => {
-                let videoHTML = "";
+                const vidContainer = document.createElement('div');
+                vidContainer.className = 'grid';
                 let foundVideo = false;
 
                 snap.forEach(c => {
                     const v = c.val();
-                    // Search in Caption
-                    if(v.caption && v.caption.toLowerCase().includes(q)) {
+                    const vCapClean = cleanText(v.caption);
+                    
+                    if(v.caption && vCapClean.includes(q)) {
                         foundVideo = true;
-                        videoHTML += `
-                            <video src="${v.videoUrl}" class="vid-thumb" muted onclick="window.location.href='index?video=${c.key}'"></video>
-                        `;
+                        renderVideoCard({ key: c.key, ...v }, vidContainer);
                     }
                 });
 
                 if(foundVideo) {
-                    res.innerHTML += `<h4>Videos</h4><div class="grid">${videoHTML}</div>`;
+                    const title = document.createElement('h4'); title.innerText = "Videos";
+                    res.appendChild(title);
+                    res.appendChild(vidContainer);
                 } else if (!res.innerHTML.includes("Users")) {
-                    // Only show "No results" if users were also not found
-                    res.innerHTML += "<p style='color:#555; text-align:center; margin-top:20px;'>No results found.</p>";
+                    res.innerHTML = "<p style='color:#555; text-align:center; margin-top:20px;'>No results found.</p>";
                 }
             }, {onlyOnce: true});
         }
+
+        // 6. TOGGLE FOLLOW FUNCTION
+        window.toggleFollow = async (targetUid, btn) => {
+            if(!myUid) return;
+            
+            // Check current state based on button class
+            const isFollowing = btn.classList.contains('btn-following');
+            
+            // Optimistic UI Update (Turant Change)
+            if(isFollowing) {
+                btn.className = "f-btn btn-follow";
+                btn.innerText = "Follow";
+                myFollowing.delete(targetUid);
+                // Database Update
+                await remove(ref(db, `followers/${targetUid}/${myUid}`));
+                await remove(ref(db, `following/${myUid}/${targetUid}`));
+            } else {
+                btn.className = "f-btn btn-following";
+                btn.innerText = "Following";
+                myFollowing.add(targetUid);
+                // Database Update
+                await set(ref(db, `followers/${targetUid}/${myUid}`), true);
+                await set(ref(db, `following/${myUid}/${targetUid}`), true);
+            }
+        };
+
     </script>
 </body>
 </html>
