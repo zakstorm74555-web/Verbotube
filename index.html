@@ -182,7 +182,6 @@
         .add-btn-nav i { color: black; font-size: 16px; }
 
     </style>
-    <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
 </head>
 <body>
 
@@ -233,7 +232,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        // ✅ IMPORTED runTransaction to count views
         import { getDatabase, ref, onValue, get, set, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // CLOUDINARY
@@ -285,7 +283,6 @@
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
 
-                    // Use 'q_auto' for fast streaming
                     let videoUrl = item.videoUrl;
                     if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
                     
@@ -374,12 +371,15 @@
                         if(audio) { audio.currentTime = 0; audio.play(); }
                     });
 
+                    // ✅ PROFILE PIC & DISC IMAGE FIX
                     onValue(ref(db, 'users/' + item.uid), uSnap => {
-                        const u = uSnap.val() || {};
-                        const pic = u.photo || "icon.png";
-                        document.getElementById(`pic-${item.key}`).src = pic;
-                        document.getElementById(`name-${item.key}`).innerText = `${u.username || item.uploader}`;
-                        document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
+                        const u = uSnap.val();
+                        if (u) {
+                            const pic = (u.photo && u.photo !== "") ? u.photo : "icon.png";
+                            document.getElementById(`pic-${item.key}`).src = pic;
+                            document.getElementById(`name-${item.key}`).innerText = `${u.username || item.uploader}`;
+                            document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
+                        }
                     });
 
                     onValue(ref(db, `gameplay_likes/${item.key}`), s => {
@@ -470,7 +470,6 @@
                         const vidId = card.getAttribute('data-id');
                         window.history.replaceState(null, null, "?video=" + vidId);
 
-                        // ✅ PLAY VIDEO & COUNT VIEW
                         if(audio) { 
                             video.pause(); 
                             icon.style.opacity = 0.8; 
@@ -479,11 +478,9 @@
                             icon.style.opacity = 0; 
                         }
 
-                        // 👁️ VIEW COUNTING LOGIC (With Local Session Check)
                         if (!sessionStorage.getItem('viewed_' + vidId)) {
                             sessionStorage.setItem('viewed_' + vidId, 'true');
                             
-                            // Increase View Count in DB
                             const viewRef = ref(db, `gameplay_clips/${vidId}/views`);
                             runTransaction(viewRef, (currentViews) => {
                                 return (currentViews || 0) + 1;
