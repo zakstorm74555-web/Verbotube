@@ -29,8 +29,16 @@
             display: none; pointer-events: none; text-align: center;
         }
 
+        /* MUSIC BADGE */
+        .music-badge {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 20px;
+            font-size: 12px; color: #FFD700; border: 1px solid #FFD700;
+            display: none; align-items: center; gap: 8px; z-index: 20;
+        }
+
         /* EDITOR CONTROLS */
-        .controls { background: #111; padding: 10px; border-top: 1px solid #333; height: 280px; display: flex; flex-direction: column; }
+        .controls { background: #111; padding: 10px; border-top: 1px solid #333; height: 320px; display: flex; flex-direction: column; }
         
         /* TABS */
         .tabs { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid #222; margin-bottom: 10px; }
@@ -48,6 +56,14 @@
         .effect-box { width: 50px; height: 50px; background: #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; border: 2px solid transparent; font-size: 20px; color: #ccc; }
         .effect-item.selected .effect-box { border-color: #FFD700; color: #FFD700; background: #222; }
         .effect-label { font-size: 10px; margin-top: 5px; color: #888; }
+
+        /* SOUND LIST */
+        .sound-list { display: flex; flex-direction: column; gap: 10px; }
+        .sound-item { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 12px; border-radius: 10px; cursor: pointer; border: 1px solid #333; }
+        .sound-item:hover { border-color: #FFD700; }
+        .sound-info { display: flex; flex-direction: column; }
+        .s-name { font-weight: bold; font-size: 13px; color: white; }
+        .s-author { font-size: 11px; color: #888; }
 
         /* RANGE SLIDERS */
         .range-wrap { margin-bottom: 15px; }
@@ -83,13 +99,17 @@
 
         <div class="preview-area">
             <video id="mainVideo" playsinline loop onclick="togglePlay()"></video>
-            <div id="textLayer"></div>
+            <audio id="remixAudio"></audio> <div id="textLayer"></div>
+            
+            <div class="music-badge" id="musicBadge">
+                <i class="fas fa-music"></i> <span id="soundNameDisplay">Original Sound</span>
+            </div>
         </div>
 
         <div class="controls">
             <div class="tabs">
                 <div class="tab active" onclick="switchTab('effects', this)"><i class="fas fa-magic"></i> Effects</div>
-                <div class="tab" onclick="switchTab('trim', this)"><i class="fas fa-cut"></i> Trim</div>
+                <div class="tab" onclick="switchTab('sound', this)"><i class="fas fa-music"></i> Sound</div> <div class="tab" onclick="switchTab('trim', this)"><i class="fas fa-cut"></i> Trim</div>
                 <div class="tab" onclick="switchTab('text', this)"><i class="fas fa-font"></i> Text</div>
                 <div class="tab" onclick="switchTab('speed', this)"><i class="fas fa-tachometer-alt"></i> Speed</div>
             </div>
@@ -104,6 +124,15 @@
                     <div class="effect-item" onclick="setEffect('e_negate', this)"><div class="effect-box"><i class="fas fa-adjust"></i></div><span class="effect-label">Invert</span></div>
                     <div class="effect-item" onclick="setEffect('e_sepia:80', this)"><div class="effect-box" style="color:#cda434"><i class="fas fa-filter"></i></div><span class="effect-label">Sepia</span></div>
                     <div class="effect-item" onclick="setEffect('e_grayscale', this)"><div class="effect-box"><i class="fas fa-tint-slash"></i></div><span class="effect-label">B&W</span></div>
+                </div>
+            </div>
+
+            <div id="p-sound" class="panel">
+                <button onclick="removeSound()" style="width:100%; padding:10px; background:#333; color:white; border:1px solid #FFD700; border-radius:10px; margin-bottom:15px; font-weight:bold;">
+                    <i class="fas fa-undo"></i> Use Original Sound
+                </button>
+                <div class="sound-list" id="soundList">
+                    <p style="text-align:center; color:#555;">Loading sounds...</p>
                 </div>
             </div>
 
@@ -157,7 +186,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
@@ -177,11 +206,74 @@
         let isReverse = false;
         let textOverlay = "";
         let textPos = "center";
+        let selectedRemixUrl = ""; // ✅ To store Sound URL
 
         onAuthStateChanged(auth, user => {
-            if(user) currentUser = user;
-            else window.location.href = 'login';
+            if(user) {
+                currentUser = user;
+                loadSounds(); // ✅ Load sounds when logged in
+            } else window.location.href = 'login';
         });
+
+        // ✅ LOAD SOUNDS FROM DATABASE
+        function loadSounds() {
+            onValue(ref(db, 'gameplay_clips'), snap => {
+                const list = document.getElementById('soundList');
+                list.innerHTML = "";
+                if(snap.exists()) {
+                    let count = 0;
+                    snap.forEach(c => {
+                        if(count > 20) return; // Limit to 20 sounds
+                        const v = c.val();
+                        // Use remixUrl if exists, else use videoUrl
+                        const soundUrl = v.remixUrl || v.videoUrl;
+                        const soundName = v.caption || "Original Sound";
+                        
+                        const item = document.createElement('div');
+                        item.className = 'sound-item';
+                        item.innerHTML = `
+                            <div class="sound-info">
+                                <span class="s-name">${soundName.substring(0,25)}</span>
+                                <span class="s-author">${v.uploader}</span>
+                            </div>
+                            <i class="fas fa-play-circle" style="color:#FFD700; font-size:20px;"></i>
+                        `;
+                        item.onclick = () => setSound(soundUrl, soundName);
+                        list.appendChild(item);
+                        count++;
+                    });
+                } else {
+                    list.innerHTML = "<p style='color:#555; text-align:center;'>No sounds yet.</p>";
+                }
+            }, {onlyOnce: true});
+        }
+
+        // ✅ SET SOUND FUNCTION
+        window.setSound = (url, name) => {
+            selectedRemixUrl = url;
+            const aud = document.getElementById('remixAudio');
+            const vid = document.getElementById('mainVideo');
+            
+            aud.src = url;
+            aud.load();
+            
+            // Show Badge
+            document.getElementById('musicBadge').style.display = 'flex';
+            document.getElementById('soundNameDisplay').innerText = name.substring(0,15) + "...";
+            
+            // Mute Video if sound is selected
+            vid.muted = true;
+            
+            // Play Both if video is playing
+            if(!vid.paused) aud.play();
+        };
+
+        window.removeSound = () => {
+            selectedRemixUrl = "";
+            document.getElementById('remixAudio').pause();
+            document.getElementById('mainVideo').muted = false; // Unmute original
+            document.getElementById('musicBadge').style.display = 'none';
+        };
 
         window.loadFile = (input) => {
             if(input.files && input.files[0]) {
@@ -203,8 +295,25 @@
 
         window.togglePlay = () => {
             const v = document.getElementById('mainVideo');
-            v.paused ? v.play() : v.pause();
+            const a = document.getElementById('remixAudio');
+            
+            if(v.paused) {
+                v.play();
+                if(selectedRemixUrl) a.play();
+            } else {
+                v.pause();
+                if(selectedRemixUrl) a.pause();
+            }
         };
+        
+        // SYNC AUDIO ON END
+        document.getElementById('mainVideo').addEventListener('ended', () => {
+            const a = document.getElementById('remixAudio');
+            if(selectedRemixUrl) {
+                a.currentTime = 0;
+                a.play();
+            }
+        });
 
         window.switchTab = (name, btn) => {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -216,11 +325,8 @@
         // --- EDITING FUNCTIONS ---
         window.setEffect = (effectCode, el) => {
             currentEffect = effectCode;
-            // Visual feedback only (Real effect happens on server)
             document.querySelectorAll('#p-effects .effect-item').forEach(i => i.classList.remove('selected'));
             el.classList.add('selected');
-            
-            // Basic preview using CSS (Not perfect but gives idea)
             const v = document.getElementById('mainVideo');
             v.style.filter = "none";
             if(effectCode.includes("sepia")) v.style.filter = "sepia(0.8)";
@@ -246,7 +352,6 @@
             const end = parseFloat(document.getElementById('endRange').value);
             document.getElementById('startVal').innerText = start.toFixed(1) + "s";
             document.getElementById('endVal').innerText = end.toFixed(1) + "s";
-            
             const v = document.getElementById('mainVideo');
             if(v.currentTime < start || v.currentTime > end) v.currentTime = start;
         };
@@ -285,46 +390,35 @@
                     const data = JSON.parse(xhr.responseText);
                     let finalUrl = data.secure_url;
 
-                    // --- CONSTRUCT TRANSFORMATION STRING ---
-                    // Cloudinary Chain: Trim -> Speed -> Reverse -> Effect -> Text -> Optimize
-                    
                     let transforms = [];
                     const start = document.getElementById('startRange').value;
                     const end = document.getElementById('endRange').value;
 
-                    // 1. Trim
                     if(start > 0) transforms.push(`so_${start}`);
                     if(end < videoDuration) transforms.push(`eo_${end}`);
-
-                    // 2. Speed & Reverse
                     if(currentSpeed) transforms.push(currentSpeed);
                     if(isReverse) transforms.push("e_reverse");
-
-                    // 3. Visual Effects
                     if(currentEffect) transforms.push(currentEffect);
 
-                    // 4. Text Overlay (Burned In)
                     if(textOverlay) {
-                        // Safe URL encoding for text
                         const safeText = encodeURIComponent(textOverlay).replace(/%20/g, "%20");
                         transforms.push(`l_text:Impact_50:${safeText},g_${textPos},co_white,bo_2px_solid_black`);
                     }
 
-                    // 5. Optimization (Always last)
                     transforms.push("q_auto,w_720");
 
-                    // Inject into URL
                     if(transforms.length > 0) {
                         const insertionIndex = finalUrl.indexOf("/upload/") + 8;
                         finalUrl = finalUrl.slice(0, insertionIndex) + transforms.join(",") + "/" + finalUrl.slice(insertionIndex);
                     }
 
-                    // Save to Firebase
                     const uSnap = await get(ref(db, 'users/' + currentUser.uid));
                     const username = uSnap.exists() ? uSnap.val().username : "User";
 
+                    // ✅ SAVE REMIX URL TO DATABASE
                     await push(ref(db, 'gameplay_clips'), {
                         videoUrl: finalUrl,
+                        remixUrl: selectedRemixUrl || "", // Pass the sound URL
                         caption: textOverlay || "My Edit",
                         uid: currentUser.uid,
                         uploader: username,
