@@ -4,357 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Studio - Verbotube</title>
-    
     <link rel="icon" type="image/png" href="icon.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- VERBOTUBE STUDIO THEME --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* --- HEADER --- */
-        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); position: absolute; top: 0; width: 100%; z-index: 50; }
-        .close-btn { color: white; background: none; border: none; font-size: 24px; cursor: pointer; }
-        
-        /* Gold-Red Gradient Button */
-        .next-btn { 
-            background: linear-gradient(135deg, #FFD700, #FF0000); 
-            color: black; padding: 8px 20px; border-radius: 20px; border: none; 
-            font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-        }
+        /* HEADER */
+        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #111; z-index: 50; }
+        .next-btn { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; padding: 8px 20px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; }
 
-        /* --- PREVIEW AREA --- */
-        .preview-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: #111; overflow: hidden; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        /* PREVIEW AREA */
+        .preview-box { flex: 1; position: relative; background: #000; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        video { max-width: 100%; max-height: 100%; }
         
-        /* FILTERS */
-        .f-normal { filter: none; }
-        .f-vivid { filter: contrast(1.1) saturate(1.2); }
-        .f-mono { filter: grayscale(1); }
-        .f-dramatic { filter: contrast(1.2) brightness(0.9); }
+        /* TEXT OVERLAY */
+        #overlayText { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px black; cursor: grab; user-select: none; display: none; }
 
-        /* Music Badge */
-        .music-badge { 
-            position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 20px; 
-            font-size: 12px; display: none; align-items: center; gap: 8px; 
-            border: 1px solid #FFD700; color: #FFD700; z-index: 60;
-        }
+        /* TOOLBAR */
+        .toolbar { background: #111; padding: 10px; overflow-x: auto; display: flex; gap: 20px; border-top: 1px solid #333; }
+        .tool { display: flex; flex-direction: column; align-items: center; min-width: 60px; color: #aaa; font-size: 12px; cursor: pointer; }
+        .tool i { font-size: 20px; margin-bottom: 5px; }
+        .tool.active { color: #FFD700; }
 
-        /* --- EDITOR TOOLS --- */
-        .editor-panel { background: #000; padding: 15px; padding-bottom: 30px; display: flex; flex-direction: column; gap: 15px; z-index: 50; border-top: 1px solid #222; }
+        /* CONTROLS PANEL */
+        .controls-panel { background: #1a1a1a; padding: 15px; height: 180px; display: none; flex-direction: column; gap: 15px; overflow-y: auto; border-top: 1px solid #333; }
         
-        .trimmer-box { display: flex; flex-direction: column; gap: 5px; }
-        .time-labels { display: flex; justify-content: space-between; font-size: 12px; color: #888; }
-        
-        /* Gold Slider */
+        label { font-size: 12px; color: #888; display: flex; justify-content: space-between; }
         input[type="range"] { width: 100%; accent-color: #FFD700; }
+        
+        .speed-opts { display: flex; gap: 10px; justify-content: center; }
+        .speed-btn { background: #333; border: 1px solid #555; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .speed-btn.active { background: #FFD700; color: black; }
 
-        .toolbar { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
-        .tool-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; color: #ccc; }
-        
-        /* Active Tool Gold */
-        .tool-item.active { color: #FFD700; text-shadow: 0 0 5px #FFD700; }
-        
-        .tool-icon { font-size: 22px; background: #222; width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 1px solid #333; }
-
-        .filter-scroller { display: none; overflow-x: auto; gap: 10px; padding: 10px 0; white-space: nowrap; }
-        .filter-option { display: inline-block; text-align: center; cursor: pointer; margin-right: 10px; }
-        .filter-img { width: 60px; height: 60px; background: #333; border-radius: 5px; border: 2px solid transparent; object-fit: cover; }
-        .filter-option.selected .filter-img { border-color: #FFD700; }
-
-        /* --- POST SHEET --- */
-        .post-sheet { 
-            position: fixed; bottom: -100%; left: 0; width: 100%; height: 70vh; 
-            background: #111; z-index: 100; border-radius: 20px 20px 0 0; 
-            transition: 0.3s; padding: 20px; display: flex; flex-direction: column; gap: 20px; border-top: 2px solid #FFD700;
-        }
-        .sheet-header { text-align: center; font-weight: bold; font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 15px; color: #FFD700; }
-        textarea { background: #222; border: 1px solid #444; color: white; padding: 15px; border-radius: 10px; resize: none; height: 100px; width: 100%; font-family: inherit; }
-        textarea:focus { border-color: #FFD700; outline: none; }
-        
-        .final-post-btn { 
-            background: linear-gradient(135deg, #FFD700, #FF0000); 
-            color: black; border: none; padding: 15px; border-radius: 30px; 
-            font-weight: bold; font-size: 16px; margin-top: auto; 
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-        }
-
-        /* --- MODALS --- */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; flex-direction: column; }
-        .sound-list { padding: 20px; overflow-y: auto; }
-        .sound-item { padding: 15px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; }
-        
-        .loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:300; display:none; justify-content:center; align-items:center; flex-direction:column; }
-        
-        /* Gold Pulse Animation */
-        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(255, 215, 0, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
+        /* LOADING */
+        .loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index: 100; display:none; justify-content:center; align-items:center; flex-direction:column; }
     </style>
 </head>
 <body>
 
-    <div id="fileSelectScreen" style="height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column;">
-        <div onclick="document.getElementById('videoInput').click()" style="width:80px; height:80px; background:linear-gradient(135deg, #FFD700, #FF0000); border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; animation: pulse 2s infinite;">
-            <i class="fas fa-plus" style="font-size:30px; color:black;"></i>
+    <div id="fileScreen" style="height:100%; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <div onclick="document.getElementById('vidInput').click()" style="width:80px; height:80px; background:#222; border-radius:50%; display:flex; justify-content:center; align-items:center; border:2px dashed #FFD700; cursor:pointer;">
+            <i class="fas fa-plus" style="font-size:30px; color:#FFD700;"></i>
         </div>
-        <p style="color:#888; margin-top:20px;">Upload Video</p>
-        <input type="file" id="videoInput" accept="video/*" style="display:none" onchange="loadVideo(this)">
+        <p>Select Video</p>
+        <input type="file" id="vidInput" accept="video/*" style="display:none" onchange="loadVideo(this)">
     </div>
 
-    <div id="editorScreen" style="display:none; height:100vh; flex-direction:column;">
-        
+    <div id="editorUI" style="display:none; height:100%; flex-direction:column;">
         <div class="header">
-            <button class="close-btn" onclick="location.reload()">&times;</button>
-            <button class="next-btn" onclick="openPostSheet()">Next</button>
+            <i class="fas fa-times" onclick="location.reload()" style="font-size:20px; cursor:pointer;"></i>
+            <button class="next-btn" onclick="uploadVideo()">POST</button>
         </div>
 
-        <div class="preview-container">
-            <video id="mainVideo" loop playsinline onclick="togglePlay()"></video>
-            <audio id="remixAudio" preload="auto"></audio>
-            
-            <div class="music-badge" id="musicBadge">
-                <i class="fas fa-music"></i> <span id="soundName">Original Sound</span>
+        <div class="preview-box">
+            <video id="mainVideo" playsinline loop onclick="this.paused ? this.play() : this.pause()"></video>
+            <div id="overlayText">Text Here</div>
+        </div>
+
+        <div id="panel-adjust" class="controls-panel">
+            <label>Brightness</label><input type="range" min="0" max="200" value="100" oninput="updateFilter()">
+            <label>Contrast</label><input type="range" min="0" max="200" value="100" oninput="updateFilter()">
+            <label>Saturation</label><input type="range" min="0" max="200" value="100" oninput="updateFilter()">
+        </div>
+
+        <div id="panel-speed" class="controls-panel">
+            <p style="text-align:center; margin:0 0 10px;">Playback Speed</p>
+            <div class="speed-opts">
+                <button class="speed-btn" onclick="setSpeed(0.5, this)">0.5x</button>
+                <button class="speed-btn active" onclick="setSpeed(1, this)">1x</button>
+                <button class="speed-btn" onclick="setSpeed(1.5, this)">1.5x</button>
+                <button class="speed-btn" onclick="setSpeed(2, this)">2x</button>
             </div>
         </div>
 
-        <div class="editor-panel">
-            
-            <div class="trimmer-box">
-                <div class="time-labels"><span>Start: <span id="startTimeDisplay">0s</span></span></div>
-                <input type="range" id="trimSlider" min="0" value="0" step="0.1" oninput="updateTrim()">
-            </div>
+        <div id="panel-text" class="controls-panel">
+            <input type="text" id="txtInput" placeholder="Enter text..." style="padding:10px; width:100%; background:#333; border:none; color:white; border-radius:5px;" oninput="updateText()">
+            <label>Color <input type="color" oninput="document.getElementById('overlayText').style.color=this.value"></label>
+            <button onclick="toggleText(false)" style="margin-top:10px; background:red; border:none; color:white; padding:5px; border-radius:5px;">Remove Text</button>
+        </div>
 
-            <div class="filter-scroller" id="filterScroller">
-                <div class="filter-option selected" onclick="applyFilter('normal', this)">
-                    <div class="filter-img" style="background:grey"></div><span>Normal</span>
-                </div>
-                <div class="filter-option" onclick="applyFilter('vivid', this)">
-                    <div class="filter-img" style="background:linear-gradient(45deg, red, blue)"></div><span>Vivid</span>
-                </div>
-                <div class="filter-option" onclick="applyFilter('mono', this)">
-                    <div class="filter-img" style="background:#333"></div><span>Mono</span>
-                </div>
-                <div class="filter-option" onclick="applyFilter('dramatic', this)">
-                    <div class="filter-img" style="background:#000"></div><span>Drama</span>
-                </div>
-            </div>
-
-            <div class="toolbar">
-                <div class="tool-item" onclick="toggleFilters()" id="btnFilter">
-                    <div class="tool-icon"><i class="fas fa-magic"></i></div>
-                    <span>Filters</span>
-                </div>
-                <div class="tool-item" onclick="openSounds()" id="btnSound">
-                    <div class="tool-icon"><i class="fas fa-music"></i></div>
-                    <span>Sound</span>
-                </div>
-            </div>
+        <div class="toolbar">
+            <div class="tool" onclick="showPanel('adjust')"><i class="fas fa-sliders-h"></i>Adjust</div>
+            <div class="tool" onclick="showPanel('speed')"><i class="fas fa-tachometer-alt"></i>Speed</div>
+            <div class="tool" onclick="showPanel('text')"><i class="fas fa-font"></i>Text</div>
+            <div class="tool" onclick="document.getElementById('mainVideo').muted = !document.getElementById('mainVideo').muted"><i class="fas fa-volume-mute"></i>Mute</div>
         </div>
     </div>
 
-    <div class="post-sheet" id="postSheet">
-        <div class="sheet-header">Post Settings</div>
-        <textarea id="caption" placeholder="Describe your magic... #Verbotube"></textarea>
-        
-        <div style="display:flex; justify-content:space-between; padding:10px; background:#222; border-radius:10px;">
-            <span>Who can watch?</span>
-            <select id="visibility" style="background:none; color:#FFD700; border:none; font-weight:bold;">
-                <option value="public">Public</option>
-                <option value="friends">Friends</option>
-            </select>
-        </div>
-
-        <button class="final-post-btn" onclick="uploadFinal()">POST NOW</button>
-        <p style="text-align:center; color:#555; cursor:pointer;" onclick="closePostSheet()">Cancel</p>
-    </div>
-
-    <div class="modal" id="soundModal">
-        <div class="header" style="position:relative; background:#111;">
-            <h3 style="color:#FFD700;">Select Sound</h3>
-            <button class="close-btn" onclick="document.getElementById('soundModal').style.display='none'">&times;</button>
-        </div>
-        <div class="sound-list" id="soundList">Loading...</div>
-    </div>
-
-    <div class="loading-screen" id="loader">
+    <div class="loader" id="loader">
         <i class="fas fa-circle-notch fa-spin" style="font-size:40px; color:#FFD700;"></i>
-        <p style="margin-top:20px; color:#ccc;" id="loadText">Uploading...</p>
+        <p id="progressText">Processing...</p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const CLOUD_NAME = "dusj0vpsi"; 
-
+        
         let currentUser = null;
         let selectedFile = null;
-        let activeFilter = 'normal';
-        let trimTime = 0;
-        let selectedRemixUrl = null;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const preSelectedSound = urlParams.get('sound');
+        let filters = { brightness: 100, contrast: 100, saturate: 100 };
 
         onAuthStateChanged(auth, user => {
-            if (user) { currentUser = user; }
+            if(user) currentUser = user;
             else window.location.href = 'login';
         });
 
         window.loadVideo = (input) => {
-            if(input.files && input.files[0]) {
+            if(input.files[0]) {
                 selectedFile = input.files[0];
-                document.getElementById('fileSelectScreen').style.display = 'none';
-                document.getElementById('editorScreen').style.display = 'flex';
-                
-                const vid = document.getElementById('mainVideo');
-                vid.src = URL.createObjectURL(selectedFile);
-                vid.onloadedmetadata = () => {
-                    document.getElementById('trimSlider').max = vid.duration;
-                };
-
-                vid.play();
-
-                if(preSelectedSound) {
-                    applySound(decodeURIComponent(preSelectedSound), "Remixed Sound");
-                }
+                document.getElementById('fileScreen').style.display = 'none';
+                document.getElementById('editorUI').style.display = 'flex';
+                document.getElementById('mainVideo').src = URL.createObjectURL(selectedFile);
             }
         };
 
-        window.togglePlay = () => {
-            const vid = document.getElementById('mainVideo');
-            const aud = document.getElementById('remixAudio');
-            
-            if(vid.paused) {
-                vid.play();
-                if(selectedRemixUrl) {
-                    aud.play().catch(e => console.log("Must interact to play audio")); 
-                }
-            } else {
-                vid.pause();
-                if(selectedRemixUrl) aud.pause();
-            }
+        window.showPanel = (id) => {
+            document.querySelectorAll('.controls-panel').forEach(p => p.style.display = 'none');
+            const panel = document.getElementById('panel-' + id);
+            if(panel) panel.style.display = 'flex';
+            if(id === 'text') toggleText(true);
         };
 
-        document.getElementById('mainVideo').addEventListener('ended', () => {
-             const aud = document.getElementById('remixAudio');
-             if(selectedRemixUrl) {
-                 aud.currentTime = 0;
-                 aud.play();
-             }
+        window.updateFilter = () => {
+            const inputs = document.querySelectorAll('#panel-adjust input');
+            filters.brightness = inputs[0].value;
+            filters.contrast = inputs[1].value;
+            filters.saturate = inputs[2].value;
+            document.getElementById('mainVideo').style.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
+        };
+
+        window.setSpeed = (speed, btn) => {
+            document.getElementById('mainVideo').playbackRate = speed;
+            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+
+        window.toggleText = (show) => {
+            document.getElementById('overlayText').style.display = show ? 'block' : 'none';
+        };
+
+        window.updateText = () => {
+            document.getElementById('overlayText').innerText = document.getElementById('txtInput').value || "Text Here";
+        };
+
+        // DRAG TEXT LOGIC
+        const textEl = document.getElementById('overlayText');
+        let isDragging = false;
+
+        textEl.addEventListener('mousedown', () => isDragging = true);
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mousemove', (e) => {
+            if(isDragging) {
+                const rect = document.querySelector('.preview-box').getBoundingClientRect();
+                textEl.style.left = (e.clientX - rect.left) + 'px';
+                textEl.style.top = (e.clientY - rect.top) + 'px';
+                textEl.style.transform = 'translate(-50%, -50%)';
+            }
         });
 
-        window.updateTrim = () => {
-            const val = document.getElementById('trimSlider').value;
-            trimTime = parseFloat(val);
-            document.getElementById('startTimeDisplay').innerText = trimTime + "s";
-            document.getElementById('mainVideo').currentTime = trimTime;
-            document.getElementById('remixAudio').pause();
-        };
-
-        window.toggleFilters = () => {
-            const box = document.getElementById('filterScroller');
-            box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
-            document.getElementById('btnFilter').classList.toggle('active');
-        };
-
-        window.applyFilter = (filter, elem) => {
-            activeFilter = filter;
-            document.getElementById('mainVideo').className = `f-${filter}`;
-            document.querySelectorAll('.filter-option').forEach(e => e.classList.remove('selected'));
-            elem.classList.add('selected');
-        };
-
-        window.openSounds = () => {
-            document.getElementById('soundModal').style.display = 'flex';
-            document.getElementById('btnSound').classList.add('active');
-            const list = document.getElementById('soundList');
-            list.innerHTML = "Loading...";
-            
-            onValue(ref(db, 'gameplay_clips'), snap => {
-                list.innerHTML = "";
-                snap.forEach(child => {
-                    const data = child.val();
-                    const d = document.createElement('div');
-                    d.className = 'sound-item';
-                    d.innerHTML = `<span>${data.caption || 'Sound'}</span> <span style="color:#FFD700; font-weight:bold;">Use</span>`;
-                    d.onclick = () => {
-                        applySound(data.remixUrl || data.videoUrl, data.caption);
-                        document.getElementById('soundModal').style.display = 'none';
-                    };
-                    list.appendChild(d);
-                });
-            });
-        };
-
-        function applySound(url, name) {
-            selectedRemixUrl = url;
-            const aud = document.getElementById('remixAudio');
-            
-            aud.src = url;
-            aud.load(); 
-            aud.volume = 1.0; 
-
-            const vid = document.getElementById('mainVideo');
-            vid.muted = true;
-            
-            if(!vid.paused) {
-                aud.play().catch(e => alert("Please tap screen to enable sound"));
+        // DRAG TEXT (TOUCH)
+        textEl.addEventListener('touchstart', () => isDragging = true);
+        window.addEventListener('touchend', () => isDragging = false);
+        window.addEventListener('touchmove', (e) => {
+            if(isDragging) {
+                const touch = e.touches[0];
+                const rect = document.querySelector('.preview-box').getBoundingClientRect();
+                textEl.style.left = (touch.clientX - rect.left) + 'px';
+                textEl.style.top = (touch.clientY - rect.top) + 'px';
             }
+        });
 
-            document.getElementById('musicBadge').style.display = 'flex';
-            document.getElementById('soundName').innerText = name.substring(0,15) + "...";
-        }
-
-        window.openPostSheet = () => {
-            document.getElementById('mainVideo').pause();
-            document.getElementById('remixAudio').pause();
-            document.getElementById('postSheet').style.bottom = "0";
-        };
-        window.closePostSheet = () => document.getElementById('postSheet').style.bottom = "-100%";
-
-        window.uploadFinal = async () => {
+        window.uploadVideo = async () => {
             document.getElementById('loader').style.display = 'flex';
-            const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const username = uSnap.exists() ? uSnap.val().username : "User";
+            
+            // NOTE: Filters are visual only in this browser version.
+            // To burn filters into video, backend processing (FFmpeg) is needed.
+            // Here we upload raw video but save filter metadata to apply during playback.
 
             const fd = new FormData();
             fd.append("file", selectedFile);
             fd.append("upload_preset", "paravideo");
 
             const xhr = new XMLHttpRequest();
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+            xhr.open("POST", `https://api.cloudinary.com/v1_1/dusj0vpsi/video/upload`);
             
             xhr.upload.onprogress = e => {
                 const p = Math.round((e.loaded / e.total) * 100);
-                document.getElementById('loadText').innerText = `Uploading ${p}%`;
+                document.getElementById('progressText').innerText = `Uploading ${p}%`;
             };
 
             xhr.onload = async () => {
                 if(xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
-                    const vidUrl = data.secure_url;
+                    
+                    const uSnap = await get(ref(db, 'users/' + currentUser.uid));
+                    const username = uSnap.exists() ? uSnap.val().username : "User";
 
+                    // Save Metadata including Filters
                     await push(ref(db, 'gameplay_clips'), {
-                        videoUrl: vidUrl,
-                        caption: document.getElementById('caption').value,
-                        filter: activeFilter,
-                        trimStart: trimTime,
-                        remixUrl: selectedRemixUrl || "",
-                        isHD: true,
-                        visibility: document.getElementById('visibility').value,
+                        videoUrl: data.secure_url,
+                        caption: document.getElementById('txtInput').value || "My Video",
+                        cssFilter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`, // Saved Filter
                         uid: currentUser.uid,
                         uploader: username,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
+                        isHD: true
                     });
 
-                    // ✅ REDIRECT TO PROFILE (Clean URL)
                     window.location.href = 'profile';
                 } else {
                     alert("Upload Failed");
