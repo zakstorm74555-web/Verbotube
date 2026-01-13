@@ -9,26 +9,12 @@
     <title>Verbotube - Short Video Platform</title>
     
     <meta name="description" content="Verbotube is the ultimate short video app. Watch viral clips, gaming moments, and share your magic with the world.">
-    <meta name="application-name" content="Verbotube">
-    <meta property="og:site_name" content="Verbotube">
-    <meta property="og:title" content="Verbotube">
-    <meta property="og:type" content="website">
     
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="shortcut icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Verbotube",
-      "url": "https://verbotube.vercel.app/",
-      "alternateName": ["Verbotube App", "Verbo Tube"]
-    }
-    </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -283,8 +269,13 @@
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
 
+                    // ✅ SMART URL HANDLING (The Fix)
+                    // If video URL already has 'q_auto' (from new Studio), leave it.
+                    // If not (old video), add optimization.
                     let videoUrl = item.videoUrl;
-                    if(item.isHD) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
+                    if(item.isHD && !videoUrl.includes("q_auto")) {
+                        videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
+                    }
                     
                     const filterClass = item.filter ? `f-${item.filter}` : '';
                     const isRemix = item.remixUrl ? true : false; 
@@ -446,13 +437,11 @@
         window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Verbotube! ${currentShareUrl}`);
         window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
         
-        // ✅ Download function still uses the raw video link which is fine
         window.downloadVideo = async () => {
             alert("Downloading...");
             try {
-                // Here we fetch the RAW video URL because we need the file
                 const videoElement = document.querySelector('.video-card.playing video'); 
-                const rawUrl = videoElement ? videoElement.src : currentShareUrl; // Fallback
+                const rawUrl = videoElement ? videoElement.src : currentShareUrl; 
 
                 const res = await fetch(rawUrl);
                 const blob = await res.blob();
@@ -461,7 +450,6 @@
                 document.body.appendChild(a); a.click();
                 window.URL.revokeObjectURL(url);
             } catch(e) { 
-                // If blob fails, just open the raw link
                 const videoElement = document.querySelector('.video-card.playing video');
                 window.open(videoElement ? videoElement.src : currentShareUrl, '_blank'); 
             }
