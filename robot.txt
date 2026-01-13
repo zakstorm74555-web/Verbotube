@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://starmagic.vercel.app/sitemap.xml
+Sitemap: https://verbotube.vercel.app/sitemap.xml
