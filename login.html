@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login - Star Magic</title>
+    <title>Login - Verbotube</title>
+    
     <link rel="icon" type="image/png" href="icon.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* --- VERBOTUBE THEME --- */
         body { 
             background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; 
             margin: 0; height: 100vh; display: flex; flex-direction: column; 
@@ -38,14 +41,14 @@
         <img src="icon.png" class="logo-img">
     </div>
 
-    <h1>Star Magic</h1>
+    <h1>Verbotube</h1>
     <p>Watch, Create & Share Viral Moments</p>
 
     <button class="login-btn" onclick="handleLogin()">
         <i class="fab fa-google"></i> Continue with Google
     </button>
 
-    <button class="skip-btn" onclick="window.location.href='index.html'">Skip for now</button>
+    <button class="skip-btn" onclick="window.location.href='index'">Skip for now</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -57,9 +60,9 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Agar banda pehle se login hai, to wapis bhej do
+        // Agar banda pehle se login hai, to wapis bhej do (Clean URL)
         onAuthStateChanged(auth, user => {
-            if (user) window.location.href = 'index.html';
+            if (user) window.location.href = 'index';
         });
 
         window.handleLogin = () => {
@@ -78,7 +81,7 @@
                         });
                     }
                 });
-                window.location.href = 'index.html'; // Login Success -> Home
+                window.location.href = 'index'; // ✅ Login Success -> Home (Clean URL)
             })
             .catch((error) => {
                 alert("Login Failed: " + error.message);
