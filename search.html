@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Search - Star Magic</title>
+    <title>Search - Verbotube</title>
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/fvz5S9J/ZsDDGHQ.png">
+    <link rel="icon" type="image/png" href="icon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* --- STAR MAGIC THEME --- */
+        /* --- VERBOTUBE THEME --- */
         * { box-sizing: border-box; }
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; padding: 15px; margin: 0; }
         
@@ -55,7 +55,7 @@
 <body>
 
     <div class="header">
-        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-bar" id="search" placeholder="Search Users..." onkeyup="doSearch()">
@@ -83,20 +83,18 @@
             grid.innerHTML = "";
             
             if(snap.exists()) {
-                // Convert to array and include Key (ID)
                 let vids = Object.entries(snap.val()).map(([key, val]) => ({ key, ...val }));
                 
-                // Sort by Newest
                 vids.sort((a,b) => b.timestamp - a.timestamp); 
                 
                 vids.forEach(v => {
                     const vidEl = document.createElement('video');
                     vidEl.src = v.videoUrl;
                     vidEl.className = 'vid-thumb';
-                    vidEl.muted = true; // Thumbnails should be mute
+                    vidEl.muted = true; 
                     
-                    // Click opens Index with Video ID
-                    vidEl.onclick = () => { window.location.href = `index.html#v=${v.key}`; };
+                    // ✅ UPDATED LINKING: Uses 'index' and query param
+                    vidEl.onclick = () => { window.location.href = `index?video=${v.key}`; };
                     
                     grid.appendChild(vidEl);
                 });
@@ -110,23 +108,20 @@
             const q = document.getElementById('search').value.toLowerCase().trim();
             const res = document.getElementById('results');
             
-            // If empty, reload page (simplest way to reset to trending)
             if(q.length === 0) { location.reload(); return; }
             if(q.length < 2) return;
 
-            // Search Users in Firebase
             onValue(ref(db, 'users'), snap => {
                 res.innerHTML = "<h4>Users</h4>";
                 let found = false;
                 
                 snap.forEach(c => {
                     const u = c.val();
-                    // Search by Username (Case Insensitive)
                     if(u.username && u.username.toLowerCase().includes(q)) {
                         found = true;
                         res.innerHTML += `
-                            <div class="user-item" onclick="window.location.href='profile.html?uid=${c.key}'">
-                                <img src="${u.photo || 'https://via.placeholder.com/50'}" class="u-pic">
+                            <div class="user-item" onclick="window.location.href='profile?uid=${c.key}'">
+                                <img src="${u.photo || 'icon.png'}" class="u-pic">
                                 <div class="u-info">
                                     <div>${u.username}</div>
                                     <div>Tap to view profile</div>
