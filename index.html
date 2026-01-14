@@ -9,15 +9,15 @@
     <title>Verbotube - Short Video Platform</title>
     <link rel="manifest" href="manifest.json">
 
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker Registered'))
-                .catch(err => console.log('Service Worker Failed', err));
-        });
-    }
-</script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.log('Service Worker Failed', err));
+            });
+        }
+    </script>
     
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="shortcut icon" type="image/png" href="icon.png">
@@ -51,8 +51,22 @@
         .header-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
         .tab-btn { cursor: pointer; transition: 0.3s; }
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 3px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        
+        .header-right { display: flex; gap: 15px; align-items: center; }
         .search-icon { font-size: 20px; cursor: pointer; color: white; }
         .auth-btn-header { font-size: 12px; background: #222; padding: 5px 12px; border-radius: 20px; border: 1px solid #FFD700; color: #FFD700; cursor: pointer; display: none; }
+
+        /* 🔥 NEW INSTALL BUTTON (Initially Hidden) */
+        .install-app-btn {
+            display: none; /* JS will show this if user is in browser */
+            background: linear-gradient(135deg, #FFD700, #FF0000);
+            color: black; font-weight: bold; font-size: 11px;
+            padding: 6px 12px; border-radius: 20px;
+            text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+            animation: pulseBtn 2s infinite;
+        }
+        @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* FEED */
         .feed-container { 
@@ -180,7 +194,12 @@
                 <span class="tab-btn active" id="tabForYou" onclick="switchFeed('foryou')">For You</span>
                 <span class="tab-btn" id="tabFollowing" onclick="switchFeed('following')">Following</span>
             </div>
-            <div style="display:flex; gap:15px; align-items:center;">
+            
+            <div class="header-right">
+                <div id="installBtn" class="install-app-btn" onclick="window.location.href='download.html'">
+                    <i class="fas fa-download"></i> Get App
+                </div>
+
                 <div class="search-icon" onclick="window.location.href='search'"><i class="fas fa-search"></i></div>
                 <div id="authBtn" class="auth-btn-header" onclick="goToLogin()">Login</div>
             </div>
@@ -235,6 +254,28 @@
         let activeTab = 'foryou';
         let currentShareUrl = "";
         
+        // 🔥 SMART APP DETECTION LOGIC 🔥
+        function checkAppMode() {
+            const installBtn = document.getElementById('installBtn');
+            
+            // Ye check karega agar App Installed Mode (Standalone) mein khula hai
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               (window.navigator.standalone) || 
+                               document.referrer.includes('android-app://');
+
+            if (isStandalone) {
+                // Agar App hai, to Download button chhupa do
+                installBtn.style.display = 'none';
+                console.log("App Mode Detected: Hiding Install Button");
+            } else {
+                // Agar Browser hai, to Download Button dikhao
+                installBtn.style.display = 'block';
+                console.log("Browser Mode Detected: Showing Install Button");
+            }
+        }
+        // Run check on load
+        checkAppMode();
+        
         onAuthStateChanged(auth, user => {
             if (user) { 
                 currentUser = user; 
@@ -275,8 +316,6 @@
                     let videoUrl = item.videoUrl;
                     if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
                     
-                    // ✅ CHECK FOR REMIX (SOUND)
-                    // If remixUrl exists and is not empty, use it as audio.
                     const hasRemix = (item.remixUrl && item.remixUrl !== "");
                     
                     div.innerHTML = `
@@ -333,7 +372,7 @@
                     const icon = div.querySelector('.play-icon');
                     const loader = div.querySelector('.loader-overlay');
 
-                    // ✅ SYNC LOGIC (Wait for both to be ready)
+                    // ✅ SYNC LOGIC
                     const handleBuffer = (isLoading) => {
                         if(isLoading) {
                             loader.style.display = 'block';
@@ -344,11 +383,9 @@
                     };
 
                     if(audio) {
-                        // If audio exists, sync loading
                         audio.addEventListener('waiting', () => { video.pause(); handleBuffer(true); });
                         video.addEventListener('waiting', () => { audio.pause(); handleBuffer(true); });
                         
-                        // Only play when both are ready enough
                         audio.addEventListener('playing', () => { 
                             if(video.readyState >= 2) { video.play().catch(()=>{}); handleBuffer(false); } 
                         });
@@ -364,14 +401,12 @@
                     video.addEventListener('timeupdate', () => {
                         const val = (video.currentTime / video.duration) * 100;
                         seeker.value = val || 0;
-                        // Force Sync Audio Time
                         if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) {
                             audio.currentTime = video.currentTime;
                         }
                     });
 
                     video.addEventListener('ended', () => {
-                        // Loop is handled by attribute, but sync resets here
                         if(audio) { audio.currentTime = 0; audio.play(); }
                     });
 
@@ -406,7 +441,6 @@
             });
         }
 
-        // ✅ UPDATED TOGGLE PLAY (Handles Audio)
         window.togglePlay = (layer) => {
             const card = layer.parentElement;
             const video = card.querySelector('video');
@@ -469,7 +503,6 @@
             }
         };
 
-        // ✅ OBSERVER FIX (Pauses Audio Too)
         function setupObserver() {
             const obs = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
@@ -482,14 +515,12 @@
                         const vidId = card.getAttribute('data-id');
                         window.history.replaceState(null, null, "?video=" + vidId);
 
-                        // Auto Play
                         video.play().catch(()=>{});
                         if(audio) audio.play().catch(()=>{});
                         
                         icon.style.opacity = 0;
                         card.classList.add('playing');
 
-                        // Count View
                         if (!sessionStorage.getItem('viewed_' + vidId)) {
                             sessionStorage.setItem('viewed_' + vidId, 'true');
                             const viewRef = ref(db, `gameplay_clips/${vidId}/views`);
@@ -497,7 +528,6 @@
                         }
 
                     } else {
-                        // Pause Everything
                         video.pause();
                         if(audio) audio.pause();
                         icon.style.opacity = 0.8;
