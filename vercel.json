@@ -8,5 +8,6 @@
     { "source": "/profile", "destination": "/profile.html" },
     { "source": "/friends", "destination": "/friends.html" },
     { "source": "/login", "destination": "/login.html" }
+    { "source": "/download", "destination": "/downlaod.html" }
   ]
 }
