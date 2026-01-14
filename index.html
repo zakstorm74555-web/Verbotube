@@ -3,91 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Verbotube - 9:16 Fix</title>
+    <title>Verbotube Final Fix</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- CORE STYLES --- */
+        /* --- GLOBAL RESET --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        body { 
+            background-color: #111; color: white; margin: 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* 🔥 APP FRAME (Mobile View) 🔥 */
+        #app-frame {
+            width: 100%; height: 100%; 
+            max-width: 450px; 
+            background: #000; position: relative; overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); border: 1px solid #333;
+        }
 
         /* HEADER */
         header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); 
             display: flex; justify-content: space-between; align-items: center; 
         }
         .header-tabs { display: flex; gap: 20px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
-        /* FEED & VIDEO CARD (9:16 FIX) */
-        .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        /* FEED */
+        .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .feed-container::-webkit-scrollbar { display: none; }
         
         .video-card { 
-            background: #000; width: 100%; height: 100vh; position: relative; 
-            scroll-snap-align: start; 
-            display: flex; justify-content: center; align-items: center; /* Center Video */
+            background: #000; width: 100%; height: 100%; position: relative; 
+            scroll-snap-align: start; display: flex; justify-content: center; align-items: center;
             overflow: hidden; 
         }
 
-        /* 🔥 STRICT 9:16 RATIO VIDEO PLAYER 🔥 */
-        video { 
-            height: 100%; 
-            width: auto; /* Width auto rakhi taake height ke hisaab se 9:16 bane */
-            aspect-ratio: 9 / 16; 
-            object-fit: cover; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Thoda shadow taake alag dikhe */
+        /* VIDEO (Landscape Fit) */
+        video { width: 100%; height: 100%; object-fit: contain; }
+
+        /* OVERLAYS */
+        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .play-icon { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 60px; color: #FFD700; opacity: 0; pointer-events: none; transition: 0.2s; z-index: 15;
         }
 
-        /* SIDEBAR */
+        /* SIDEBAR (Right Side) */
         .sidebar { 
-            position: absolute; right: 10px; bottom: 120px; 
-            display: flex; flex-direction: column; gap: 20px; align-items: center; 
+            position: absolute; right: 10px; bottom: 100px; /* Thoda neeche kiya */
+            display: flex; flex-direction: column; gap: 15px; align-items: center; 
             z-index: 30; text-shadow: 1px 1px 2px black; 
         }
-        .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 10px; margin-top: 5px; font-weight: 600; }
         .liked { color: #FF0000 !important; animation: pop 0.3s ease; }
         @keyframes pop { 50% { transform: scale(1.2); } }
 
+        /* INFO & MARQUEE */
         .video-info { 
-            position: absolute; bottom: 60px; left: 0; width: 100%; 
+            position: absolute; bottom: 20px; left: 0; width: 75%; /* Width kam ki taake Disc se na takraye */
             background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; z-index: 20; pointer-events: none; 
+            padding-bottom: 70px; /* Nav ke liye jagah */
         }
         .video-info * { pointer-events: auto; }
+        .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 13px; overflow: hidden; white-space: nowrap; width: 100%; margin-top: 5px; }
+        .marquee-track { display: inline-block; animation: marquee 6s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* 🔥 GROUP MENU (MASTI) FIXED */
+        /* DISC (Rotating Icon) */
+        .disc-area { position: absolute; bottom: 90px; right: 10px; width: 45px; height: 45px; z-index: 25; }
+        .disc-bg { 
+            width: 100%; height: 100%; border-radius: 50%; background: #111; 
+            border: 6px solid #222; display: flex; justify-content: center; align-items: center; 
+            animation: spin 5s linear infinite; background-size: cover;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 🔥 GROUP MENU (MASTI) */
         .fun-menu {
-            position: absolute; right: 70px; bottom: 200px;
-            display: none; /* JS Toggle karega */
-            flex-direction: column; gap: 15px;
+            position: absolute; right: 60px; bottom: 200px;
+            display: none; flex-direction: column; gap: 15px;
             background: rgba(0,0,0,0.8); padding: 10px; border-radius: 30px;
             border: 1px solid #FFD700; z-index: 200;
-            animation: slideLeft 0.2s ease-out;
         }
-        @keyframes slideLeft { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .fun-item {
             font-size: 24px; cursor: pointer; width: 40px; height: 40px; 
             background: rgba(255,255,255,0.1); border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* 🥚 EGG/TOMATO LAYERS */
-        .reaction-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden; }
-        .flying-obj { position: absolute; font-size: 40px; z-index: 101; animation: throw 0.6s forwards; }
-        .splat-obj { position: absolute; font-size: 60px; z-index: 100; animation: fade 3s forwards; }
-        @keyframes throw { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1.5) rotate(720deg); opacity: 1; } }
-        @keyframes fade { 0% { transform: scale(1.5); } 10% { transform: scale(1); } 100% { opacity: 0; transform: translateY(100px); } }
-
-        /* 🖌️ DRAWING LAYER */
-        .draw-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 50; pointer-events: none; touch-action: none;
-        }
-        .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.2); cursor: crosshair; }
+        /* DRAWING & REACTIONS */
+        .draw-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; touch-action: none; }
+        .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.3); cursor: crosshair; }
         .palette {
             position: absolute; top: 50%; right: 60px; transform: translateY(-50%);
             display: none; flex-direction: column; gap: 15px;
@@ -96,27 +110,40 @@
         .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
         .send-art-btn { background: #FFD700; color: black; border: none; padding: 10px; border-radius: 50%; font-size: 16px; cursor: pointer; }
 
-        /* 🎤 VOICE BUBBLES */
-        .voice-bubble-container {
-            position: absolute; bottom: 180px; left: 10px;
+        .reaction-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden; }
+        .flying-obj { position: absolute; font-size: 40px; z-index: 101; animation: throw 0.6s forwards; }
+        .splat-obj { position: absolute; font-size: 60px; z-index: 100; animation: fade 3s forwards; }
+        @keyframes throw { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1.5) rotate(720deg); opacity: 1; } }
+        @keyframes fade { 0% { transform: scale(1.5); } 10% { transform: scale(1); } 100% { opacity: 0; transform: translateY(100px); } }
+
+        /* 🎤 BUBBLES & COMMENTS */
+        .bubble-container {
+            position: absolute; bottom: 150px; left: 10px; /* Left side fixed */
             display: flex; flex-direction: column; gap: 10px;
-            max-height: 200px; overflow-y: auto; z-index: 150;
-            width: 60px;
+            max-height: 250px; overflow-y: auto; z-index: 150; width: 50px;
         }
         .voice-bubble {
-            width: 50px; height: 50px; border-radius: 50%;
+            width: 45px; height: 45px; border-radius: 50%;
             background: rgba(0,0,0,0.6); border: 2px solid #fff;
             display: flex; justify-content: center; align-items: center;
-            cursor: pointer; overflow: hidden; position: relative;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; overflow: hidden;
         }
         .voice-bubble img { width: 100%; height: 100%; object-fit: cover; }
-        .voice-bubble.playing { border-color: #FFD700; box-shadow: 0 0 15px #FFD700; animation: bounce 0.5s infinite; }
-        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
-        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .voice-bubble.playing { border-color: #FFD700; box-shadow: 0 0 10px #FFD700; }
         
+        .text-comments-area {
+            position: absolute; bottom: 160px; left: 60px; width: 60%;
+            display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 140;
+        }
+        .text-bubble {
+            background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 10px; font-size: 12px;
+            backdrop-filter: blur(4px); align-self: flex-start; pointer-events: auto; color: white;
+            text-shadow: 1px 1px 1px black;
+        }
+
+        /* 🎤 MIC BUTTON (Moved Left) */
         .mic-fab {
-            position: absolute; bottom: 100px; right: 20px;
+            position: absolute; bottom: 100px; left: 20px; /* Moved to LEFT */
             width: 50px; height: 50px; border-radius: 50%;
             background: #FFD700; color: black; border: none;
             font-size: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
@@ -124,71 +151,47 @@
         }
         .mic-fab.recording { transform: scale(1.2); background: #ff4444; color: white; }
 
-        /* 🔥 TEXT COMMENTS BUBBLES */
-        .text-comments-area {
-            position: absolute; bottom: 130px; left: 10px; width: 70%;
-            display: flex; flex-direction: column; gap: 8px;
-            pointer-events: none; z-index: 140;
-            mask-image: linear-gradient(to top, black 80%, transparent 100%);
-        }
-        .text-bubble {
-            background: rgba(0, 0, 0, 0.6); color: white;
-            padding: 8px 12px; border-radius: 15px; font-size: 13px;
-            align-self: flex-start; pointer-events: auto;
-            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);
-            animation: slideUp 0.3s ease-out;
-            max-width: 100%; word-wrap: break-word;
-        }
-        .text-bubble b { color: #FFD700; margin-right: 5px; }
-        .time-tag {
-            background: #FFD700; color: black; font-weight: bold;
-            font-size: 10px; padding: 2px 6px; border-radius: 10px;
-            margin-left: 5px; cursor: pointer; display: inline-block;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 🔥 COMMENT INPUT BAR */
+        /* 💬 INPUT BAR */
         .comment-input-bar {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background: #111; padding: 10px; display: none; /* Toggle */
-            align-items: center; gap: 10px; z-index: 300; border-top: 1px solid #333;
+            position: absolute; bottom: 60px; left: 0; width: 100%;
+            background: #111; padding: 10px; display: none; z-index: 300; border-top: 1px solid #333;
         }
-        .comment-input {
-            flex: 1; background: #333; border: none; color: white;
-            padding: 10px; border-radius: 20px; outline: none;
-        }
-        .attach-time-btn {
-            background: #222; color: #888; border: 1px solid #444;
-            padding: 8px; border-radius: 50%; cursor: pointer; font-size: 14px;
-        }
-        .attach-time-btn.active { background: #FFD700; color: black; border-color: #FFD700; }
-        .send-text-btn { color: #FFD700; font-size: 20px; background: none; border: none; cursor: pointer; }
+        .comment-input { flex: 1; padding: 8px; border-radius: 20px; border: none; }
 
         /* BOTTOM NAV */
         .bottom-nav { 
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; 
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; 
             background: #000; border-top: 1px solid #222; 
             display: flex; justify-content: space-around; align-items: center; z-index: 1000; 
         }
-        .add-btn-nav { width: 45px; height: 30px; background: linear-gradient(135deg, #FFD700, #FF0000); border-radius: 8px; display: flex; justify-content: center; align-items: center; }
-
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="header-tabs"><span class="tab-btn active">For You</span></div>
-        <div style="color:white;"><i class="fas fa-search"></i></div>
-    </header>
+    <div id="app-frame">
+        
+        <header>
+            <div class="header-tabs">
+                <span class="tab-btn active" onclick="switchFeed('foryou')">For You</span>
+                <span class="tab-btn" onclick="switchFeed('following')">Following</span>
+            </div>
+            <div style="color:white;"><i class="fas fa-search"></i></div>
+        </header>
 
-    <div class="feed-container" id="feed">
-        <p style="text-align:center; color:#555; margin-top:50vh;">Loading...</p>
-    </div>
+        <div class="feed-container" id="feed">
+            <p style="text-align:center; color:#555; margin-top:50%;">Loading Verbotube...</p>
+        </div>
 
-    <div class="bottom-nav">
-        <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
-        <div class="add-btn-nav" onclick="checkLoginAndUpload()"><i class="fas fa-plus"></i></div>
-        <i class="fas fa-user" style="color:#888; font-size:22px;" onclick="window.location.href='profile'"></i>
+        <div class="bottom-nav">
+            <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
+            <i class="fas fa-user-friends" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
+            <div style="width:40px; height:25px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:5px; display:flex; justify-content:center; align-items:center;" onclick="checkLoginAndUpload()">
+                <i class="fas fa-plus" style="color:black; font-size:14px;"></i>
+            </div>
+            <i class="fas fa-inbox" style="color:#888; font-size:22px;"></i>
+            <i class="fas fa-user" style="color:#888; font-size:22px;" onclick="window.location.href='profile'"></i>
+        </div>
+
     </div>
 
     <script type="module">
@@ -207,12 +210,13 @@
         onAuthStateChanged(auth, user => { if (user) { currentUser = user; loadVideos(); } else { window.location.href = 'login'; } });
 
         window.checkLoginAndUpload = () => { currentUser ? window.location.href = 'upload' : window.location.href = 'login'; };
+        window.switchFeed = (type) => { loadVideos(); };
 
         function loadVideos() {
             const feed = document.getElementById('feed');
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
-                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50vh; text-align:center;'>No videos.</p>"; return; }
+                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50%; text-align:center;'>No videos.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => b.timestamp - a.timestamp);
 
@@ -224,24 +228,24 @@
                     let videoUrl = item.videoUrl;
                     if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/");
 
+                    const hasRemix = (item.remixUrl && item.remixUrl !== "");
+
                     div.innerHTML = `
                         <div class="reaction-container" id="react-area-${item.key}"></div>
                         <canvas id="canvas-${item.key}" class="draw-layer"></canvas>
                         
                         <div class="text-comments-area" id="text-bubbles-${item.key}"></div>
+                        <div class="bubble-container" id="voice-bubbles-${item.key}"></div>
 
-                        <div class="voice-bubble-container" id="voice-bubbles-${item.key}"></div>
+                        <video src="${videoUrl}" playsinline loop id="vid-${item.key}" ${hasRemix ? 'muted' : ''}></video>
+                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}"></audio>` : ''}
 
-                        <video src="${videoUrl}" playsinline loop id="vid-${item.key}"></video>
                         <div class="touch-layer" onclick="togglePlay(this)"></div>
-                        <div class="play-icon" style="position:absolute; font-size:60px; opacity:0.8; color:#FFD700; pointer-events:none;"><i class="fas fa-play"></i></div>
+                        <div class="play-icon"><i class="fas fa-play"></i></div>
 
                         <div class="comment-input-bar" id="input-bar-${item.key}">
-                            <button class="attach-time-btn" id="time-btn-${item.key}" onclick="toggleTimeAttach('${item.key}')">
-                                <i class="fas fa-stopwatch"></i>
-                            </button>
                             <input type="text" class="comment-input" id="input-${item.key}" placeholder="Add a comment...">
-                            <button class="send-text-btn" onclick="sendTextComment('${item.key}')"><i class="fas fa-paper-plane"></i></button>
+                            <i class="fas fa-paper-plane" style="color:#FFD700; font-size:20px;" onclick="sendTextComment('${item.key}')"></i>
                         </div>
 
                         <div id="fun-menu-${item.key}" class="fun-menu">
@@ -265,37 +269,53 @@
 
                         <div class="sidebar">
                             <div class="action-btn">
-                                <img src="icon.png" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white;">
+                                <img src="icon.png" id="pic-${item.key}" style="width:40px; height:40px; border-radius:50%; border:2px solid white;">
                             </div>
-                            <button class="action-btn" onclick="handleLike('${item.key}')">
+                            <div class="action-btn" onclick="handleLike('${item.key}')">
                                 <i class="fas fa-heart" id="like-icon-${item.key}"></i>
                                 <span id="like-count-${item.key}">0</span>
-                            </button>
-                            <button class="action-btn" onclick="toggleInputBar('${item.key}')">
+                            </div>
+                            <div class="action-btn" onclick="toggleInputBar('${item.key}')">
                                 <i class="fas fa-comment-dots"></i>
                                 <span>Chat</span>
-                            </button>
-                            <button class="action-btn" onclick="toggleFunMenu('${item.key}')">
+                            </div>
+                            <div class="action-btn" onclick="useSound('${item.remixUrl || item.videoUrl}')">
+                                <i class="fas fa-compact-disc"></i>
+                                <span>Remix</span>
+                            </div>
+                            <div class="action-btn" onclick="toggleFunMenu('${item.key}')">
                                 <i class="fas fa-laugh-squint" style="color:#FFD700;"></i>
                                 <span>Masti</span>
-                            </button>
-                            <button class="action-btn"><i class="fas fa-share"></i><span>Share</span></button>
+                            </div>
+                            <div class="action-btn"><i class="fas fa-share"></i><span>Share</span></div>
                         </div>
 
                         <div class="video-info">
-                            <div style="font-weight:bold;">@${item.uploader}</div>
-                            <div>${item.caption}</div>
+                            <div style="font-weight:bold; font-size:16px; margin-bottom:5px;">@${item.uploader}</div>
+                            <div style="font-size:14px; margin-bottom:8px;">${item.caption}</div>
+                            <div class="music-marquee">
+                                <i class="fas fa-music" style="color:#FFD700;"></i> 
+                                <span class="marquee-track">${item.caption ? item.caption : 'Original Sound'} - ${item.uploader}</span>
+                            </div>
                         </div>
+
+                        <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
 
-                    // Load Basic Info
-                    onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()) document.getElementById(`pic-${item.key}`).src = u.val().photo || "icon.png"; });
+                    // Load User Data
+                    onValue(ref(db, 'users/' + item.uid), u => { 
+                        if(u.exists()) {
+                            const p = u.val().photo || "icon.png";
+                            document.getElementById(`pic-${item.key}`).src = p;
+                            document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${p}')`;
+                        }
+                    });
+
                     onValue(ref(db, `gameplay_likes/${item.key}`), s => {
                         document.getElementById(`like-count-${item.key}`).innerText = s.size || 0;
                         if(currentUser) document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
                     });
 
-                    // React Barrage
                     onValue(ref(db, `gameplay_clips/${item.key}/reactions`), rSnap => {
                         if(rSnap.exists() && !div.dataset.barrageFired) {
                             div.dataset.barrageFired = "true";
@@ -305,22 +325,34 @@
                         }
                     });
 
-                    // 🔥 LOAD ALL COMMENTS
                     loadTextBubbles(item.key);
                     loadVoiceBubbles(item.key);
 
-                    // 🔥 SECRET: Author Drawings
+                    // Secret Drawings
                     if(currentUser && currentUser.uid === item.uid) { listenForArt(item.key); }
+
+                    // Sync Audio Loop
+                    if(hasRemix) {
+                        const vid = div.querySelector('video');
+                        const aud = div.querySelector('audio');
+                        aud.onended = () => { vid.currentTime = 0; aud.currentTime = 0; vid.play(); aud.play(); };
+                        vid.onended = () => { vid.play(); /* Video loops visually until audio ends */ };
+                    }
 
                     feed.appendChild(div);
                 });
                 
-                // Observer
                 const obs = new IntersectionObserver(e => e.forEach(en => {
                     const vid = en.target.querySelector('video');
+                    const aud = en.target.querySelector('audio');
                     const icon = en.target.querySelector('.play-icon');
-                    if(en.isIntersecting) { vid.play(); icon.style.opacity = 0; }
-                    else { vid.pause(); icon.style.opacity = 0.8; }
+                    if(en.isIntersecting) { 
+                        vid.play(); if(aud) aud.play(); 
+                        icon.style.opacity = 0; 
+                    } else { 
+                        vid.pause(); if(aud) aud.pause(); 
+                        icon.style.opacity = 0.8; 
+                    }
                 }), { threshold: 0.6 });
                 document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
             });
@@ -328,9 +360,15 @@
 
         window.togglePlay = (layer) => {
             const vid = layer.parentElement.querySelector('video');
+            const aud = layer.parentElement.querySelector('audio');
             const icon = layer.parentElement.querySelector('.play-icon');
-            if(vid.paused) { vid.play(); icon.style.opacity = 0; }
-            else { vid.pause(); icon.style.opacity = 0.8; }
+            if(vid.paused) { 
+                vid.play(); if(aud) aud.play();
+                icon.style.opacity = 0; 
+            } else { 
+                vid.pause(); if(aud) aud.pause();
+                icon.style.opacity = 0.8; 
+            }
         };
 
         window.handleLike = (key) => {
@@ -345,9 +383,6 @@
             if(!isVisible) menu.style.display = 'flex';
         };
 
-        // --- 🔥 TEXT COMMENTS & TIME SYNC 🔥 ---
-        let timeAttachMode = {}; 
-
         window.toggleInputBar = (key) => {
             const bar = document.getElementById(`input-bar-${key}`);
             const isFlex = bar.style.display === 'flex';
@@ -355,78 +390,32 @@
             if(!isFlex) bar.style.display = 'flex';
         };
 
-        window.toggleTimeAttach = (key) => {
-            const vid = document.getElementById(`vid-${key}`);
-            const btn = document.getElementById(`time-btn-${key}`);
-            
-            if(timeAttachMode[key]) {
-                timeAttachMode[key] = null;
-                btn.classList.remove('active');
-            } else {
-                timeAttachMode[key] = vid.currentTime;
-                btn.classList.add('active');
-                vid.pause();
-            }
-        };
-
         window.sendTextComment = async (key) => {
             const input = document.getElementById(`input-${key}`);
             const text = input.value.trim();
             if(!text) return;
-
             const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const user = uSnap.val() || {};
-            const payload = {
-                text: text,
-                username: user.username || "User",
-                timestamp: Date.now()
-            };
-
-            if(timeAttachMode[key] !== undefined && timeAttachMode[key] !== null) {
-                payload.videoTime = timeAttachMode[key];
-            }
-
-            await push(ref(db, `gameplay_clips/${key}/comments`), payload);
-
-            input.value = "";
-            timeAttachMode[key] = null;
-            document.getElementById(`time-btn-${key}`).classList.remove('active');
-            toggleInputBar(key); 
-            document.getElementById(`vid-${key}`).play();
+            await push(ref(db, `gameplay_clips/${key}/comments`), {
+                text: text, username: uSnap.val().username || "User", timestamp: Date.now()
+            });
+            input.value = ""; toggleInputBar(key);
         };
-
         function loadTextBubbles(key) {
             onValue(ref(db, `gameplay_clips/${key}/comments`), snap => {
                 const container = document.getElementById(`text-bubbles-${key}`);
                 container.innerHTML = "";
                 if(!snap.exists()) return;
-
-                const comments = Object.values(snap.val());
-                comments.slice(-4).forEach(c => {
-                    const div = document.createElement('div');
-                    div.className = "text-bubble";
-                    
-                    let timeHtml = "";
-                    if(c.videoTime) {
-                        const mins = Math.floor(c.videoTime / 60);
-                        const secs = Math.floor(c.videoTime % 60);
-                        const timeStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                        timeHtml = `<span class="time-tag" onclick="jumpToTime('${key}', ${c.videoTime})">⏱️ ${timeStr}</span>`;
-                    }
-
-                    div.innerHTML = `<b>${c.username}:</b> ${c.text} ${timeHtml}`;
+                Object.values(snap.val()).slice(-4).forEach(c => {
+                    const div = document.createElement('div'); div.className = "text-bubble";
+                    div.innerHTML = `<b>${c.username}:</b> ${c.text}`;
                     container.appendChild(div);
                 });
             });
         }
+        
+        window.useSound = (url) => window.location.href = `upload?sound=${encodeURIComponent(url)}`;
 
-        window.jumpToTime = (key, time) => {
-            const vid = document.getElementById(`vid-${key}`);
-            vid.currentTime = time;
-            vid.play();
-        };
-
-        // --- 🔥 EGG/TOMATO ---
+        // --- MASTI LOGIC ---
         window.throwReaction = (key, type) => {
             const reactRef = ref(db, `gameplay_clips/${key}/reactions/${type}`);
             runTransaction(reactRef, (count) => (count || 0) + 1);
@@ -438,17 +427,14 @@
             const emoji = type === 'tomato' ? '🍅' : '🥚';
             const flyer = document.createElement('div');
             flyer.innerText = emoji; flyer.className = 'flying-obj';
-            const startX = Math.random() < 0.5 ? -20 : 120;
-            const endX = Math.random() * 60 + 20;
-            flyer.style.left = startX + '%'; flyer.style.top = (Math.random() * 80 + 10) + '%';
-            const anim = flyer.animate([{ transform: 'scale(0.5)' }, { left: endX + '%', top: (Math.random()*60+20)+'%', transform: 'scale(1.5) rotate(720deg)' }], { duration: 500 });
+            flyer.style.left = (Math.random() < 0.5 ? -20 : 120) + '%'; flyer.style.top = (Math.random()*80+10)+'%';
+            const anim = flyer.animate([{ transform: 'scale(0.5)' }, { left: (Math.random()*60+20)+'%', top: (Math.random()*60+20)+'%', transform: 'scale(1.5) rotate(720deg)' }], { duration: 500 });
             container.appendChild(flyer);
             anim.onfinish = () => {
                 flyer.remove();
                 const splat = document.createElement('div'); splat.className = 'splat-obj'; splat.innerText = emoji;
-                splat.style.left = endX + '%'; splat.style.top = (Math.random()*60+20)+'%';
-                container.appendChild(splat);
-                setTimeout(() => splat.remove(), 3000);
+                splat.style.left = (Math.random()*60+20)+'%'; splat.style.top = (Math.random()*60+20)+'%';
+                container.appendChild(splat); setTimeout(() => splat.remove(), 3000);
             };
         }
         function triggerBarrage(key, type, count) {
@@ -456,7 +442,7 @@
             const int = setInterval(() => { if(i++ >= max) clearInterval(int); fireSingleProjectile(key, type); }, 150);
         }
 
-        // --- 🔥 MUNCHKIN DRAWING ---
+        // --- DRAWING ---
         let drawCtx = null, isDrawing = false, currentStrokes = [], currentColor = "red";
         window.toggleDrawing = (key) => {
             const canvas = document.getElementById(`canvas-${key}`);
@@ -464,18 +450,21 @@
             const palette = document.getElementById(`palette-${key}`);
             if(canvas.classList.contains('active')) {
                 canvas.classList.remove('active'); palette.style.display = 'none'; vid.play();
-                document.getElementById(`fun-menu-${key}`).style.display = 'none'; currentStrokes = [];
+                document.getElementById(`fun-menu-${key}`).style.display = 'none'; 
             } else {
                 canvas.classList.add('active'); palette.style.display = 'flex'; vid.pause();
-                setupCanvas(canvas); alert("Draw for the Creator! 🤫");
+                setupCanvas(canvas); alert("Draw something! 🤫");
             }
         };
         window.setPenColor = (key, color) => { currentColor = color; setupCanvas(document.getElementById(`canvas-${key}`)); };
         window.sendArt = (key) => {
-            if(currentStrokes.length === 0) { alert("Draw something!"); return; }
+            if(currentStrokes.length === 0) { alert("Please draw first!"); return; }
             push(ref(db, `gameplay_clips/${key}/graffiti`), { strokes: currentStrokes, author: currentUser.uid });
             alert("Sent! 🎭"); 
-            document.getElementById(`canvas-${key}`).getContext('2d').clearRect(0,0,1000,1000); toggleDrawing(key);
+            const canvas = document.getElementById(`canvas-${key}`);
+            canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+            currentStrokes = []; 
+            toggleDrawing(key); 
         };
         function setupCanvas(canvas) {
             canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
@@ -496,7 +485,7 @@
             onValue(ref(db, `gameplay_clips/${key}/graffiti`), snap => {
                 if(snap.exists()) {
                     const canvas = document.getElementById(`canvas-${key}`);
-                    canvas.width = canvas.offsetWidth || window.innerWidth; canvas.height = canvas.offsetHeight || window.innerHeight;
+                    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
                     const ctx = canvas.getContext('2d'); ctx.lineCap = "round"; ctx.lineWidth = 5;
                     snap.forEach(child => {
                         const art = child.val();
@@ -509,7 +498,7 @@
             });
         }
 
-        // --- 🔥 VOICE BUBBLES ---
+        // --- VOICE ---
         let voiceRecorder = null, voiceChunks = [];
         window.startVoice = async (btn, key) => {
             try {
@@ -527,36 +516,26 @@
                 if(voiceChunks.length === 0) return;
                 const blob = new Blob(voiceChunks, { type: 'audio/webm' });
                 const fd = new FormData(); fd.append("file", blob); fd.append("upload_preset", "paravideo"); fd.append("resource_type", "video");
-                
                 const container = document.getElementById(`voice-bubbles-${key}`);
                 const temp = document.createElement('div'); temp.className = 'voice-bubble'; temp.innerHTML = "⏳"; container.appendChild(temp);
-
                 try {
                     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, { method: 'POST', body: fd });
                     const data = await res.json();
                     const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-                    await push(ref(db, `gameplay_clips/${key}/voice_bubbles`), {
-                        audioUrl: data.secure_url, photo: uSnap.val().photo || "icon.png", timestamp: Date.now()
-                    });
+                    await push(ref(db, `gameplay_clips/${key}/voice_bubbles`), { audioUrl: data.secure_url, photo: uSnap.val().photo || "icon.png" });
                     temp.remove();
                 } catch(e) { temp.innerHTML = "❌"; setTimeout(()=>temp.remove(), 2000); }
             };
         };
-
         function loadVoiceBubbles(key) {
             onValue(ref(db, `gameplay_clips/${key}/voice_bubbles`), snap => {
                 const container = document.getElementById(`voice-bubbles-${key}`);
                 container.innerHTML = "";
                 if(!snap.exists()) return;
-                const bubbles = Object.values(snap.val());
-                bubbles.forEach(b => {
+                Object.values(snap.val()).forEach(b => {
                     const div = document.createElement('div'); div.className = "voice-bubble";
                     div.innerHTML = `<img src="${b.photo}">`;
-                    div.onclick = () => {
-                        const aud = new Audio(b.audioUrl); aud.play();
-                        div.classList.add('playing');
-                        aud.onended = () => div.classList.remove('playing');
-                    };
+                    div.onclick = () => { const aud = new Audio(b.audioUrl); aud.play(); div.classList.add('playing'); aud.onended = () => div.classList.remove('playing'); };
                     container.appendChild(div);
                 });
             });
