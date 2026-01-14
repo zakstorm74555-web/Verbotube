@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Verbotube</title>
+    <title>Verbotube - Official</title>
     
-    <link rel="icon" type="image/png" href="icon.png?v=9">
-    <link rel="shortcut icon" type="image/png" href="icon.png?v=9">
-    <link rel="apple-touch-icon" href="icon.png?v=9">
+    <link rel="icon" type="image/png" href="icon.png?v=10">
     <link rel="manifest" href="manifest.json">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- GLOBAL --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: #111; color: white; margin: 0; 
@@ -29,23 +26,20 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.8); border: 1px solid #333;
         }
 
-        /* HEADER */
         header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); 
             display: flex; justify-content: space-between; align-items: center; 
         }
-        .header-tabs { display: flex; gap: 20px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
+        .header-tabs { display: flex; gap: 20px; font-weight: bold; color: #aaa; }
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
         .install-btn { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 20px; cursor: pointer; display: none; }
 
-        /* FEED */
         .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .feed-container::-webkit-scrollbar { display: none; }
         .video-card { background: #000; width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        /* SIDEBAR & OVERLAYS */
         .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 30; text-shadow: 1px 1px 2px black; }
         .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 10px; margin-top: 5px; font-weight: 600; }
@@ -53,9 +47,11 @@
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; color: #FFD700; opacity: 0; pointer-events: none; z-index: 15; }
         .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
 
-        /* INFO & AD UI */
+        /* 🔥 USER ID / NAME STYLING 🔥 */
         .video-info { position: absolute; bottom: 20px; left: 0; width: 75%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; z-index: 20; pointer-events: none; padding-bottom: 75px; }
-        .username { font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #FFD700; }
+        .username { font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #FFD700; pointer-events: auto; }
+        .caption { font-size: 14px; margin-bottom: 5px; color: #eee; }
+
         .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 13px; overflow: hidden; white-space: nowrap; margin-top: 5px; }
         .marquee-track { display: inline-block; animation: marquee 6s linear infinite; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -64,12 +60,11 @@
         .ad-cta-strip { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #1a1a1a; border-top: 1px solid #333; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
         .ad-cta-btn { background: #3897f0; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; text-decoration: none; }
 
-        /* FUN, DRAWING, BUBBLES */
         .fun-menu { position: absolute; right: 60px; bottom: 200px; display: none; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 30px; border: 1px solid #FFD700; z-index: 200; }
         .draw-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; touch-action: none; }
         .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.3); }
         .palette { position: absolute; top: 50%; right: 60px; transform: translateY(-50%); display: none; flex-direction: column; gap: 15px; background: #222; padding: 15px; border-radius: 20px; z-index: 201; border: 1px solid #FFD700; }
-        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; }
         .send-art-btn { background: #FFD700; color: black; border: none; padding: 10px; border-radius: 50%; font-size: 16px; cursor: pointer; }
 
         .bubble-container { position: absolute; bottom: 150px; left: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; z-index: 150; width: 50px; }
@@ -78,15 +73,11 @@
         .text-comments-area { position: absolute; bottom: 160px; left: 60px; width: 60%; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 140; }
         .text-bubble { background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 10px; font-size: 12px; color: white; }
 
-        /* SHARE SHEET */
         .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
         .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; margin: auto; }
 
-        /* NAV */
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        
-        /* DISC */
         .disc-area { position: absolute; bottom: 90px; right: 10px; width: 45px; height: 45px; z-index: 25; }
         .disc-bg { width: 100%; height: 100%; border-radius: 50%; background: #111; border: 6px solid #222; animation: spin 5s linear infinite; background-size: cover; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -172,12 +163,11 @@
             // 🔥 REAL-TIME ADS LISTENER
             onValue(ref(db, 'ads'), (adSnap) => {
                 ads = adSnap.exists() ? Object.values(adSnap.val()) : [];
-                // Niche wala clips listener automatically refresh ho jayega data badalne par
             });
 
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
-                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50%; text-align:center;'>No clips found.</p>"; return; }
+                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50%; text-align:center;'>No clips yet.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => b.timestamp - a.timestamp);
                 let finalList = [], adIndex = 0;
@@ -204,7 +194,7 @@
                     div.innerHTML = `
                         <div class="reaction-container" id="react-area-${item.key}"></div>
                         <canvas id="canvas-${item.key}" class="draw-layer"></canvas>
-                        ${item.isAd ? `<div class="sponsored-tag">Sponsored</div><div class="ad-cta-strip"><span>${item.caption.substring(0,25)}...</span><a href="${item.ctaLink}" target="_blank" class="ad-cta-btn">${item.ctaText}</a></div>` : ''}
+                        ${item.isAd ? `<div class="sponsored-tag">Sponsored</div><div class="ad-cta-strip"><span>${item.caption.substring(0,20)}...</span><a href="${item.ctaLink}" target="_blank" class="ad-cta-btn">${item.ctaText}</a></div>` : ''}
                         
                         <div class="text-comments-area" id="text-bubbles-${item.key}"></div>
                         <div class="bubble-container" id="voice-bubbles-${item.key}"></div>
@@ -233,7 +223,7 @@
                             <button class="send-art-btn" onclick="sendArt('${item.key}')"><i class="fas fa-check"></i></button>
                         </div>
                         <div class="sidebar">
-                            <img src="icon.png" id="pic-${item.key}" style="width:40px; height:40px; border-radius:50%; border:2px solid white;">
+                            <img src="icon.png" id="pic-${item.key}" style="width:40px; height:40px; border-radius:50%; border:2px solid white; cursor:pointer;" onclick="window.location.href='profile?uid=${item.uid}'">
                             <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></div>
                             <div class="action-btn" onclick="toggleInputBar('${item.key}')"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
                             <div class="action-btn" onmousedown="startVoice(this,'${item.key}')" onmouseup="stopVoice(this,'${item.key}')" ontouchstart="startVoice(this,'${item.key}')" ontouchend="stopVoice(this,'${item.key}')"><i class="fas fa-microphone"></i><span>Voice</span></div>
@@ -244,15 +234,22 @@
                         ` : ''}
 
                         <div class="video-info">
-                            ${!item.isAd ? `<div class="username" id="name-${item.key}">@${item.uploader}</div>` : ''}
-                            <div style="font-size:14px;">${item.caption || ''}</div>
-                            ${!item.isAd ? `<div class="music-marquee"><i class="fas fa-music" style="color:#FFD700;"></i><span class="marquee-track">${item.caption}</span></div>` : ''}
+                            <div class="username" id="name-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader || 'user'}</div>
+                            <div class="caption">${item.caption || ''}</div>
+                            ${!item.isAd ? `<div class="music-marquee"><i class="fas fa-music" style="color:#FFD700;"></i><span class="marquee-track">${item.caption || 'Original Sound'} - ${item.uploader}</span></div>` : ''}
                         </div>
                         ${!item.isAd ? `<div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>` : ''}
                     `;
 
+                    // Listeners for Video Card
                     if(!item.isAd) {
-                        onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()) { const p = u.val().photo || "icon.png"; document.getElementById(`pic-${item.key}`).src = p; document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${p}')`; document.getElementById(`name-${item.key}`).innerText = "@"+u.val().username; }});
+                        onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()) { 
+                            const val = u.val();
+                            const p = val.photo || "icon.png"; 
+                            document.getElementById(`pic-${item.key}`).src = p; 
+                            document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${p}')`; 
+                            document.getElementById(`name-${item.key}`).innerText = "@"+ (val.username || item.uploader);
+                        }});
                         onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; if(currentUser) document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
                         onValue(ref(db, `gameplay_clips/${item.key}/reactions`), r => { if(r.exists() && !div.dataset.bf) { div.dataset.bf="t"; const val=r.val(); if(val.tomato) triggerBarrage(item.key,'tomato',val.tomato); if(val.egg) triggerBarrage(item.key,'egg',val.egg); } });
                         loadTextBubbles(item.key); loadVoiceBubbles(item.key);
@@ -266,43 +263,26 @@
             });
         }
 
-        window.togglePlay = (l) => { const v=l.parentElement.querySelector('video'), a=l.parentElement.querySelector('audio'), i=l.parentElement.querySelector('.play-icon'); if(v.paused){ v.play(); if(a)a.play(); i.style.opacity=0; } else { v.pause(); if(a)a.pause(); i.style.opacity=0.8; } };
+        window.togglePlay = (l) => { const v=l.parentElement.querySelector('video'), a=l.parentElement.querySelector('audio'), i=l.parentElement.querySelector('.play-icon'); if(v.paused){ v.play().catch(()=>{}); if(a)a.play().catch(()=>{}); i.style.opacity=0; } else { v.pause(); if(a)a.pause(); i.style.opacity=0.8; } };
         window.handleLike = (k) => { const r=ref(db,`gameplay_likes/${k}/${currentUser.uid}`); get(r).then(s=>s.exists()?remove(r):set(r,true)); };
         window.toggleFunMenu = (k) => { const m=document.getElementById(`fun-menu-${k}`); const v=m.style.display==='flex'; document.querySelectorAll('.fun-menu').forEach(x=>x.style.display='none'); if(!v) m.style.display='flex'; };
         window.toggleInputBar = (k) => { const b=document.getElementById(`input-bar-${k}`); b.style.display = b.style.display==='flex'?'none':'flex'; };
-        window.openShare = (u) => { currentShareUrl = u; document.getElementById('shareSheet').style.bottom = "0"; };
-        window.closeShare = () => { document.getElementById('shareSheet').style.bottom = "-100%"; };
-        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check this! ${currentShareUrl}`);
-        window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Copied!"));
+        window.openShare = (u) => { currentShareUrl=u; document.getElementById('shareSheet').style.bottom="0"; };
+        window.closeShare = () => { document.getElementById('shareSheet').style.bottom="-100%"; };
+        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Watch this! ${currentShareUrl}`);
+        window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(()=>alert("Copied!"));
         window.downloadVideo = async () => { try { const r=await fetch(currentShareUrl), b=await r.blob(), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='video.mp4'; a.click(); } catch(e){ window.open(currentShareUrl,'_blank'); } };
-        
         window.sendTextComment = async (k) => { const i=document.getElementById(`input-${k}`); if(!i.value.trim()) return; const u=await get(ref(db,'users/'+currentUser.uid)); await push(ref(db,`gameplay_clips/${k}/comments`),{text:i.value,username:u.val().username||"User"}); i.value=""; toggleInputBar(k); };
         function loadTextBubbles(k) { onValue(ref(db,`gameplay_clips/${k}/comments`), s=>{ const c=document.getElementById(`text-bubbles-${k}`); c.innerHTML=""; if(s.exists()) Object.values(s.val()).slice(-3).forEach(v=>{ const d=document.createElement('div'); d.className="text-bubble"; d.innerHTML=`<b>${v.username}:</b> ${v.text}`; c.appendChild(d); }); }); }
         window.useSound = (u) => window.location.href=`upload?sound=${encodeURIComponent(u)}`;
         window.throwReaction = (k,t) => { const r=ref(db,`gameplay_clips/${k}/reactions/${t}`); runTransaction(r,c=>(c||0)+1); fireProj(k,t); };
-
         function fireProj(k,t) { const c=document.getElementById(`react-area-${k}`), e=t==='tomato'?'🍅':'🥚', f=document.createElement('div'); f.innerText=e; f.className='flying-obj'; f.style.left=(Math.random()<0.5?-20:120)+'%'; f.style.top='50%'; const a=f.animate([{transform:'scale(0.5)'},{left:(Math.random()*60+20)+'%',top:(Math.random()*60+20)+'%',transform:'scale(1.5) rotate(720deg)'}],500); c.appendChild(f); a.onfinish=()=>{ f.remove(); const s=document.createElement('div'); s.className='splat-obj'; s.innerText=e; s.style.left=(Math.random()*60+20)+'%'; s.style.top=(Math.random()*60+20)+'%'; c.appendChild(s); setTimeout(()=>s.remove(),3000); }; }
         function triggerBarrage(k,t,n) { let i=0, m=Math.min(n,30), x=setInterval(()=>{ if(i++>=m)clearInterval(x); fireProj(k,t); },150); }
         
         let strokes=[], currentColor="red", drawing=false;
         window.toggleDrawing = (k) => { const c=document.getElementById(`canvas-${k}`), v=document.getElementById(`vid-${k}`), p=document.getElementById(`palette-${k}`); if(c.classList.contains('active')){ c.classList.remove('active'); p.style.display='none'; v.play(); document.getElementById(`fun-menu-${k}`).style.display='none'; } else { c.classList.add('active'); p.style.display='flex'; v.pause(); setupCanvas(c); } };
         window.setPenColor = (k,c) => { currentColor=c; setupCanvas(document.getElementById(`canvas-${k}`)); };
-        
-        // 🔥 AUTO BACK ON SEND
-        window.sendArt = (k) => { 
-            if(!strokes.length) { alert("Draw first!"); return; } 
-            push(ref(db,`gameplay_clips/${k}/graffiti`),{strokes,author:currentUser.uid}); 
-            alert("Sent!"); 
-            strokes=[]; 
-            const c=document.getElementById(`canvas-${k}`); 
-            c.getContext('2d').clearRect(0,0,c.width,c.height); 
-            // Close Everything
-            c.classList.remove('active');
-            document.getElementById(`palette-${k}`).style.display='none';
-            document.getElementById(`fun-menu-${k}`).style.display='none';
-            document.getElementById(`vid-${k}`).play();
-        };
-
+        window.sendArt = (k) => { if(!strokes.length)return; push(ref(db,`gameplay_clips/${k}/graffiti`),{strokes,author:currentUser.uid}); alert("Sent!"); strokes=[]; const c=document.getElementById(`canvas-${k}`); c.getContext('2d').clearRect(0,0,c.width,c.height); c.classList.remove('active'); document.getElementById(`palette-${k}`).style.display='none'; document.getElementById(`fun-menu-${k}`).style.display='none'; document.getElementById(`vid-${k}`).play(); };
         function setupCanvas(c) { c.width=c.offsetWidth; c.height=c.offsetHeight; const x=c.getContext('2d'); x.lineCap="round"; x.lineWidth=5; x.strokeStyle=currentColor; const s=(e)=>{ drawing=true; x.beginPath(); strokes.push({color:currentColor,points:[]}); d(e); }; const f=()=>{drawing=false;}; const d=(e)=>{ if(!drawing)return; const r=c.getBoundingClientRect(), px=(e.clientX||e.touches[0].clientX)-r.left, py=(e.clientY||e.touches[0].clientY)-r.top; x.lineTo(px,py); x.stroke(); x.beginPath(); x.moveTo(px,py); strokes[strokes.length-1].points.push({x:Math.round(px),y:Math.round(py)}); }; c.ontouchstart=s; c.onmousedown=s; c.ontouchend=f; c.onmouseup=f; c.ontouchmove=d; c.onmousemove=d; }
         function listenForArt(k) { onValue(ref(db,`gameplay_clips/${k}/graffiti`), s=>{ if(s.exists()){ const c=document.getElementById(`canvas-${k}`), x=c.getContext('2d'); x.lineCap="round"; x.lineWidth=5; s.forEach(ch=>{ const a=ch.val(); if(a.strokes) a.strokes.forEach(st=>{ x.beginPath(); x.strokeStyle=st.color; if(st.points.length){ x.moveTo(st.points[0].x, st.points[0].y); st.points.forEach(p=>x.lineTo(p.x,p.y)); x.stroke(); } }); }); } }); }
 
