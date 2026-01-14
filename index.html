@@ -8,8 +8,6 @@
     
     <title>Verbotube - Short Video Platform</title>
     
-    <meta name="description" content="Verbotube is the ultimate short video app. Watch viral clips, gaming moments, and share your magic with the world.">
-    
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="shortcut icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
@@ -73,12 +71,6 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* FILTERS */
-        .f-normal { filter: none; }
-        .f-vivid { filter: contrast(1.1) saturate(1.2); }
-        .f-mono { filter: grayscale(1); }
-        .f-dramatic { filter: contrast(1.2) brightness(0.9); }
 
         /* SEEK BAR */
         .seek-container {
@@ -253,7 +245,6 @@
 
         function loadVideos() {
             const feed = document.getElementById('feed');
-            
             const params = new URLSearchParams(window.location.search);
             const deepLinkId = params.get('video');
 
@@ -269,22 +260,20 @@
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
 
-                    // ✅ SMART URL HANDLING (The Fix)
-                    // If video URL already has 'q_auto' (from new Studio), leave it.
-                    // If not (old video), add optimization.
+                    // Handle Video URL
                     let videoUrl = item.videoUrl;
-                    if(item.isHD && !videoUrl.includes("q_auto")) {
-                        videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
-                    }
+                    if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
                     
-                    const filterClass = item.filter ? `f-${item.filter}` : '';
-                    const isRemix = item.remixUrl ? true : false; 
+                    // ✅ CHECK FOR REMIX (SOUND)
+                    // If remixUrl exists and is not empty, use it as audio.
+                    const hasRemix = (item.remixUrl && item.remixUrl !== "");
                     
                     div.innerHTML = `
                         <div class="loader-overlay"><div class="spinner"></div></div>
 
-                        <video src="${videoUrl}" class="${filterClass}" playsinline loop preload="auto" ${isRemix ? 'muted' : ''}></video>
-                        ${isRemix ? `<audio src="${item.remixUrl}"></audio>` : ''}
+                        <video src="${videoUrl}" playsinline loop preload="auto" ${hasRemix ? 'muted' : ''}></video>
+                        
+                        ${hasRemix ? `<audio src="${item.remixUrl}" loop preload="auto"></audio>` : ''}
                         
                         <div class="touch-layer" onclick="togglePlay(this)"></div>
                         <div class="play-icon"><i class="fas fa-play"></i></div>
@@ -333,6 +322,7 @@
                     const icon = div.querySelector('.play-icon');
                     const loader = div.querySelector('.loader-overlay');
 
+                    // ✅ SYNC LOGIC (Wait for both to be ready)
                     const handleBuffer = (isLoading) => {
                         if(isLoading) {
                             loader.style.display = 'block';
@@ -343,22 +333,34 @@
                     };
 
                     if(audio) {
+                        // If audio exists, sync loading
                         audio.addEventListener('waiting', () => { video.pause(); handleBuffer(true); });
                         video.addEventListener('waiting', () => { audio.pause(); handleBuffer(true); });
-                        audio.addEventListener('playing', () => { if(video.readyState >= 3) { video.play(); handleBuffer(false); } });
-                        video.addEventListener('playing', () => { if(audio.readyState >= 3) { audio.play(); handleBuffer(false); } });
+                        
+                        // Only play when both are ready enough
+                        audio.addEventListener('playing', () => { 
+                            if(video.readyState >= 2) { video.play().catch(()=>{}); handleBuffer(false); } 
+                        });
+                        video.addEventListener('playing', () => { 
+                            if(audio.readyState >= 2) { audio.play().catch(()=>{}); handleBuffer(false); } 
+                        });
                     } else {
                         video.addEventListener('waiting', () => handleBuffer(true));
                         video.addEventListener('playing', () => handleBuffer(false));
                     }
 
+                    // Seek Bar Update
                     video.addEventListener('timeupdate', () => {
                         const val = (video.currentTime / video.duration) * 100;
                         seeker.value = val || 0;
-                        if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) audio.currentTime = video.currentTime;
+                        // Force Sync Audio Time
+                        if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) {
+                            audio.currentTime = video.currentTime;
+                        }
                     });
 
                     video.addEventListener('ended', () => {
+                        // Loop is handled by attribute, but sync resets here
                         if(audio) { audio.currentTime = 0; audio.play(); }
                     });
 
@@ -393,6 +395,7 @@
             });
         }
 
+        // ✅ UPDATED TOGGLE PLAY (Handles Audio)
         window.togglePlay = (layer) => {
             const card = layer.parentElement;
             const video = card.querySelector('video');
@@ -406,7 +409,7 @@
                 card.classList.remove('playing');
             } else {
                 video.play();
-                if(audio) { video.muted = true; audio.play(); } 
+                if(audio) { audio.play(); } 
                 icon.style.opacity = 0;
                 card.classList.add('playing');
             }
@@ -455,6 +458,7 @@
             }
         };
 
+        // ✅ OBSERVER FIX (Pauses Audio Too)
         function setupObserver() {
             const obs = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
@@ -467,31 +471,29 @@
                         const vidId = card.getAttribute('data-id');
                         window.history.replaceState(null, null, "?video=" + vidId);
 
-                        if(audio) { 
-                            video.pause(); 
-                            icon.style.opacity = 0.8; 
-                        } else { 
-                            video.play().catch(()=>{}); 
-                            icon.style.opacity = 0; 
-                        }
+                        // Auto Play
+                        video.play().catch(()=>{});
+                        if(audio) audio.play().catch(()=>{});
+                        
+                        icon.style.opacity = 0;
+                        card.classList.add('playing');
 
+                        // Count View
                         if (!sessionStorage.getItem('viewed_' + vidId)) {
                             sessionStorage.setItem('viewed_' + vidId, 'true');
-                            
                             const viewRef = ref(db, `gameplay_clips/${vidId}/views`);
-                            runTransaction(viewRef, (currentViews) => {
-                                return (currentViews || 0) + 1;
-                            });
+                            runTransaction(viewRef, (currentViews) => (currentViews || 0) + 1);
                         }
 
                     } else {
+                        // Pause Everything
                         video.pause();
                         if(audio) audio.pause();
                         icon.style.opacity = 0.8;
                         card.classList.remove('playing');
                     }
                 });
-            }, { threshold: 0.5 }); 
+            }, { threshold: 0.6 }); 
             document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
         }
     </script>
