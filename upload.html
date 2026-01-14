@@ -6,98 +6,100 @@
     <title>Studio - Verbotube</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Lobster&family=Orbitron&family=Roboto:wght@900&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@900&family=Pacifico&family=Permanent+Marker&display=swap" rel="stylesheet">
 
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; user-select: none; }
         body { background: #000; color: white; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* --- 1. START SCREEN --- */
+        /* --- SCREEN 1: UPLOAD --- */
         #uploadScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .start-btn { 
-            width: 120px; height: 120px; border-radius: 20px; background: #1a1a1a; border: 2px solid #333;
+            width: 140px; height: 140px; border-radius: 30px; background: #111; border: 1px solid #333;
             display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.1);
         }
         .start-btn:active { transform: scale(0.95); border-color: #FFD700; }
-        .start-btn i { font-size: 40px; margin-bottom: 10px; color: #FFD700; }
+        .start-btn i { font-size: 50px; margin-bottom: 15px; color: #FFD700; }
+        .start-btn span { font-weight: bold; color: #fff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- 2. CAMERA SCREEN --- */
-        #cameraScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 200; display: none; flex-direction: column; }
-        #camPreview { flex: 1; object-fit: cover; transform: scaleX(-1); } /* Mirror Effect */
-        .cam-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 40px; }
-        .record-btn { width: 70px; height: 70px; background: red; border: 4px solid white; border-radius: 50%; cursor: pointer; }
-        .record-btn.recording { animation: pulse 1s infinite; background: white; border-color: red; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
-        /* --- 3. EDITOR SCREEN --- */
-        .preview-area { position: relative; flex: 1; background: #111; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        /* --- SCREEN 2: EDITOR --- */
+        .preview-area { position: relative; flex: 1; background: #000; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         video { width: 100%; height: 100%; object-fit: contain; }
         
         #textOverlay { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 24px; font-weight: bold; color: white; text-shadow: 2px 2px 4px black; cursor: grab; 
-            display: none; z-index: 10; padding: 10px; border: 1px dashed rgba(255,255,255,0.3); white-space: nowrap;
+            font-size: 30px; font-weight: bold; color: white; text-shadow: 3px 3px 6px black; cursor: grab; 
+            display: none; z-index: 10; padding: 10px; border: 2px dashed rgba(255,215,0,0.5); white-space: nowrap;
         }
 
-        /* Top Bar */
-        .top-bar { position: absolute; top: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; z-index: 20; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .music-pill { background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; font-size: 12px; border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; gap: 5px; }
+        /* Sidebar Tools */
+        .sidebar { 
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
+            display: flex; flex-direction: column; gap: 35px; z-index: 20; 
+            background: rgba(0,0,0,0.5); padding: 20px 10px; border-radius: 40px;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tool { display: flex; flex-direction: column; align-items: center; gap: 5px; text-shadow: 0 2px 5px black; cursor: pointer; }
+        .tool i { font-size: 24px; color: white; transition: 0.2s; }
+        .tool span { font-size: 9px; font-weight: bold; color: #ccc; text-transform: uppercase; }
+        .tool:active i { color: #FFD700; transform: scale(1.2); }
 
-        /* Sidebar */
-        .sidebar { position: absolute; right: 10px; top: 80px; display: flex; flex-direction: column; gap: 20px; z-index: 20; }
-        .tool { display: flex; flex-direction: column; align-items: center; gap: 2px; text-shadow: 0 2px 5px black; }
-        .tool i { font-size: 24px; }
-        .tool span { font-size: 10px; font-weight: 600; }
+        /* Remix Badge (Top Center) */
+        .remix-badge {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #111; border: 1px solid #333;
+            color: white; padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold;
+            display: none; z-index: 20; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+        .remix-badge i { color: #FFD700; animation: spin 4s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Bottom Controls */
-        .bottom-panel { background: #000; padding: 10px; border-top: 1px solid #222; z-index: 50; }
-        .timeline-box { margin-bottom: 10px; padding: 0 10px; }
-        input[type=range].seeker { width: 100%; accent-color: #FFD700; height: 40px; }
-        .next-btn { background: #FFD700; color: black; padding: 10px 30px; border-radius: 25px; font-weight: bold; border: none; font-size: 14px; margin-left: auto; display: block; }
+        .bottom-panel { background: #000; padding: 20px; border-top: 1px solid #222; z-index: 50; display: flex; justify-content: center; }
+        .next-btn { 
+            background: #FFD700; color: black; 
+            padding: 15px 60px; border-radius: 40px; font-weight: 900; border: none; font-size: 16px; 
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); width: 100%; max-width: 350px; text-transform: uppercase; letter-spacing: 1px;
+        }
 
         /* Popups */
-        .popup { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; border-radius: 20px 20px 0 0; padding: 20px; transform: translateY(100%); transition: 0.3s; z-index: 100; max-height: 60vh; overflow-y: auto; }
+        .popup { position: fixed; bottom: 0; left: 0; width: 100%; background: #151515; border-radius: 25px 25px 0 0; padding: 25px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; max-height: 70vh; overflow-y: auto; border-top: 2px solid #333; }
         .popup.show { transform: translateY(0); }
-        .popup-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #ccc; }
+        .popup-header { display: flex; justify-content: space-between; margin-bottom: 25px; font-weight: bold; color: #fff; font-size: 16px; letter-spacing: 1px; }
 
-        /* UI Elements */
-        .font-row { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
-        .font-opt { padding: 8px 12px; background: #333; border-radius: 5px; white-space: nowrap; border: 1px solid #444; }
-        .font-opt.active { border-color: #FFD700; color: #FFD700; }
-        .sound-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #333; }
+        /* Sound List */
+        .sound-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; }
+        .sound-item:active { background: #222; }
+        .sound-info { display: flex; flex-direction: column; gap: 4px; }
+        .sound-title { color: white; font-weight: bold; font-size: 14px; }
+        .sound-author { color: #666; font-size: 11px; }
+
+        /* Colors & Fonts */
+        .font-row { display: flex; gap: 12px; overflow-x: auto; padding: 5px 0; }
+        .font-opt { padding: 8px 16px; background: #222; border-radius: 8px; white-space: nowrap; border: 1px solid #333; color: #888; cursor: pointer; font-size: 13px; }
+        .font-opt.active { border-color: #FFD700; color: #FFD700; background: #000; }
+        
+        .color-circle { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #333; cursor: pointer; }
+        .color-row { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
 
         /* Loader */
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 300; display: none; justify-content: center; align-items: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
     <div id="uploadScreen">
-        <h2 style="color:#FFD700; margin-bottom:30px;">CREATE</h2>
+        <h1 style="color:#FFD700; font-family:'Anton'; letter-spacing:2px; font-size:40px; margin-bottom:10px;">STUDIO</h1>
+        <p style="color:#666; font-size:12px; margin-bottom:40px;">Create. Remix. Viral.</p>
         
-        <div style="display:flex; gap:20px;">
-            <div class="start-btn" onclick="openCamera()">
-                <i class="fas fa-camera"></i>
-                <span>Camera</span>
-            </div>
-            <div class="start-btn" onclick="document.getElementById('fileInput').click()">
-                <i class="fas fa-image"></i>
-                <span>Gallery</span>
-            </div>
+        <div class="start-btn" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-plus"></i>
+            <span>Upload Video</span>
         </div>
-        
         <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="handleFile(this.files[0])">
-    </div>
-
-    <div id="cameraScreen">
-        <video id="camPreview" autoplay playsinline muted></video>
-        <div class="top-bar">
-            <i class="fas fa-times" onclick="closeCamera()" style="font-size:24px;"></i>
-        </div>
-        <div class="cam-controls">
-            <div class="record-btn" id="recBtn" onclick="toggleRecording()"></div>
-        </div>
-        <div style="position:absolute; top:20px; left:50%; transform:translateX(-50%); color:red; font-weight:bold; display:none;" id="recTimer">Recording...</div>
     </div>
 
     <div id="editorScreen" style="display:none; height:100%; flex-direction:column;">
@@ -105,74 +107,65 @@
             <video id="mainVideo" playsinline loop onclick="togglePlay()"></video>
             <audio id="bgAudio" loop></audio>
             
-            <div id="textOverlay">Text</div>
+            <div id="textOverlay">Tap to Edit</div>
 
-            <div class="top-bar">
-                <i class="fas fa-chevron-left close-icon" onclick="location.reload()"></i>
-                <div class="music-pill" onclick="openPopup('sound')">
-                    <i class="fas fa-music"></i> <span id="soundName">Add Sound</span>
-                </div>
+            <div class="remix-badge" id="musicBadge" onclick="openPopup('sound')">
+                <i class="fas fa-compact-disc"></i> <span id="soundName">Original Sound</span>
             </div>
 
             <div class="sidebar">
                 <div class="tool" onclick="openPopup('text')"><i class="fas fa-font"></i><span>Text</span></div>
-                <div class="tool" onclick="openPopup('filter')"><i class="fas fa-magic"></i><span>Effects</span></div>
-                <div class="tool" onclick="openPopup('speed')"><i class="fas fa-tachometer-alt"></i><span>Speed</span></div>
-                <div class="tool" onclick="toggleMute()"><i class="fas fa-volume-up" id="muteIcon"></i><span>Mute</span></div>
+                <div class="tool" onclick="openPopup('filter')"><i class="fas fa-magic"></i><span>Filter</span></div>
+                <div class="tool" onclick="openPopup('sound')"><i class="fas fa-music"></i><span>Sounds</span></div>
             </div>
         </div>
 
         <div class="bottom-panel">
-            <div class="timeline-box">
-                <div class="time-labels"><span id="currTime">0:00</span><span id="durTime">0:00</span></div>
-                <input type="range" class="seeker" id="timeline" value="0" step="0.01" oninput="scrub(this.value)">
-            </div>
             <button class="next-btn" onclick="uploadVideo()">Post Video</button>
         </div>
     </div>
 
     <div id="p-text" class="popup">
         <div class="popup-header"><span onclick="closePopup()">Cancel</span>Text<span style="color:#FFD700" onclick="applyText()">Done</span></div>
-        <input type="text" id="textInput" placeholder="Type something..." style="width:100%; padding:10px; background:#333; border:none; color:white; border-radius:5px; margin-bottom:10px;">
+        <input type="text" id="textInput" placeholder="Type here..." style="width:100%; padding:15px; background:#222; border:none; color:white; border-radius:12px; margin-bottom:20px; font-size:16px;">
+        
         <div class="font-row">
-            <div class="font-opt active" onclick="setFont('Roboto', this)" style="font-family:Roboto">Bold</div>
+            <div class="font-opt active" onclick="setFont('Montserrat', this)" style="font-family:Montserrat">Modern</div>
+            <div class="font-opt" onclick="setFont('Anton', this)" style="font-family:Anton">Heavy</div>
+            <div class="font-opt" onclick="setFont('Permanent Marker', this)" style="font-family:Permanent Marker">Marker</div>
+            <div class="font-opt" onclick="setFont('Pacifico', this)" style="font-family:Pacifico">Cursive</div>
             <div class="font-opt" onclick="setFont('Bangers', this)" style="font-family:Bangers">Comic</div>
-            <div class="font-opt" onclick="setFont('Lobster', this)" style="font-family:Lobster">Cursive</div>
-            <div class="font-opt" onclick="setFont('Orbitron', this)" style="font-family:Orbitron">Sci-Fi</div>
         </div>
-        <div style="display:flex; gap:10px;">
-            <input type="color" id="colorPicker" value="#ffffff" oninput="setTextColor(this.value)" style="width:40px; height:40px; border:none; border-radius:50%;">
-            <button onclick="toggleTextBg()" style="padding:10px; background:#444; color:white; border:none; border-radius:5px;">Background</button>
+
+        <div style="margin-top:20px; display:flex; align-items:center; gap:15px;">
+            <input type="color" id="colorPicker" value="#ffffff" oninput="setTextColor(this.value)" style="width:50px; height:50px; border:none; border-radius:50%; background:none; cursor:pointer;">
+            <span style="color:#666; font-size:12px;">Tap circle to pick any color</span>
+            <button onclick="toggleTextBg()" style="margin-left:auto; padding:8px 15px; background:#333; color:white; border:none; border-radius:8px;">Bg</button>
         </div>
     </div>
 
     <div id="p-sound" class="popup" style="height:70vh;">
-        <div class="popup-header"><span onclick="closePopup()">Close</span>Library<span></span></div>
-        <div id="soundList">Loading...</div>
+        <div class="popup-header"><span onclick="closePopup()">Close</span>Sound Library<span></span></div>
+        <div id="soundList" style="display:flex; flex-direction:column;">
+            <p style="text-align:center; color:#555; margin-top:20px;">Loading viral sounds...</p>
+        </div>
     </div>
 
     <div id="p-filter" class="popup">
         <div class="popup-header"><span onclick="closePopup()">Close</span>Filters<span></span></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button onclick="applyFilter('none')" style="padding:15px; background:#222; color:white; border:1px solid #444;">Normal</button>
-            <button onclick="applyFilter('grayscale(1)')" style="padding:15px; background:#222; color:white; border:1px solid #444;">B&W</button>
-            <button onclick="applyFilter('sepia(0.8)')" style="padding:15px; background:#332; color:#ebc;">Sepia</button>
-            <button onclick="applyFilter('contrast(1.5)')" style="padding:15px; background:#000; color:white;">Drama</button>
-        </div>
-    </div>
-
-    <div id="p-speed" class="popup">
-        <div class="popup-header"><span onclick="closePopup()">Close</span>Speed<span></span></div>
-        <div style="display:flex; justify-content:space-between;">
-            <button onclick="setSpeed(0.5)" style="padding:10px; background:#222; color:white;">0.5x</button>
-            <button onclick="setSpeed(1.0)" style="padding:10px; background:#FFD700; color:black;">1x</button>
-            <button onclick="setSpeed(2.0)" style="padding:10px; background:#222; color:white;">2x</button>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+            <div onclick="applyFilter('none')" style="padding:15px; background:#222; text-align:center; border-radius:10px;">Normal</div>
+            <div onclick="applyFilter('grayscale(1)')" style="padding:15px; background:#222; text-align:center; border-radius:10px;">B&W</div>
+            <div onclick="applyFilter('sepia(0.6)')" style="padding:15px; background:#322; color:#ebc; text-align:center; border-radius:10px;">Retro</div>
+            <div onclick="applyFilter('contrast(1.3) saturate(1.4)')" style="padding:15px; background:#000; text-align:center; border-radius:10px; border:1px solid #444;">Vivid</div>
+            <div onclick="applyFilter('hue-rotate(180deg)')" style="padding:15px; background:#112; text-align:center; border-radius:10px;">Neon</div>
+            <div onclick="applyFilter('invert(1)')" style="padding:15px; background:#fff; color:black; text-align:center; border-radius:10px;">X-Ray</div>
         </div>
     </div>
 
     <div id="loader">
         <i class="fas fa-circle-notch fa-spin" style="font-size:50px; color:#FFD700;"></i>
-        <p style="margin-top:20px; color:white;">Uploading...</p>
+        <h3 style="margin-top:20px; color:white; letter-spacing:1px;">POSTING...</h3>
     </div>
 
     <script type="module">
@@ -188,13 +181,12 @@
 
         let currentUser = null;
         let selectedFile = null;
-        let mediaRecorder, recordedChunks = [], camStream;
         
-        // Editor State
-        let textData = { text: "", font: "Roboto", color: "#ffffff", hasBg: false, x: 50, y: 50 };
+        // State
+        let textData = { text: "", font: "Montserrat", color: "#ffffff", hasBg: false, x: 50, y: 50 };
         let currentFilter = "";
-        let currentSpeed = 1.0;
         let selectedSoundUrl = "";
+        let selectedSoundName = "";
 
         onAuthStateChanged(auth, user => {
             if(user) { currentUser = user; loadSounds(); }
@@ -210,75 +202,95 @@
 
         function startEditor(url) {
             document.getElementById('uploadScreen').style.display = 'none';
-            document.getElementById('cameraScreen').style.display = 'none';
             document.getElementById('editorScreen').style.display = 'flex';
-            
             const vid = document.getElementById('mainVideo');
             vid.src = url;
-            vid.onloadedmetadata = () => {
-                document.getElementById('timeline').max = vid.duration;
-                document.getElementById('durTime').innerText = formatTime(vid.duration);
-            };
             vid.play();
             initDraggableText();
         }
 
-        // 2. CAMERA LOGIC
-        window.openCamera = async () => {
-            try {
-                camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                document.getElementById('camPreview').srcObject = camStream;
-                document.getElementById('uploadScreen').style.display = 'none';
-                document.getElementById('cameraScreen').style.display = 'flex';
-            } catch(e) { alert("Camera access failed"); }
-        };
-
-        window.closeCamera = () => {
-            if(camStream) camStream.getTracks().forEach(t => t.stop());
-            document.getElementById('cameraScreen').style.display = 'none';
-            document.getElementById('uploadScreen').style.display = 'flex';
-        };
-
-        window.toggleRecording = () => {
-            const btn = document.getElementById('recBtn');
-            if(btn.classList.contains('recording')) {
-                mediaRecorder.stop();
-                btn.classList.remove('recording');
-                document.getElementById('recTimer').style.display = 'none';
-            } else {
-                recordedChunks = [];
-                mediaRecorder = new MediaRecorder(camStream);
-                mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-                    selectedFile = new File([blob], "cam.mp4", { type: 'video/mp4' });
-                    startEditor(URL.createObjectURL(selectedFile));
-                    if(camStream) camStream.getTracks().forEach(t => t.stop());
-                };
-                mediaRecorder.start();
-                btn.classList.add('recording');
-                document.getElementById('recTimer').style.display = 'block';
-            }
-        };
-
-        // 3. EDITOR FUNCTIONS
+        // 2. PLAYBACK & SYNC
         const vid = document.getElementById('mainVideo');
         const aud = document.getElementById('bgAudio');
 
-        vid.ontimeupdate = () => {
-            document.getElementById('timeline').value = vid.currentTime;
-            document.getElementById('currTime').innerText = formatTime(vid.currentTime);
-            // Sync Audio
-            if(selectedSoundUrl && Math.abs(aud.currentTime - vid.currentTime) > 0.5) aud.currentTime = vid.currentTime;
-        };
+        vid.addEventListener('ended', () => {
+            vid.play();
+            if(selectedSoundUrl) { aud.currentTime = 0; aud.play(); }
+        });
 
-        window.scrub = (val) => { vid.currentTime = val; if(selectedSoundUrl) aud.currentTime = val; };
         window.togglePlay = () => {
             if(vid.paused) { vid.play(); if(selectedSoundUrl) aud.play(); }
             else { vid.pause(); if(selectedSoundUrl) aud.pause(); }
         };
 
-        // Text
+        // 3. SOUND LIBRARY (Remix Only)
+        function loadSounds() {
+            // Check for Remix Param
+            const params = new URLSearchParams(window.location.search);
+            const remixUrl = params.get('sound');
+            if(remixUrl) {
+                // Agar URL me sound hai, to automatic select karo
+                selectSound(decodeURIComponent(remixUrl), "Remix Sound");
+            }
+
+            onValue(ref(db, 'gameplay_clips'), snap => {
+                const list = document.getElementById('soundList');
+                list.innerHTML = "";
+                
+                // Add "Original Sound" option
+                const orig = document.createElement('div');
+                orig.className = 'sound-item';
+                orig.innerHTML = `<div class="sound-info"><span class="sound-title" style="color:#FFD700">Original Sound</span><span class="sound-author">Use video audio</span></div>`;
+                orig.onclick = () => removeSound();
+                list.appendChild(orig);
+
+                snap.forEach(c => {
+                    const v = c.val();
+                    const url = v.remixUrl || v.videoUrl;
+                    const name = v.caption ? v.caption.substring(0,25) : 'Original Sound';
+                    const author = v.uploader || 'Unknown';
+
+                    const d = document.createElement('div');
+                    d.className = 'sound-item';
+                    d.innerHTML = `
+                        <div class="sound-info">
+                            <span class="sound-title">${name}</span>
+                            <span class="sound-author">${author}</span>
+                        </div>
+                        <i class="fas fa-play" style="color:#444;"></i>
+                    `;
+                    d.onclick = () => selectSound(url, name);
+                    list.appendChild(d);
+                });
+            });
+        }
+
+        function selectSound(url, name) {
+            selectedSoundUrl = url;
+            selectedSoundName = name;
+            
+            // Setup Audio
+            aud.src = url; aud.load(); aud.play();
+            
+            // Mute Video (Remix Logic)
+            vid.muted = true;
+            vid.currentTime = 0; vid.play();
+            
+            // Show Badge
+            document.getElementById('soundName').innerText = name;
+            document.getElementById('musicBadge').style.display = 'flex';
+            closePopup();
+        }
+
+        function removeSound() {
+            selectedSoundUrl = "";
+            aud.pause();
+            vid.muted = false; // Unmute video
+            document.getElementById('musicBadge').style.display = 'none';
+            closePopup();
+        }
+
+        // 4. TOOLS (Text, Filter)
         window.applyText = () => {
             const txt = document.getElementById('textInput').value;
             const el = document.getElementById('textOverlay');
@@ -288,7 +300,7 @@
         };
         window.setFont = (f, el) => { textData.font = f; document.getElementById('textOverlay').style.fontFamily = f; document.querySelectorAll('.font-opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); };
         window.setTextColor = (c) => { textData.color = c; document.getElementById('textOverlay').style.color = c; };
-        window.toggleTextBg = () => { textData.hasBg = !textData.hasBg; document.getElementById('textOverlay').style.background = textData.hasBg ? "rgba(0,0,0,0.7)" : "transparent"; };
+        window.toggleTextBg = () => { textData.hasBg = !textData.hasBg; document.getElementById('textOverlay').style.background = textData.hasBg ? "rgba(0,0,0,0.8)" : "transparent"; };
 
         function initDraggableText() {
             const el = document.getElementById('textOverlay');
@@ -303,34 +315,9 @@
             });
         }
 
-        // Sounds & Effects
-        function loadSounds() {
-            onValue(ref(db, 'gameplay_clips'), snap => {
-                const list = document.getElementById('soundList');
-                list.innerHTML = "";
-                snap.forEach(c => {
-                    const v = c.val();
-                    const url = v.remixUrl || v.videoUrl;
-                    const d = document.createElement('div');
-                    d.className = 'sound-item';
-                    d.innerHTML = `<span>${v.caption ? v.caption.substring(0,20) : 'Sound'}</span> <i class="fas fa-play"></i>`;
-                    d.onclick = () => {
-                        selectedSoundUrl = url;
-                        aud.src = url; aud.load(); aud.play();
-                        vid.muted = true; vid.play();
-                        document.getElementById('soundName').innerText = v.caption ? v.caption.substring(0,10) : "Sound";
-                        closePopup();
-                    };
-                    list.appendChild(d);
-                });
-            });
-        }
-
         window.applyFilter = (c) => { currentFilter = c; vid.style.filter = c; closePopup(); };
-        window.setSpeed = (s) => { currentSpeed = s; vid.playbackRate = s; closePopup(); };
-        window.toggleMute = () => { vid.muted = !vid.muted; document.getElementById('muteIcon').className = vid.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up'; };
 
-        // 4. UPLOAD
+        // 5. UPLOAD LOGIC
         window.uploadVideo = async () => {
             document.getElementById('loader').style.display = 'flex';
             const fd = new FormData();
@@ -346,9 +333,13 @@
                     let url = data.secure_url;
                     let transforms = [];
 
-                    if(currentFilter.includes("grayscale")) transforms.push("e_grayscale");
-                    if(currentFilter.includes("sepia")) transforms.push("e_sepia:80");
-                    if(currentSpeed !== 1.0) transforms.push(currentSpeed > 1 ? "e_accelerate:50" : "e_accelerate:-50");
+                    if(currentFilter && currentFilter !== 'none') {
+                        if(currentFilter.includes("grayscale")) transforms.push("e_grayscale");
+                        else if(currentFilter.includes("sepia")) transforms.push("e_sepia:60");
+                        else if(currentFilter.includes("contrast")) transforms.push("e_contrast:40");
+                        else if(currentFilter.includes("hue")) transforms.push("e_hue:90");
+                        else if(currentFilter.includes("invert")) transforms.push("e_negate");
+                    }
 
                     if(textData.text) {
                         const x = Math.round(textData.x); const y = Math.round(textData.y);
@@ -356,8 +347,7 @@
                         const col = textData.color.replace("#", "");
                         transforms.push(`l_text:${textData.font}_50_bold:${txt},co_rgb:${col},g_center,y_${y-50},x_${x-50}`);
                     }
-                    transforms.push("q_auto,w_720");
-
+                    
                     if(transforms.length > 0) {
                         const i = url.indexOf("/upload/") + 8;
                         url = url.slice(0, i) + transforms.join(",") + "/" + url.slice(i);
@@ -366,8 +356,8 @@
                     const uSnap = await get(ref(db, 'users/' + currentUser.uid));
                     await push(ref(db, 'gameplay_clips'), {
                         videoUrl: url,
-                        remixUrl: selectedSoundUrl || "",
-                        caption: textData.text || "My Edit",
+                        remixUrl: selectedSoundUrl || "", // Link to sound
+                        caption: textData.text || selectedSoundName || "Verbotube Remix",
                         uid: currentUser.uid,
                         uploader: uSnap.exists() ? uSnap.val().username : "User",
                         timestamp: Date.now(),
@@ -382,7 +372,6 @@
 
         window.openPopup = (id) => document.getElementById('p-'+id).classList.add('show');
         window.closePopup = () => document.querySelectorAll('.popup').forEach(p => p.classList.remove('show'));
-        function formatTime(s) { const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${sec<10?'0'+sec:sec}`; }
 
     </script>
 </body>
