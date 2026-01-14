@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Verbotube</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        
+        .logo-area { margin-bottom: 30px; animation: float 3s infinite ease-in-out; }
+        .logo-img { width: 100px; height: 100px; border-radius: 20px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); border: 2px solid #FFD700; }
+        
+        h1 { margin: 0; color: #FFD700; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
+        p { color: #888; font-size: 14px; margin-top: 10px; max-width: 80%; line-height: 1.5; }
+
+        .btn-container { margin-top: 40px; width: 100%; max-width: 300px; }
+        
+        /* Android Button Style */
+        .download-btn {
+            background: linear-gradient(135deg, #FFD700, #FF0000);
+            color: black; border: none; padding: 15px 30px; border-radius: 50px;
+            font-size: 18px; font-weight: bold; cursor: pointer; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3); transition: 0.2s; text-decoration: none;
+        }
+        .download-btn:active { transform: scale(0.95); }
+
+        /* iOS Instruction Box */
+        .ios-instruction { display: none; background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; margin-top: 20px; text-align: left; }
+        .step { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; color: #ccc; }
+        .step i { color: #FFD700; font-size: 16px; }
+
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+    </style>
+</head>
+<body>
+
+    <div class="logo-area">
+        <img src="icon.png" class="logo-img">
+    </div>
+
+    <h1>Verbotube</h1>
+    <p>Watch. Create. Go Viral.<br>Download the App now.</p>
+
+    <div class="btn-container">
+        
+        <a id="androidBtn" href="verbotube.apk" class="download-btn" download>
+            <i class="fab fa-android"></i> Download APK
+        </a>
+
+        <div id="iosPanel" class="ios-instruction">
+            <h3 style="margin-top:0; color:white;">For iPhone Users:</h3>
+            <div class="step"><i class="fas fa-share-square"></i> Tap the <b>Share</b> button below.</div>
+            <div class="step"><i class="fas fa-plus-square"></i> Select <b>"Add to Home Screen"</b>.</div>
+            <div class="step"><i class="fas fa-check-circle"></i> Open App from Home Screen.</div>
+        </div>
+
+    </div>
+
+    <p style="margin-top: 30px; font-size: 11px; opacity: 0.5;">Version 1.0 • Secure Build</p>
+
+    <script>
+        // Check Device Type
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const androidBtn = document.getElementById('androidBtn');
+        const iosPanel = document.getElementById('iosPanel');
+
+        // Agar iPhone hai to APK button chhupao aur instructions dikhao
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            androidBtn.style.display = 'none';
+            iosPanel.style.display = 'block';
+        } else {
+            // Agar Android ya PC hai to APK button dikhao
+            iosPanel.style.display = 'none';
+            androidBtn.style.display = 'flex';
+        }
+    </script>
+
+</body>
+</html>
