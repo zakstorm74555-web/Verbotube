@@ -46,7 +46,7 @@
 
     <div class="btn-container">
         
-        <a id="androidBtn" href="verbotube.apk" class="download-btn" download>
+        <a id="androidBtn" href="https://drive.google.com/uc?export=download&id=1nvX1_R7XCXvgibUrE7eJksoosNgyIVFA" class="download-btn">
             <i class="fab fa-android"></i> Download APK
         </a>
 
@@ -67,12 +67,12 @@
         const androidBtn = document.getElementById('androidBtn');
         const iosPanel = document.getElementById('iosPanel');
 
-        // Agar iPhone hai to APK button chhupao aur instructions dikhao
         if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            // iOS
             androidBtn.style.display = 'none';
             iosPanel.style.display = 'block';
         } else {
-            // Agar Android ya PC hai to APK button dikhao
+            // Android / PC
             iosPanel.style.display = 'none';
             androidBtn.style.display = 'flex';
         }
