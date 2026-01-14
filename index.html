@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Verbotube</title>
     
-    <link rel="icon" type="image/png" href="icon.png?v=7">
+    <link rel="icon" type="image/png" href="icon.png?v=9">
+    <link rel="shortcut icon" type="image/png" href="icon.png?v=9">
+    <link rel="apple-touch-icon" href="icon.png?v=9">
     <link rel="manifest" href="manifest.json">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
@@ -35,102 +37,59 @@
         }
         .header-tabs { display: flex; gap: 20px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
-
-        .install-btn {
-            background: linear-gradient(135deg, #FFD700, #FF0000); color: black;
-            font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 20px;
-            cursor: pointer; display: none; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-        }
+        .install-btn { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; font-size: 11px; font-weight: bold; padding: 5px 10px; border-radius: 20px; cursor: pointer; display: none; }
 
         /* FEED */
         .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .feed-container::-webkit-scrollbar { display: none; }
-        
-        .video-card { 
-            background: #000; width: 100%; height: 100%; position: relative; 
-            scroll-snap-align: start; display: flex; justify-content: center; align-items: center;
-            overflow: hidden; 
-        }
+        .video-card { background: #000; width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        /* OVERLAYS */
-        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
-        .play-icon { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 60px; color: #FFD700; opacity: 0; pointer-events: none; transition: 0.2s; z-index: 15;
-        }
-
-        /* SIDEBAR */
-        .sidebar { 
-            position: absolute; right: 10px; bottom: 90px; 
-            display: flex; flex-direction: column; gap: 15px; align-items: center; 
-            z-index: 30; text-shadow: 1px 1px 2px black; 
-        }
-        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.1s; }
+        /* SIDEBAR & OVERLAYS */
+        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 15px; align-items: center; z-index: 30; text-shadow: 1px 1px 2px black; }
+        .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
         .action-btn span { font-size: 10px; margin-top: 5px; font-weight: 600; }
-        .liked { color: #FF0000 !important; animation: pop 0.3s ease; }
-        .action-btn.recording i { color: #ff4444; text-shadow: 0 0 10px red; transform: scale(1.2); }
-        .action-btn.recording span { color: #ff4444; }
-        @keyframes pop { 50% { transform: scale(1.2); } }
+        .liked { color: #FF0000 !important; }
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; color: #FFD700; opacity: 0; pointer-events: none; z-index: 15; }
+        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
 
-        /* VIDEO INFO */
-        .video-info { 
-            position: absolute; bottom: 20px; left: 0; width: 75%; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; z-index: 20; pointer-events: none; 
-            padding-bottom: 70px; 
-        }
-        .video-info * { pointer-events: auto; }
+        /* INFO & AD UI */
+        .video-info { position: absolute; bottom: 20px; left: 0; width: 75%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; z-index: 20; pointer-events: none; padding-bottom: 75px; }
         .username { font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #FFD700; }
-        .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 13px; overflow: hidden; white-space: nowrap; width: 100%; margin-top: 5px; }
+        .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 13px; overflow: hidden; white-space: nowrap; margin-top: 5px; }
         .marquee-track { display: inline-block; animation: marquee 6s linear infinite; }
         @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* DISC */
-        .disc-area { position: absolute; bottom: 90px; right: 10px; width: 45px; height: 45px; z-index: 25; }
-        .disc-bg { 
-            width: 100%; height: 100%; border-radius: 50%; background: #111; 
-            border: 6px solid #222; display: flex; justify-content: center; align-items: center; 
-            animation: spin 5s linear infinite; background-size: cover;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .sponsored-tag { position: absolute; top: 70px; left: 15px; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px; font-size: 11px; color: #fff; font-weight: bold; z-index: 50; border: 1px solid rgba(255,255,255,0.3); }
+        .ad-cta-strip { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #1a1a1a; border-top: 1px solid #333; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .ad-cta-btn { background: #3897f0; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold; font-size: 14px; text-decoration: none; }
 
-        /* AD STYLES */
-        .sponsored-tag {
-            position: absolute; top: 70px; left: 15px; 
-            background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px;
-            font-size: 12px; color: #fff; font-weight: bold; z-index: 50;
-            border: 1px solid rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px;
-        }
-        .ad-cta-strip {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: #1a1a1a; border-top: 1px solid #333; z-index: 40;
-            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-        }
-        .ad-cta-text { display: flex; flex-direction: column; }
-        .ad-cta-btn {
-            background: #3897f0; color: white; padding: 10px 20px; border-radius: 5px;
-            font-weight: bold; font-size: 14px; text-decoration: none;
-        }
-        .video-card.is-ad .video-info { padding-bottom: 80px; }
-
-        /* FUN & DRAWING */
-        .fun-menu {
-            position: absolute; right: 60px; bottom: 200px;
-            display: none; flex-direction: column; gap: 15px;
-            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 30px;
-            border: 1px solid #FFD700; z-index: 200;
-        }
-        .fun-item { font-size: 24px; cursor: pointer; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-        
+        /* FUN, DRAWING, BUBBLES */
+        .fun-menu { position: absolute; right: 60px; bottom: 200px; display: none; flex-direction: column; gap: 15px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 30px; border: 1px solid #FFD700; z-index: 200; }
         .draw-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; touch-action: none; }
-        .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.3); cursor: crosshair; }
-        .palette {
-            position: absolute; top: 50%; right: 60px; transform: translateY(-50%);
-            display: none; flex-direction: column; gap: 15px;
-            background: #222; padding: 15px; border-radius: 20px; z-index: 201; border: 1px solid #FFD700;
-        }
+        .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.3); }
+        .palette { position: absolute; top: 50%; right: 60px; transform: translateY(-50%); display: none; flex-direction: column; gap: 15px; background: #222; padding: 15px; border-radius: 20px; z-index: 201; border: 1px solid #FFD700; }
         .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
         .send-art-btn { background: #FFD700; color: black; border: none; padding: 10px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+
+        .bubble-container { position: absolute; bottom: 150px; left: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; z-index: 150; width: 50px; }
+        .voice-bubble { width: 45px; height: 45px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #fff; display: flex; justify-content: center; align-items: center; overflow: hidden; cursor: pointer; }
+        .voice-bubble img { width: 100%; height: 100%; object-fit: cover; }
+        .text-comments-area { position: absolute; bottom: 160px; left: 60px; width: 60%; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 140; }
+        .text-bubble { background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 10px; font-size: 12px; color: white; }
+
+        /* SHARE SHEET */
+        .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
+        .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
+        .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; margin: auto; }
+
+        /* NAV */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        
+        /* DISC */
+        .disc-area { position: absolute; bottom: 90px; right: 10px; width: 45px; height: 45px; z-index: 25; }
+        .disc-bg { width: 100%; height: 100%; border-radius: 50%; background: #111; border: 6px solid #222; animation: spin 5s linear infinite; background-size: cover; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .reaction-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden; }
         .flying-obj { position: absolute; font-size: 40px; z-index: 101; animation: throw 0.6s forwards; }
@@ -138,33 +97,8 @@
         @keyframes throw { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1.5) rotate(720deg); opacity: 1; } }
         @keyframes fade { 0% { transform: scale(1.5); } 10% { transform: scale(1); } 100% { opacity: 0; transform: translateY(100px); } }
 
-        /* BUBBLES */
-        .bubble-container { position: absolute; bottom: 150px; left: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; z-index: 150; width: 50px; }
-        .voice-bubble { width: 45px; height: 45px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 2px solid #fff; display: flex; justify-content: center; align-items: center; cursor: pointer; overflow: hidden; }
-        .voice-bubble img { width: 100%; height: 100%; object-fit: cover; }
-        .voice-bubble.playing { border-color: #FFD700; box-shadow: 0 0 10px #FFD700; }
-        
-        .text-comments-area { position: absolute; bottom: 160px; left: 60px; width: 60%; display: flex; flex-direction: column; gap: 5px; pointer-events: none; z-index: 140; }
-        .text-bubble { background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 10px; font-size: 12px; backdrop-filter: blur(4px); align-self: flex-start; pointer-events: auto; color: white; text-shadow: 1px 1px 1px black; }
-
         .comment-input-bar { position: absolute; bottom: 60px; left: 0; width: 100%; background: #111; padding: 10px; display: none; z-index: 300; border-top: 1px solid #333; }
-        .comment-input { flex: 1; padding: 8px; border-radius: 20px; border: none; }
-
-        /* SHARE SHEET */
-        .share-sheet {
-            position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000;
-            border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700;
-        }
-        .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
-        .share-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: white; cursor: pointer; }
-        .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
-        .s-whatsapp { background: #25D366; }
-        .s-copy { background: #333; border: 1px solid #555; }
-        .s-download { background: #FFD700; color: black; }
-        .close-share { margin-top: 20px; width: 100%; padding: 12px; background: #222; border: none; color: white; border-radius: 10px; font-weight: bold; }
-
-        /* BOTTOM NAV */
-        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .comment-input { flex: 1; padding: 8px; border-radius: 20px; border: none; outline: none; }
     </style>
 </head>
 <body>
@@ -172,8 +106,8 @@
     <div id="app-frame">
         <header>
             <div class="header-tabs">
-                <span class="tab-btn active" onclick="switchFeed('foryou')">For You</span>
-                <span class="tab-btn" onclick="switchFeed('following')">Following</span>
+                <span class="tab-btn active" onclick="switchFeed()">For You</span>
+                <span class="tab-btn" onclick="window.location.href='friends'">Following</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
                 <div id="installBtn" class="install-btn" onclick="window.location.href='download.html'"><i class="fas fa-download"></i> APP</div>
@@ -182,26 +116,26 @@
         </header>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50%;">Loading Verbotube...</p>
+            <p style="text-align:center; margin-top:50%;">Loading...</p>
         </div>
 
         <div class="share-sheet" id="shareSheet">
             <h3 style="margin:0; text-align:center; color:#FFD700;">Share & Save</h3>
             <div class="share-grid">
-                <div class="share-item" onclick="shareToWhatsapp()">
-                    <div class="share-icon-box s-whatsapp"><i class="fab fa-whatsapp"></i></div>
-                    <span>WhatsApp</span>
+                <div onclick="shareToWhatsapp()" style="cursor:pointer; color:white;">
+                    <div class="share-icon-box" style="background:#25D366;"><i class="fab fa-whatsapp"></i></div>
+                    <span style="font-size:12px;">WhatsApp</span>
                 </div>
-                <div class="share-item" onclick="copyLink()">
-                    <div class="share-icon-box s-copy"><i class="fas fa-link"></i></div>
-                    <span>Copy Link</span>
+                <div onclick="copyLink()" style="cursor:pointer; color:white;">
+                    <div class="share-icon-box" style="background:#333;"><i class="fas fa-link"></i></div>
+                    <span style="font-size:12px;">Link</span>
                 </div>
-                <div class="share-item" onclick="downloadVideo()">
-                    <div class="share-icon-box s-download"><i class="fas fa-download"></i></div>
-                    <span>Save</span>
+                <div onclick="downloadVideo()" style="cursor:pointer; color:white;">
+                    <div class="share-icon-box" style="background:#FFD700; color:black;"><i class="fas fa-download"></i></div>
+                    <span style="font-size:12px;">Save</span>
                 </div>
             </div>
-            <button class="close-share" onclick="closeShare()">Cancel</button>
+            <button onclick="closeShare()" style="margin-top:20px; width:100%; padding:10px; background:#222; border:none; color:white; border-radius:10px;">Cancel</button>
         </div>
 
         <div class="bottom-nav">
@@ -210,7 +144,7 @@
             <div style="width:40px; height:25px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:5px; display:flex; justify-content:center; align-items:center;" onclick="checkLoginAndUpload()">
                 <i class="fas fa-plus" style="color:black; font-size:14px;"></i>
             </div>
-            <i class="fas fa-inbox" style="color:#888; font-size:22px;"></i>
+            <i class="fas fa-inbox" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
             <i class="fas fa-user" style="color:#888; font-size:22px;" onclick="window.location.href='profile'"></i>
         </div>
     </div>
@@ -220,49 +154,39 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, push, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const cl = cloudinary.Cloudinary.new({ cloud_name: 'dusj0vpsi' }); 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
         const CLOUD_NAME = "dusj0vpsi";
-        let currentUser = null;
-        let currentShareUrl = "";
-
-        function checkAppMode() {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-            if(!isStandalone) document.getElementById('installBtn').style.display = 'block';
-        }
-        checkAppMode();
+        let currentUser = null, currentShareUrl = "", ads = [];
 
         onAuthStateChanged(auth, user => { if (user) { currentUser = user; loadVideos(); } else { window.location.href = 'login'; } });
 
-        window.checkLoginAndUpload = () => { currentUser ? window.location.href = 'upload' : window.location.href = 'login'; };
-        window.switchFeed = (type) => { loadVideos(); };
+        window.checkLoginAndUpload = () => { window.location.href = currentUser ? 'upload' : 'login'; };
+        window.switchFeed = () => loadVideos();
 
-        async function loadVideos() {
+        function loadVideos() {
             const feed = document.getElementById('feed');
             
-            // 🔥 FETCH ADS FROM DATABASE ONLY (No Fakes)
-            const adsSnap = await get(ref(db, 'ads'));
-            let ads = [];
-            if(adsSnap.exists()) ads = Object.values(adsSnap.val());
+            // 🔥 REAL-TIME ADS LISTENER
+            onValue(ref(db, 'ads'), (adSnap) => {
+                ads = adSnap.exists() ? Object.values(adSnap.val()) : [];
+                // Niche wala clips listener automatically refresh ho jayega data badalne par
+            });
 
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
-                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50%; text-align:center;'>No videos.</p>"; return; }
+                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50%; text-align:center;'>No clips found.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => b.timestamp - a.timestamp);
+                let finalList = [], adIndex = 0;
 
-                // 🔥 MERGE ADS (Only if they exist in DB)
-                let finalList = [];
-                let adIndex = 0;
-                
-                videos.forEach((video, index) => {
-                    finalList.push(video);
-                    if ((index + 1) % 3 === 0 && ads.length > 0) {
+                videos.forEach((v, i) => {
+                    finalList.push(v);
+                    if ((i + 1) % 3 === 0 && ads.length > 0) {
                         let ad = ads[adIndex % ads.length];
-                        finalList.push({ ...ad, isAd: true, key: 'ad_' + index });
+                        if(ad && ad.videoUrl) finalList.push({ ...ad, isAd: true, key: 'ad_' + i + '_' + Date.now() });
                         adIndex++;
                     }
                 });
@@ -270,29 +194,18 @@
                 finalList.forEach(item => {
                     const div = document.createElement('div');
                     div.className = "video-card";
-                    if(item.isAd) div.classList.add('is-ad');
                     div.setAttribute('data-id', item.key);
-                    
+                    if(item.isAd) div.classList.add('is-ad');
+
                     let videoUrl = item.videoUrl;
                     if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/");
                     const hasRemix = (item.remixUrl && item.remixUrl !== "");
 
-                    // AD VS VIDEO
-                    const adOverlay = item.isAd ? `
-                        <div class="sponsored-tag">SPONSORED</div>
-                        <div class="ad-cta-strip">
-                            <div class="ad-cta-text">
-                                <span style="font-weight:bold; color:white; font-size:14px;">${item.caption.substring(0,25)}...</span>
-                                <span style="font-size:11px; color:#aaa;">Tap to view</span>
-                            </div>
-                            <a href="${item.ctaLink}" target="_blank" class="ad-cta-btn">${item.ctaText}</a>
-                        </div>
-                    ` : '';
-
                     div.innerHTML = `
                         <div class="reaction-container" id="react-area-${item.key}"></div>
                         <canvas id="canvas-${item.key}" class="draw-layer"></canvas>
-                        ${adOverlay}
+                        ${item.isAd ? `<div class="sponsored-tag">Sponsored</div><div class="ad-cta-strip"><span>${item.caption.substring(0,25)}...</span><a href="${item.ctaLink}" target="_blank" class="ad-cta-btn">${item.ctaText}</a></div>` : ''}
+                        
                         <div class="text-comments-area" id="text-bubbles-${item.key}"></div>
                         <div class="bubble-container" id="voice-bubbles-${item.key}"></div>
 
@@ -303,36 +216,27 @@
                         <div class="play-icon"><i class="fas fa-play"></i></div>
 
                         <div class="comment-input-bar" id="input-bar-${item.key}">
-                            <input type="text" class="comment-input" id="input-${item.key}" placeholder="Add a comment...">
-                            <i class="fas fa-paper-plane" style="color:#FFD700; font-size:20px;" onclick="sendTextComment('${item.key}')"></i>
+                            <input type="text" class="comment-input" id="input-${item.key}" placeholder="Comment...">
+                            <i class="fas fa-paper-plane" style="color:#FFD700; margin-left:10px;" onclick="sendTextComment('${item.key}')"></i>
                         </div>
 
                         ${!item.isAd ? `
                         <div id="fun-menu-${item.key}" class="fun-menu">
-                            <div class="fun-item" onclick="throwReaction('${item.key}', 'tomato')">🍅</div>
-                            <div class="fun-item" onclick="throwReaction('${item.key}', 'egg')">🥚</div>
+                            <div class="fun-item" onclick="throwReaction('${item.key}','tomato')">🍅</div>
+                            <div class="fun-item" onclick="throwReaction('${item.key}','egg')">🥚</div>
                             <div class="fun-item" onclick="toggleDrawing('${item.key}')">🖍️</div>
                         </div>
-
                         <div id="palette-${item.key}" class="palette">
-                            <div class="color-dot" style="background:red;" onclick="setPenColor('${item.key}', 'red')"></div>
-                            <div class="color-dot" style="background:#FFD700;" onclick="setPenColor('${item.key}', '#FFD700')"></div>
-                            <div class="color-dot" style="background:white;" onclick="setPenColor('${item.key}', 'white')"></div>
-                            <button class="send-art-btn" onclick="sendArt('${item.key}')"><i class="fas fa-paper-plane"></i></button>
+                            <div class="color-dot" style="background:red;" onclick="setPenColor('${item.key}','red')"></div>
+                            <div class="color-dot" style="background:#FFD700;" onclick="setPenColor('${item.key}','#FFD700')"></div>
+                            <div class="color-dot" style="background:white;" onclick="setPenColor('${item.key}','white')"></div>
+                            <button class="send-art-btn" onclick="sendArt('${item.key}')"><i class="fas fa-check"></i></button>
                         </div>
-
                         <div class="sidebar">
-                            <div class="action-btn"><img src="icon.png" id="pic-${item.key}" style="width:40px; height:40px; border-radius:50%; border:2px solid white;"></div>
+                            <img src="icon.png" id="pic-${item.key}" style="width:40px; height:40px; border-radius:50%; border:2px solid white;">
                             <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="like-icon-${item.key}"></i><span id="like-count-${item.key}">0</span></div>
                             <div class="action-btn" onclick="toggleInputBar('${item.key}')"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
-                            
-                            <div class="action-btn" 
-                                 onmousedown="startVoice(this, '${item.key}')" onmouseup="stopVoice(this, '${item.key}')"
-                                 ontouchstart="startVoice(this, '${item.key}')" ontouchend="stopVoice(this, '${item.key}')">
-                                <i class="fas fa-microphone"></i>
-                                <span>Voice</span>
-                            </div>
-
+                            <div class="action-btn" onmousedown="startVoice(this,'${item.key}')" onmouseup="stopVoice(this,'${item.key}')" ontouchstart="startVoice(this,'${item.key}')" ontouchend="stopVoice(this,'${item.key}')"><i class="fas fa-microphone"></i><span>Voice</span></div>
                             <div class="action-btn" onclick="useSound('${item.remixUrl || item.videoUrl}')"><i class="fas fa-compact-disc"></i><span>Remix</span></div>
                             <div class="action-btn" onclick="toggleFunMenu('${item.key}')"><i class="fas fa-laugh-squint" style="color:#FFD700;"></i><span>Masti</span></div>
                             <div class="action-btn" onclick="openShare('${videoUrl}')"><i class="fas fa-share"></i><span>Share</span></div>
@@ -340,64 +244,73 @@
                         ` : ''}
 
                         <div class="video-info">
-                            ${item.isAd ? '' : `<div class="username" id="name-${item.key}">@${item.uploader}</div>`}
-                            <div style="font-size:14px;">${item.caption}</div>
-                            ${!item.isAd ? `<div class="music-marquee"><i class="fas fa-music" style="color:#FFD700;"></i><span class="marquee-track">${item.caption} - ${item.uploader}</span></div>` : ''}
+                            ${!item.isAd ? `<div class="username" id="name-${item.key}">@${item.uploader}</div>` : ''}
+                            <div style="font-size:14px;">${item.caption || ''}</div>
+                            ${!item.isAd ? `<div class="music-marquee"><i class="fas fa-music" style="color:#FFD700;"></i><span class="marquee-track">${item.caption}</span></div>` : ''}
                         </div>
-                        
                         ${!item.isAd ? `<div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>` : ''}
                     `;
 
                     if(!item.isAd) {
-                        onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()) { const p = u.val().photo || "icon.png"; document.getElementById(`pic-${item.key}`).src = p; document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${p}')`; document.getElementById(`name-${item.key}`).innerText = "@" + u.val().username; }});
+                        onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()) { const p = u.val().photo || "icon.png"; document.getElementById(`pic-${item.key}`).src = p; document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${p}')`; document.getElementById(`name-${item.key}`).innerText = "@"+u.val().username; }});
                         onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`like-count-${item.key}`).innerText = s.size || 0; if(currentUser) document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-                        onValue(ref(db, `gameplay_clips/${item.key}/reactions`), rSnap => { if(rSnap.exists() && !div.dataset.barrageFired) { div.dataset.barrageFired = "true"; const r = rSnap.val(); if(r.tomato > 0) triggerBarrage(item.key, 'tomato', r.tomato); if(r.egg > 0) triggerBarrage(item.key, 'egg', r.egg); } });
+                        onValue(ref(db, `gameplay_clips/${item.key}/reactions`), r => { if(r.exists() && !div.dataset.bf) { div.dataset.bf="t"; const val=r.val(); if(val.tomato) triggerBarrage(item.key,'tomato',val.tomato); if(val.egg) triggerBarrage(item.key,'egg',val.egg); } });
                         loadTextBubbles(item.key); loadVoiceBubbles(item.key);
-                        if(currentUser && currentUser.uid === item.uid) { listenForArt(item.key); }
+                        if(currentUser && currentUser.uid === item.uid) listenForArt(item.key);
                     }
-
-                    if(hasRemix) { const vid = div.querySelector('video'); const aud = div.querySelector('audio'); aud.onended = () => { vid.currentTime = 0; aud.currentTime = 0; vid.play(); aud.play(); }; vid.onended = () => { vid.play(); }; }
+                    if(hasRemix) { const v=div.querySelector('video'), a=div.querySelector('audio'); a.onended=()=>{ v.currentTime=0; a.currentTime=0; v.play(); a.play(); }; v.onended=()=>v.play(); }
 
                     feed.appendChild(div);
                 });
-                
-                const obs = new IntersectionObserver(e => e.forEach(en => { const vid = en.target.querySelector('video'); const aud = en.target.querySelector('audio'); const icon = en.target.querySelector('.play-icon'); if(en.isIntersecting) { vid.play(); if(aud) aud.play(); icon.style.opacity = 0; } else { vid.pause(); if(aud) aud.pause(); icon.style.opacity = 0.8; } }), { threshold: 0.6 });
-                document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
+                setupObserver();
             });
         }
 
-        window.togglePlay = (layer) => { const vid = layer.parentElement.querySelector('video'); const aud = layer.parentElement.querySelector('audio'); const icon = layer.parentElement.querySelector('.play-icon'); if(vid.paused) { vid.play(); if(aud) aud.play(); icon.style.opacity = 0; } else { vid.pause(); if(aud) aud.pause(); icon.style.opacity = 0.8; } };
-        window.handleLike = (key) => { const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
-        
-        window.toggleFunMenu = (key) => { const menu = document.getElementById(`fun-menu-${key}`); const isVisible = menu.style.display === 'flex'; document.querySelectorAll('.fun-menu').forEach(m => m.style.display = 'none'); if(!isVisible) menu.style.display = 'flex'; };
-        window.toggleInputBar = (key) => { const bar = document.getElementById(`input-bar-${key}`); const isFlex = bar.style.display === 'flex'; document.querySelectorAll('.comment-input-bar').forEach(b => b.style.display = 'none'); if(!isFlex) bar.style.display = 'flex'; };
-        
-        window.openShare = (url) => { currentShareUrl = url; document.getElementById('shareSheet').style.bottom = "0"; };
+        window.togglePlay = (l) => { const v=l.parentElement.querySelector('video'), a=l.parentElement.querySelector('audio'), i=l.parentElement.querySelector('.play-icon'); if(v.paused){ v.play(); if(a)a.play(); i.style.opacity=0; } else { v.pause(); if(a)a.pause(); i.style.opacity=0.8; } };
+        window.handleLike = (k) => { const r=ref(db,`gameplay_likes/${k}/${currentUser.uid}`); get(r).then(s=>s.exists()?remove(r):set(r,true)); };
+        window.toggleFunMenu = (k) => { const m=document.getElementById(`fun-menu-${k}`); const v=m.style.display==='flex'; document.querySelectorAll('.fun-menu').forEach(x=>x.style.display='none'); if(!v) m.style.display='flex'; };
+        window.toggleInputBar = (k) => { const b=document.getElementById(`input-bar-${k}`); b.style.display = b.style.display==='flex'?'none':'flex'; };
+        window.openShare = (u) => { currentShareUrl = u; document.getElementById('shareSheet').style.bottom = "0"; };
         window.closeShare = () => { document.getElementById('shareSheet').style.bottom = "-100%"; };
-        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check this out! ${currentShareUrl}`);
-        window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
-        window.downloadVideo = async () => { alert("Downloading..."); try { const res = await fetch(currentShareUrl); const blob = await res.blob(); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'verbotube_video.mp4'; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); closeShare(); } catch(e) { window.open(currentShareUrl, '_blank'); } };
+        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check this! ${currentShareUrl}`);
+        window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Copied!"));
+        window.downloadVideo = async () => { try { const r=await fetch(currentShareUrl), b=await r.blob(), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='video.mp4'; a.click(); } catch(e){ window.open(currentShareUrl,'_blank'); } };
+        
+        window.sendTextComment = async (k) => { const i=document.getElementById(`input-${k}`); if(!i.value.trim()) return; const u=await get(ref(db,'users/'+currentUser.uid)); await push(ref(db,`gameplay_clips/${k}/comments`),{text:i.value,username:u.val().username||"User"}); i.value=""; toggleInputBar(k); };
+        function loadTextBubbles(k) { onValue(ref(db,`gameplay_clips/${k}/comments`), s=>{ const c=document.getElementById(`text-bubbles-${k}`); c.innerHTML=""; if(s.exists()) Object.values(s.val()).slice(-3).forEach(v=>{ const d=document.createElement('div'); d.className="text-bubble"; d.innerHTML=`<b>${v.username}:</b> ${v.text}`; c.appendChild(d); }); }); }
+        window.useSound = (u) => window.location.href=`upload?sound=${encodeURIComponent(u)}`;
+        window.throwReaction = (k,t) => { const r=ref(db,`gameplay_clips/${k}/reactions/${t}`); runTransaction(r,c=>(c||0)+1); fireProj(k,t); };
 
-        window.sendTextComment = async (key) => { const input = document.getElementById(`input-${key}`); if(!input.value.trim()) return; const uSnap = await get(ref(db, 'users/' + currentUser.uid)); await push(ref(db, `gameplay_clips/${key}/comments`), { text: input.value, username: uSnap.val().username || "User", timestamp: Date.now() }); input.value = ""; toggleInputBar(key); };
-        function loadTextBubbles(key) { onValue(ref(db, `gameplay_clips/${key}/comments`), snap => { const container = document.getElementById(`text-bubbles-${key}`); container.innerHTML = ""; if(!snap.exists()) return; Object.values(snap.val()).slice(-4).forEach(c => { const d = document.createElement('div'); d.className = "text-bubble"; d.innerHTML = `<b>${c.username}:</b> ${c.text}`; container.appendChild(d); }); }); }
+        function fireProj(k,t) { const c=document.getElementById(`react-area-${k}`), e=t==='tomato'?'🍅':'🥚', f=document.createElement('div'); f.innerText=e; f.className='flying-obj'; f.style.left=(Math.random()<0.5?-20:120)+'%'; f.style.top='50%'; const a=f.animate([{transform:'scale(0.5)'},{left:(Math.random()*60+20)+'%',top:(Math.random()*60+20)+'%',transform:'scale(1.5) rotate(720deg)'}],500); c.appendChild(f); a.onfinish=()=>{ f.remove(); const s=document.createElement('div'); s.className='splat-obj'; s.innerText=e; s.style.left=(Math.random()*60+20)+'%'; s.style.top=(Math.random()*60+20)+'%'; c.appendChild(s); setTimeout(()=>s.remove(),3000); }; }
+        function triggerBarrage(k,t,n) { let i=0, m=Math.min(n,30), x=setInterval(()=>{ if(i++>=m)clearInterval(x); fireProj(k,t); },150); }
         
-        window.useSound = (url) => window.location.href = `upload?sound=${encodeURIComponent(url)}`;
-        window.throwReaction = (key, type) => { const r = ref(db, `gameplay_clips/${key}/reactions/${type}`); runTransaction(r, (c) => (c || 0) + 1); fireSingleProjectile(key, type); if(navigator.vibrate) navigator.vibrate(50); };
+        let strokes=[], currentColor="red", drawing=false;
+        window.toggleDrawing = (k) => { const c=document.getElementById(`canvas-${k}`), v=document.getElementById(`vid-${k}`), p=document.getElementById(`palette-${k}`); if(c.classList.contains('active')){ c.classList.remove('active'); p.style.display='none'; v.play(); document.getElementById(`fun-menu-${k}`).style.display='none'; } else { c.classList.add('active'); p.style.display='flex'; v.pause(); setupCanvas(c); } };
+        window.setPenColor = (k,c) => { currentColor=c; setupCanvas(document.getElementById(`canvas-${k}`)); };
         
-        let drawCtx=null, isDrawing=false, currentStrokes=[], currentColor="red";
-        window.toggleDrawing = (key) => { const canvas = document.getElementById(`canvas-${key}`); const vid = document.getElementById(`vid-${key}`); const palette = document.getElementById(`palette-${key}`); if(canvas.classList.contains('active')) { canvas.classList.remove('active'); palette.style.display='none'; vid.play(); document.getElementById(`fun-menu-${key}`).style.display='none'; } else { canvas.classList.add('active'); palette.style.display='flex'; vid.pause(); setupCanvas(canvas); alert("Draw something! 🤫"); } };
-        window.setPenColor = (key, c) => { currentColor = c; setupCanvas(document.getElementById(`canvas-${key}`)); };
-        window.sendArt = (key) => { if(currentStrokes.length === 0) { alert("Empty!"); return; } push(ref(db, `gameplay_clips/${key}/graffiti`), { strokes: currentStrokes, author: currentUser.uid }); alert("Sent to Creator! 🎭"); const canvas = document.getElementById(`canvas-${key}`); canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height); currentStrokes = []; canvas.classList.remove('active'); document.getElementById(`palette-${key}`).style.display = 'none'; document.getElementById(`fun-menu-${key}`).style.display = 'none'; document.getElementById(`vid-${key}`).play(); };
-        function setupCanvas(canvas) { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; const ctx = canvas.getContext('2d'); ctx.lineCap = "round"; ctx.lineWidth = 5; ctx.strokeStyle = currentColor; drawCtx = ctx; const start = (e) => { isDrawing = true; ctx.beginPath(); currentStrokes.push({ color: currentColor, points: [] }); draw(e); }; const end = () => { isDrawing = false; ctx.beginPath(); }; const draw = (e) => { if(!isDrawing) return; const rect = canvas.getBoundingClientRect(); const x = (e.clientX || e.touches[0].clientX) - rect.left; const y = (e.clientY || e.touches[0].clientY) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); currentStrokes[currentStrokes.length - 1].points.push({x: Math.round(x), y: Math.round(y)}); }; canvas.ontouchstart = start; canvas.onmousedown = start; canvas.ontouchend = end; canvas.onmouseup = end; canvas.ontouchmove = draw; canvas.onmousemove = draw; }
-        
-        function fireSingleProjectile(key, type) { const c = document.getElementById(`react-area-${key}`); const e = type==='tomato'?'🍅':'🥚'; const f = document.createElement('div'); f.innerText = e; f.className = 'flying-obj'; f.style.left = (Math.random()<0.5?-20:120)+'%'; f.style.top = (Math.random()*80+10)+'%'; const a = f.animate([{transform:'scale(0.5)'},{left:(Math.random()*60+20)+'%',top:(Math.random()*60+20)+'%',transform:'scale(1.5) rotate(720deg)'}],{duration:500}); c.appendChild(f); a.onfinish=()=>{ f.remove(); const s = document.createElement('div'); s.className='splat-obj'; s.innerText=e; s.style.left=(Math.random()*60+20)+'%'; s.style.top=(Math.random()*60+20)+'%'; c.appendChild(s); setTimeout(()=>s.remove(),3000); }; }
-        function triggerBarrage(key, type, count) { let i=0; const m=Math.min(count,50); const t=setInterval(()=>{ if(i++>=m) clearInterval(t); fireSingleProjectile(key,type); },150); }
-        function listenForArt(key) { onValue(ref(db, `gameplay_clips/${key}/graffiti`), snap => { if(snap.exists()) { const c = document.getElementById(`canvas-${key}`); c.width=c.offsetWidth; c.height=c.offsetHeight; const x = c.getContext('2d'); x.lineCap="round"; x.lineWidth=5; snap.forEach(ch => { const a = ch.val(); if(a.strokes) a.strokes.forEach(s => { x.beginPath(); x.strokeStyle = s.color; if(s.points.length>0) { x.moveTo(s.points[0].x, s.points[0].y); s.points.forEach(p => x.lineTo(p.x, p.y)); x.stroke(); } }); }); } }); }
-        
-        let voiceRecorder = null, voiceChunks = []; 
-        window.startVoice = async (b,k) => { try { const s = await navigator.mediaDevices.getUserMedia({audio:true}); voiceRecorder=new MediaRecorder(s); voiceChunks=[]; voiceRecorder.ondataavailable=e=>voiceChunks.push(e.data); voiceRecorder.start(); b.classList.add('recording'); if(navigator.vibrate) navigator.vibrate(100); } catch(e){alert("Mic needed!");} }; 
-        window.stopVoice = async (b,k) => { if(!voiceRecorder) return; voiceRecorder.stop(); b.classList.remove('recording'); voiceRecorder.stream.getTracks().forEach(t=>t.stop()); voiceRecorder.onstop=async()=>{ if(voiceChunks.length===0) return; const bl=new Blob(voiceChunks,{type:'audio/webm'}); const fd=new FormData(); fd.append("file",bl); fd.append("upload_preset","paravideo"); fd.append("resource_type","video"); const c=document.getElementById(`voice-bubbles-${k}`); const t=document.createElement('div'); t.className='voice-bubble'; t.innerHTML="⏳"; c.appendChild(t); try { const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,{method:'POST',body:fd}); const d=await r.json(); const u=await get(ref(db,'users/'+currentUser.uid)); await push(ref(db,`gameplay_clips/${k}/voice_bubbles`),{audioUrl:d.secure_url,photo:u.val().photo||"icon.png"}); t.remove(); } catch(e){ t.innerHTML="❌"; setTimeout(()=>t.remove(),2000); } }; };
-        function loadVoiceBubbles(k) { onValue(ref(db,`gameplay_clips/${k}/voice_bubbles`),s=>{ const c=document.getElementById(`voice-bubbles-${k}`); c.innerHTML=""; if(!s.exists()) return; Object.values(s.val()).forEach(b=>{ const d=document.createElement('div'); d.className="voice-bubble"; d.innerHTML=`<img src="${b.photo}">`; d.onclick=()=>{ const a=new Audio(b.audioUrl); a.play(); d.classList.add('playing'); a.onended=()=>d.classList.remove('playing'); }; c.appendChild(d); }); }); }
+        // 🔥 AUTO BACK ON SEND
+        window.sendArt = (k) => { 
+            if(!strokes.length) { alert("Draw first!"); return; } 
+            push(ref(db,`gameplay_clips/${k}/graffiti`),{strokes,author:currentUser.uid}); 
+            alert("Sent!"); 
+            strokes=[]; 
+            const c=document.getElementById(`canvas-${k}`); 
+            c.getContext('2d').clearRect(0,0,c.width,c.height); 
+            // Close Everything
+            c.classList.remove('active');
+            document.getElementById(`palette-${k}`).style.display='none';
+            document.getElementById(`fun-menu-${k}`).style.display='none';
+            document.getElementById(`vid-${k}`).play();
+        };
+
+        function setupCanvas(c) { c.width=c.offsetWidth; c.height=c.offsetHeight; const x=c.getContext('2d'); x.lineCap="round"; x.lineWidth=5; x.strokeStyle=currentColor; const s=(e)=>{ drawing=true; x.beginPath(); strokes.push({color:currentColor,points:[]}); d(e); }; const f=()=>{drawing=false;}; const d=(e)=>{ if(!drawing)return; const r=c.getBoundingClientRect(), px=(e.clientX||e.touches[0].clientX)-r.left, py=(e.clientY||e.touches[0].clientY)-r.top; x.lineTo(px,py); x.stroke(); x.beginPath(); x.moveTo(px,py); strokes[strokes.length-1].points.push({x:Math.round(px),y:Math.round(py)}); }; c.ontouchstart=s; c.onmousedown=s; c.ontouchend=f; c.onmouseup=f; c.ontouchmove=d; c.onmousemove=d; }
+        function listenForArt(k) { onValue(ref(db,`gameplay_clips/${k}/graffiti`), s=>{ if(s.exists()){ const c=document.getElementById(`canvas-${k}`), x=c.getContext('2d'); x.lineCap="round"; x.lineWidth=5; s.forEach(ch=>{ const a=ch.val(); if(a.strokes) a.strokes.forEach(st=>{ x.beginPath(); x.strokeStyle=st.color; if(st.points.length){ x.moveTo(st.points[0].x, st.points[0].y); st.points.forEach(p=>x.lineTo(p.x,p.y)); x.stroke(); } }); }); } }); }
+
+        let vRec=null, vChks=[]; window.startVoice=async(b,k)=>{ try{ const s=await navigator.mediaDevices.getUserMedia({audio:true}); vRec=new MediaRecorder(s); vChks=[]; vRec.ondataavailable=e=>vChks.push(e.data); vRec.start(); b.style.color="#ff4444"; }catch(e){alert("Mic Needed");} }; window.stopVoice=async(b,k)=>{ if(!vRec)return; vRec.stop(); b.style.color="white"; vRec.onstop=async()=>{ const bl=new Blob(vChks,{type:'audio/webm'}), fd=new FormData(); fd.append("file",bl); fd.append("upload_preset","paravideo"); const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,{method:'POST',body:fd}), d=await r.json(), u=await get(ref(db,'users/'+currentUser.uid)); await push(ref(db,`gameplay_clips/${k}/voice_bubbles`),{audioUrl:d.secure_url,photo:u.val().photo||"icon.png"}); }; };
+        function loadVoiceBubbles(k) { onValue(ref(db,`gameplay_clips/${k}/voice_bubbles`), s=>{ const c=document.getElementById(`voice-bubbles-${k}`); c.innerHTML=""; if(s.exists()) Object.values(s.val()).forEach(v=>{ const d=document.createElement('div'); d.className="voice-bubble"; d.innerHTML=`<img src="${v.photo}">`; d.onclick=()=>{ const a=new Audio(v.audioUrl); a.play(); }; c.appendChild(d); }); }); }
+
+        function setupObserver() { const obs=new IntersectionObserver(e=>{ e.forEach(en=>{ const v=en.target.querySelector('video'), a=en.target.querySelector('audio'), i=en.target.querySelector('.play-icon'); if(en.isIntersecting){ v.play().catch(()=>{}); if(a)a.play().catch(()=>{}); i.style.opacity=0; } else { v.pause(); if(a)a.pause(); i.style.opacity=0.8; } }); },{threshold:0.6}); document.querySelectorAll('.video-card').forEach(x=>obs.observe(x)); }
+        if(!window.matchMedia('(display-mode: standalone)').matches) document.getElementById('installBtn').style.display='block';
     </script>
 </body>
 </html>
