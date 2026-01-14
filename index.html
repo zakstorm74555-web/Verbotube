@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Verbotube - home</title>
+    <title>Verbotube</title>
     
-    <link rel="icon" type="image/png" href="icon.png?v=5">
+    <link rel="icon" type="image/png" href="icon.png?v=7">
     <link rel="manifest" href="manifest.json">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
@@ -69,11 +69,8 @@
         .action-btn { background: none; border: none; color: white; font-size: 26px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.1s; }
         .action-btn span { font-size: 10px; margin-top: 5px; font-weight: 600; }
         .liked { color: #FF0000 !important; animation: pop 0.3s ease; }
-        
-        /* 🔥 RECORDING STATE FOR SIDEBAR BTN */
         .action-btn.recording i { color: #ff4444; text-shadow: 0 0 10px red; transform: scale(1.2); }
         .action-btn.recording span { color: #ff4444; }
-
         @keyframes pop { 50% { transform: scale(1.2); } }
 
         /* VIDEO INFO */
@@ -97,6 +94,25 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
+        /* AD STYLES */
+        .sponsored-tag {
+            position: absolute; top: 70px; left: 15px; 
+            background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px;
+            font-size: 12px; color: #fff; font-weight: bold; z-index: 50;
+            border: 1px solid rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .ad-cta-strip {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: #1a1a1a; border-top: 1px solid #333; z-index: 40;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+        }
+        .ad-cta-text { display: flex; flex-direction: column; }
+        .ad-cta-btn {
+            background: #3897f0; color: white; padding: 10px 20px; border-radius: 5px;
+            font-weight: bold; font-size: 14px; text-decoration: none;
+        }
+        .video-card.is-ad .video-info { padding-bottom: 80px; }
+
         /* FUN & DRAWING */
         .fun-menu {
             position: absolute; right: 60px; bottom: 200px;
@@ -108,7 +124,6 @@
         
         .draw-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; touch-action: none; }
         .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.3); cursor: crosshair; }
-        
         .palette {
             position: absolute; top: 50%; right: 60px; transform: translateY(-50%);
             display: none; flex-direction: column; gap: 15px;
@@ -135,14 +150,11 @@
         .comment-input-bar { position: absolute; bottom: 60px; left: 0; width: 100%; background: #111; padding: 10px; display: none; z-index: 300; border-top: 1px solid #333; }
         .comment-input { flex: 1; padding: 8px; border-radius: 20px; border: none; }
 
-        /* AD STYLES */
-        .sponsored-tag { position: absolute; top: 70px; left: 15px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #aaa; font-weight: bold; z-index: 50; border: 1px solid rgba(255,255,255,0.2); }
-        .ad-cta-strip { position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: #202020; border-top: 1px solid #333; z-index: 40; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; }
-        .ad-cta-btn { background: #3897f0; color: white; padding: 8px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; text-decoration: none; }
-        .video-card.is-ad .video-info { padding-bottom: 60px; }
-
         /* SHARE SHEET */
-        .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
+        .share-sheet {
+            position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000;
+            border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700;
+        }
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
         .share-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: white; cursor: pointer; }
         .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
@@ -170,7 +182,7 @@
         </header>
 
         <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50%;">Loading...</p>
+            <p style="text-align:center; color:#555; margin-top:50%;">Loading Verbotube...</p>
         </div>
 
         <div class="share-sheet" id="shareSheet">
@@ -228,27 +240,34 @@
         window.checkLoginAndUpload = () => { currentUser ? window.location.href = 'upload' : window.location.href = 'login'; };
         window.switchFeed = (type) => { loadVideos(); };
 
-        function loadVideos() {
+        async function loadVideos() {
             const feed = document.getElementById('feed');
+            
+            // 🔥 FETCH ADS FROM DATABASE ONLY (No Fakes)
+            const adsSnap = await get(ref(db, 'ads'));
+            let ads = [];
+            if(adsSnap.exists()) ads = Object.values(adsSnap.val());
+
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
                 if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50%; text-align:center;'>No videos.</p>"; return; }
                 
                 let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => b.timestamp - a.timestamp);
 
-                // 🔥 INJECT AD
-                const adData = {
-                    key: 'ad_dummy',
-                    videoUrl: 'https://res.cloudinary.com/demo/video/upload/v1/samples/cld-sample-video.mp4',
-                    isAd: true,
-                    uploader: 'Verbotube Ads',
-                    caption: 'Download the best App now! 🔥',
-                    ctaLink: 'https://google.com',
-                    ctaText: 'Install Now'
-                };
-                if(videos.length > 2) videos.splice(2, 0, adData);
+                // 🔥 MERGE ADS (Only if they exist in DB)
+                let finalList = [];
+                let adIndex = 0;
+                
+                videos.forEach((video, index) => {
+                    finalList.push(video);
+                    if ((index + 1) % 3 === 0 && ads.length > 0) {
+                        let ad = ads[adIndex % ads.length];
+                        finalList.push({ ...ad, isAd: true, key: 'ad_' + index });
+                        adIndex++;
+                    }
+                });
 
-                videos.forEach(item => {
+                finalList.forEach(item => {
                     const div = document.createElement('div');
                     div.className = "video-card";
                     if(item.isAd) div.classList.add('is-ad');
@@ -258,20 +277,22 @@
                     if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/");
                     const hasRemix = (item.remixUrl && item.remixUrl !== "");
 
+                    // AD VS VIDEO
                     const adOverlay = item.isAd ? `
-                        <div class="sponsored-tag">Sponsored</div>
+                        <div class="sponsored-tag">SPONSORED</div>
                         <div class="ad-cta-strip">
-                            <span style="font-size:12px; color:#ddd;">${item.caption}</span>
-                            <a href="${item.ctaLink}" target="_blank" class="ad-cta-btn">${item.ctaText} <i class="fas fa-chevron-right"></i></a>
+                            <div class="ad-cta-text">
+                                <span style="font-weight:bold; color:white; font-size:14px;">${item.caption.substring(0,25)}...</span>
+                                <span style="font-size:11px; color:#aaa;">Tap to view</span>
+                            </div>
+                            <a href="${item.ctaLink}" target="_blank" class="ad-cta-btn">${item.ctaText}</a>
                         </div>
                     ` : '';
 
                     div.innerHTML = `
                         <div class="reaction-container" id="react-area-${item.key}"></div>
                         <canvas id="canvas-${item.key}" class="draw-layer"></canvas>
-                        
                         ${adOverlay}
-
                         <div class="text-comments-area" id="text-bubbles-${item.key}"></div>
                         <div class="bubble-container" id="voice-bubbles-${item.key}"></div>
 
@@ -373,7 +394,6 @@
         function triggerBarrage(key, type, count) { let i=0; const m=Math.min(count,50); const t=setInterval(()=>{ if(i++>=m) clearInterval(t); fireSingleProjectile(key,type); },150); }
         function listenForArt(key) { onValue(ref(db, `gameplay_clips/${key}/graffiti`), snap => { if(snap.exists()) { const c = document.getElementById(`canvas-${key}`); c.width=c.offsetWidth; c.height=c.offsetHeight; const x = c.getContext('2d'); x.lineCap="round"; x.lineWidth=5; snap.forEach(ch => { const a = ch.val(); if(a.strokes) a.strokes.forEach(s => { x.beginPath(); x.strokeStyle = s.color; if(s.points.length>0) { x.moveTo(s.points[0].x, s.points[0].y); s.points.forEach(p => x.lineTo(p.x, p.y)); x.stroke(); } }); }); } }); }
         
-        // 🔥 FIXED MIC IN SIDEBAR LOGIC
         let voiceRecorder = null, voiceChunks = []; 
         window.startVoice = async (b,k) => { try { const s = await navigator.mediaDevices.getUserMedia({audio:true}); voiceRecorder=new MediaRecorder(s); voiceChunks=[]; voiceRecorder.ondataavailable=e=>voiceChunks.push(e.data); voiceRecorder.start(); b.classList.add('recording'); if(navigator.vibrate) navigator.vibrate(100); } catch(e){alert("Mic needed!");} }; 
         window.stopVoice = async (b,k) => { if(!voiceRecorder) return; voiceRecorder.stop(); b.classList.remove('recording'); voiceRecorder.stream.getTracks().forEach(t=>t.stop()); voiceRecorder.onstop=async()=>{ if(voiceChunks.length===0) return; const bl=new Blob(voiceChunks,{type:'audio/webm'}); const fd=new FormData(); fd.append("file",bl); fd.append("upload_preset","paravideo"); fd.append("resource_type","video"); const c=document.getElementById(`voice-bubbles-${k}`); const t=document.createElement('div'); t.className='voice-bubble'; t.innerHTML="⏳"; c.appendChild(t); try { const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,{method:'POST',body:fd}); const d=await r.json(); const u=await get(ref(db,'users/'+currentUser.uid)); await push(ref(db,`gameplay_clips/${k}/voice_bubbles`),{audioUrl:d.secure_url,photo:u.val().photo||"icon.png"}); t.remove(); } catch(e){ t.innerHTML="❌"; setTimeout(()=>t.remove(),2000); } }; };
