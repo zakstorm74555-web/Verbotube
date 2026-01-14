@@ -7,6 +7,17 @@
     <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
     
     <title>Verbotube - Short Video Platform</title>
+    <link rel="manifest" href="manifest.json">
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker Registered'))
+                .catch(err => console.log('Service Worker Failed', err));
+        });
+    }
+</script>
     
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="shortcut icon" type="image/png" href="icon.png">
