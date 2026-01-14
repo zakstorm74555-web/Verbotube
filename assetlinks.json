@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.verbotube.twa",
+        "sha256_cert_fingerprints": ["DC:2C:0E:1F:AC:2C:95:7A:50:1B:2D:91:14:91:4D:DE:1E:4A:37:E0:BD:63:F2:3D:82:EF:21:3E:D6:96:B7:4E"]
+      }
+    }]
