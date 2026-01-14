@@ -3,397 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Studio - Verbotube</title>
+    <title>Canvas Studio - Verbotube</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron&family=Roboto:wght@900&display=swap" rel="stylesheet">
+
     <style>
-        /* --- PRO STUDIO THEME --- */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', sans-serif; }
         body { background: #000; color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
         .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #111; border-bottom: 1px solid #333; z-index: 50; }
-        .next-btn { background: linear-gradient(135deg, #FFD700, #FF0000); color: black; padding: 8px 25px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; }
+        .save-btn { background: #FFD700; color: black; padding: 8px 25px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; }
 
-        /* PREVIEW AREA */
-        .preview-area { flex: 1; display: flex; justify-content: center; align-items: center; background: #000; position: relative; overflow: hidden; }
-        video { max-width: 100%; max-height: 80vh; pointer-events: none; }
+        /* CANVAS AREA (Main Screen) */
+        .stage { flex: 1; display: flex; justify-content: center; align-items: center; background: #050505; position: relative; overflow: hidden; }
+        canvas { max-width: 100%; max-height: 80vh; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); border: 1px solid #333; }
         
-        /* LAYERS (Text & Stickers) */
-        .overlay-layer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); cursor: grab; display: none; z-index: 10; }
-        .overlay-layer.active { border: 1px dashed #FFD700; }
-        .sticker-img { max-width: 150px; }
-        
-        /* TEMPLATE BADGE */
-        .template-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 5px; font-size: 11px; display: none; border: 1px solid #00ff00; color: #00ff00; }
+        /* HIDDEN ELEMENTS */
+        video { display: none; } 
 
-        /* CONTROLS AREA */
-        .controls { background: #111; padding: 10px; border-top: 1px solid #333; height: 350px; display: flex; flex-direction: column; }
+        /* CONTROLS */
+        .controls { background: #111; height: 280px; display: flex; flex-direction: column; border-top: 1px solid #333; }
         
-        /* TABS */
-        .tabs { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid #222; margin-bottom: 10px; }
-        .tab { color: #888; font-size: 12px; cursor: pointer; white-space: nowrap; padding: 6px 12px; border-radius: 20px; background: #222; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .tab.active { background: #FFD700; color: black; font-weight: bold; }
+        .tabs { display: flex; overflow-x: auto; border-bottom: 1px solid #222; }
+        .tab { flex: 1; text-align: center; padding: 15px; color: #888; font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { color: #FFD700; border-color: #FFD700; font-weight: bold; background: #1a1a1a; }
 
-        /* PANELS */
-        .panel { display: none; height: 100%; overflow-y: auto; }
+        .panel { display: none; height: 100%; padding: 15px; overflow-y: auto; }
         .panel.active { display: block; }
 
-        /* TEMPLATE GRID */
-        .template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .tmpl-card { aspect-ratio: 9/16; background: #222; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid #333; }
-        .tmpl-card img { width: 100%; height: 100%; object-fit: cover; }
-        .tmpl-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 5px; background: rgba(0,0,0,0.7); font-size: 10px; text-align: center; }
+        /* TOOLS UI */
+        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .tool-btn { background: #222; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid #333; font-size: 11px; }
+        .tool-btn.selected { border-color: #FFD700; color: #FFD700; }
+        .tool-btn i { font-size: 18px; margin-bottom: 5px; display: block; }
 
-        /* TOOLS */
-        .tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
-        .tool-btn { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; font-size: 11px; color: #ccc; }
-        .tool-btn.selected { color: #FFD700; border: 1px solid #FFD700; }
-        .tool-btn i { font-size: 18px; }
+        input[type=text] { width: 100%; padding: 12px; background: #333; border: 1px solid #555; color: white; border-radius: 5px; margin-bottom: 10px; }
+        input[type=range] { width: 100%; accent-color: #FFD700; }
 
-        /* STICKER SEARCH */
-        .giphy-search { width: 100%; padding: 10px; background: #333; border: none; color: white; border-radius: 5px; margin-bottom: 10px; }
-        .sticker-results { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .sticker-thumb { width: 60px; height: 60px; object-fit: contain; cursor: pointer; }
+        /* CAMERA OVERLAY */
+        #camOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:black; z-index: 100; display: flex; flex-direction: column; }
+        #camPreview { flex: 1; object-fit: cover; transform: scaleX(-1); } /* Mirror effect */
+        .cam-controls { padding: 20px; display: flex; justify-content: center; gap: 30px; background: rgba(0,0,0,0.5); position: absolute; bottom: 0; width: 100%; }
+        .rec-btn { width: 70px; height: 70px; border-radius: 50%; background: red; border: 4px solid white; cursor: pointer; }
+        .rec-btn.recording { animation: pulse 1s infinite; border-color: red; background: white; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        /* SLIDERS */
-        input[type=range] { width: 100%; accent-color: #FFD700; margin: 10px 0; }
-        .range-label { display: flex; justify-content: space-between; font-size: 12px; color: #aaa; }
+        /* RENDER LOADER */
+        #renderScreen { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 200; display:none; justify-content:center; align-items:center; flex-direction:column; }
+        .progress-bar { width: 200px; height: 6px; background: #333; border-radius: 3px; margin-top: 20px; }
+        .progress-fill { height: 100%; background: #FFD700; width: 0%; transition: 0.1s; }
 
-        /* LOADER */
-        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 200; display:none; justify-content:center; align-items:center; flex-direction:column; }
     </style>
 </head>
 <body>
 
-    <div id="startScreen" style="height:100%; display:flex; justify-content:center; align-items:center; flex-direction:column; gap:20px;">
-        <div onclick="document.getElementById('fileInput').click()" style="width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg, #111, #000); border:2px dashed #FFD700; display:flex; justify-content:center; align-items:center; cursor:pointer; animation: pulse 2s infinite;">
-            <i class="fas fa-plus" style="font-size:40px; color:#FFD700;"></i>
+    <div id="startScreen" style="height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; gap:20px;">
+        <h1 style="color:#FFD700; text-transform: uppercase; font-size: 30px;">Verbotube Studio</h1>
+        <div style="display:flex; gap:20px;">
+            <div onclick="openCamera()" style="background:#222; padding:30px; border-radius:15px; border:1px dashed #FFD700; text-align:center; cursor:pointer;">
+                <i class="fas fa-camera" style="font-size:30px; margin-bottom:10px;"></i><br>Camera
+            </div>
+            <div onclick="document.getElementById('fileInput').click()" style="background:#222; padding:30px; border-radius:15px; border:1px dashed #fff; text-align:center; cursor:pointer;">
+                <i class="fas fa-upload" style="font-size:30px; margin-bottom:10px;"></i><br>Upload
+            </div>
         </div>
-        <button onclick="showTemplates()" style="background:#222; color:white; border:1px solid #FFD700; padding:10px 20px; border-radius:20px;">
-            <i class="fas fa-layer-group"></i> Use Template
-        </button>
-        <p style="color:#666; font-size:12px;">Start New or Remix</p>
-        <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="loadFile(this)">
+        <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="initEditor(this.files[0])">
     </div>
 
-    <div id="templateScreen" style="display:none; height:100%; flex-direction:column; padding:15px;">
-        <div class="header" style="position:relative; margin-bottom:15px; border-bottom:none;">
-            <i class="fas fa-arrow-left" onclick="location.reload()"></i>
-            <span>Select Template</span>
-            <div></div>
+    <div id="camOverlay" style="display:none;">
+        <video id="camPreview" autoplay playsinline muted></video>
+        <div class="cam-controls">
+            <i class="fas fa-times" onclick="closeCamera()" style="font-size:30px; color:white; position:absolute; left:20px; top:30px;"></i>
+            <div id="recBtn" class="rec-btn" onclick="toggleRecording()"></div>
         </div>
-        <div class="template-grid" id="tmplGrid">Loading...</div>
+        <div style="position:absolute; top:20px; right:20px; color:red; font-weight:bold; display:none;" id="recTimer">00:00</div>
     </div>
 
     <div id="editorScreen" style="display:none; height:100%; flex-direction:column;">
         <div class="header">
-            <i class="fas fa-times" onclick="location.reload()" style="font-size:20px; cursor:pointer; color:#888;"></i>
-            <button class="next-btn" onclick="uploadFinal()">POST</button>
+            <i class="fas fa-chevron-left" onclick="location.reload()" style="font-size:20px; cursor:pointer; color:#aaa;"></i>
+            <button class="save-btn" onclick="startRendering()">POST VIDEO</button>
         </div>
 
-        <div class="preview-area" id="previewArea">
-            <video id="mainVideo" playsinline loop></video>
-            <div id="templateBadge" class="template-badge"><i class="fas fa-check-circle"></i> Using Template</div>
-            
-            <div id="stickerLayer" class="overlay-layer"><img src="" class="sticker-img" id="stickerImg"></div>
-            <div id="textLayer" class="overlay-layer" style="color:white; font-size:24px; font-weight:bold; text-shadow:2px 2px 0 black; font-family:Impact;"></div>
+        <div class="stage">
+            <canvas id="mainCanvas"></canvas>
+            <video id="sourceVideo" playsinline crossorigin="anonymous" onended="replay()"></video>
         </div>
 
         <div class="controls">
             <div class="tabs">
-                <div class="tab active" onclick="switchTab('edit')"><i class="fas fa-sliders-h"></i> Edit</div>
-                <div class="tab" onclick="switchTab('voice')"><i class="fas fa-microphone-alt"></i> Voice</div>
-                <div class="tab" onclick="switchTab('chroma')"><i class="fas fa-user-friends"></i> Chroma</div>
-                <div class="tab" onclick="switchTab('sticker')"><i class="fas fa-smile"></i> Sticker</div>
+                <div class="tab active" onclick="switchTab('text', this)">Text</div>
+                <div class="tab" onclick="switchTab('filter', this)">Filters</div>
+                <div class="tab" onclick="switchTab('sticker', this)">Stickers</div>
             </div>
 
-            <div id="p-edit" class="panel active">
-                <div class="tool-grid">
-                    <div class="tool-btn" onclick="setEffect('e_vignette:50', this)"><i class="fas fa-circle"></i>Vignette</div>
-                    <div class="tool-btn" onclick="setEffect('e_cartoonify', this)"><i class="fas fa-paint-brush"></i>Cartoon</div>
-                    <div class="tool-btn" onclick="setEffect('e_negate', this)"><i class="fas fa-adjust"></i>Invert</div>
-                    <div class="tool-btn" onclick="setEffect('e_art:incognito', this)"><i class="fas fa-mask"></i>Mask</div>
-                </div>
-                <div style="margin-top:20px;">
-                    <div class="range-label"><span>Speed</span> <span id="speedVal">1x</span></div>
-                    <input type="range" min="0.5" max="2.0" step="0.5" value="1" oninput="setSpeed(this.value)">
-                </div>
-            </div>
-
-            <div id="p-voice" class="panel">
+            <div id="p-text" class="panel active">
+                <input type="text" id="textInput" placeholder="Write text..." oninput="updateTextObj()">
                 <div class="tool-grid" style="grid-template-columns: repeat(3, 1fr);">
-                    <div class="tool-btn" onclick="setAudioEffect('e_robot', this)"><i class="fas fa-robot"></i> Robot</div>
-                    <div class="tool-btn" onclick="setAudioEffect('e_accelerate:50', this)"><i class="fas fa-paw"></i> Chipmunk</div>
-                    <div class="tool-btn" onclick="setAudioEffect('e_volume:mute', this)"><i class="fas fa-volume-mute"></i> Mute</div>
+                    <div class="tool-btn" onclick="textObj.color='#FFF'">White</div>
+                    <div class="tool-btn" onclick="textObj.color='#FFD700'">Gold</div>
+                    <div class="tool-btn" onclick="textObj.color='#FF0000'">Red</div>
+                    <div class="tool-btn" onclick="textObj.font='Roboto'">Bold</div>
+                    <div class="tool-btn" onclick="textObj.font='Bangers'">Comic</div>
+                    <div class="tool-btn" onclick="textObj.font='Orbitron'">Sci-Fi</div>
                 </div>
+                <p style="text-align:center; font-size:11px; color:#555; margin-top:10px;">Drag text on screen to move</p>
             </div>
 
-            <div id="p-chroma" class="panel">
-                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Remove Green Background</p>
-                <div class="range-label"><span>Tolerance</span> <span id="chromaVal">0%</span></div>
-                <input type="range" min="0" max="50" value="0" oninput="updateChroma(this.value)">
-                <button onclick="toggleChroma()" id="chromaBtn" style="width:100%; padding:10px; background:#222; border:1px solid #00ff00; color:#00ff00; border-radius:5px; margin-top:10px;">Apply Green Screen</button>
+            <div id="p-filter" class="panel">
+                <div class="tool-grid">
+                    <div class="tool-btn" onclick="filters.filter='none'">Normal</div>
+                    <div class="tool-btn" onclick="filters.filter='grayscale(1)'">B&W</div>
+                    <div class="tool-btn" onclick="filters.filter='sepia(0.8)'">Vintage</div>
+                    <div class="tool-btn" onclick="filters.filter='contrast(1.5)'">Drama</div>
+                    <div class="tool-btn" onclick="filters.filter='hue-rotate(90deg)'">Alien</div>
+                    <div class="tool-btn" onclick="filters.filter='invert(1)'">Ghost</div>
+                </div>
             </div>
 
             <div id="p-sticker" class="panel">
-                <input type="text" class="giphy-search" placeholder="Search GIPHY..." onkeyup="searchGiphy(this.value)">
-                <div class="sticker-results" id="stickerResults"></div>
-                <button onclick="addTextOverlay()" style="width:100%; margin-top:10px; padding:10px; background:#333; color:white; border:none; border-radius:5px;"><i class="fas fa-font"></i> Add Text</button>
+                <p style="color:#888;">Select Sticker</p>
+                <div class="tool-grid">
+                    <div class="tool-btn" onclick="addSticker('🔥')">🔥</div>
+                    <div class="tool-btn" onclick="addSticker('😂')">😂</div>
+                    <div class="tool-btn" onclick="addSticker('❤️')">❤️</div>
+                    <div class="tool-btn" onclick="addSticker('👑')">👑</div>
+                </div>
             </div>
-        </div>
-        
-        <div style="padding:10px; background:#222; display:none;" id="metaBox">
-            <input type="text" id="caption" placeholder="Caption..." style="width:100%; padding:10px; background:#111; color:white; border:none;">
-            <label style="display:flex; align-items:center; gap:10px; margin-top:10px; font-size:12px; color:#ccc;">
-                <input type="checkbox" id="allowRemix" checked> Allow others to use as Template?
-            </label>
         </div>
     </div>
 
-    <div id="loader">
-        <i class="fas fa-cog fa-spin" style="font-size:40px; color:#FFD700;"></i>
-        <p style="margin-top:20px; color:white;">Processing AI Effects...</p>
+    <div id="renderScreen">
+        <i class="fas fa-magic fa-spin" style="font-size:50px; color:#FFD700;"></i>
+        <h3 style="margin-top:20px;">Rendering...</h3>
+        <p style="color:#aaa;">Creating your masterpiece</p>
+        <div class="progress-bar"><div class="progress-fill" id="renderBar"></div></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        
         const CLOUD_NAME = "dusj0vpsi";
-        const UPLOAD_PRESET = "paravideo";
-        const GIPHY_KEY = "YOUR_GIPHY_KEY_HERE"; // Public Key Works sometimes: 'Dc1s1G2K'
 
-        let selectedFile = null;
         let currentUser = null;
-        let isTemplateMode = false;
-        let templateData = null;
-
-        // Effect States
-        let activeEffect = "";
-        let audioEffect = "";
-        let playSpeed = 1.0;
-        let chromaTolerance = 0;
-        let activeStickerUrl = "";
+        let canvas, ctx, video;
+        let animationId;
         
+        // Editor State
+        let textObj = { text: "", x: 150, y: 150, color: "white", font: "Roboto" };
+        let stickerObj = { text: "", x: 200, y: 300 };
+        let filters = { filter: "none" };
+        let isDragging = false;
+        let dragTarget = null;
+
+        // Camera Recorder
+        let mediaRecorder;
+        let recordedChunks = [];
+        let camStream;
+
         onAuthStateChanged(auth, user => {
             if(user) currentUser = user;
             else window.location.href = 'login';
         });
 
-        // 1. LOAD FILE
-        window.loadFile = (input) => {
-            if(input.files[0]) {
-                selectedFile = input.files[0];
-                document.getElementById('startScreen').style.display = 'none';
-                document.getElementById('editorScreen').style.display = 'flex';
-                document.getElementById('mainVideo').src = URL.createObjectURL(selectedFile);
-                document.getElementById('mainVideo').play();
-                initDrag();
-            }
-        };
-
-        // 2. TEMPLATE SYSTEM
-        window.showTemplates = () => {
+        // 1. CAMERA LOGIC
+        window.openCamera = async () => {
             document.getElementById('startScreen').style.display = 'none';
-            document.getElementById('templateScreen').style.display = 'flex';
-            const grid = document.getElementById('tmplGrid');
-            grid.innerHTML = "Loading...";
-
-            onValue(ref(db, 'gameplay_clips'), snap => {
-                grid.innerHTML = "";
-                if(snap.exists()) {
-                    snap.forEach(c => {
-                        const v = c.val();
-                        // CHECK PERMISSION
-                        if(v.allowTemplate) {
-                            const d = document.createElement('div');
-                            d.className = 'tmpl-card';
-                            // Use thumbnail if available, else standard icon
-                            const thumb = v.videoUrl.replace('.mp4', '.jpg');
-                            d.innerHTML = `<img src="${thumb}"><div class="tmpl-overlay">${v.caption}</div>`;
-                            d.onclick = () => useTemplate(v);
-                            grid.appendChild(d);
-                        }
-                    });
-                }
-                if(grid.innerHTML === "") grid.innerHTML = "No templates available.";
-            });
-        };
-
-        window.useTemplate = (data) => {
-            isTemplateMode = true;
-            templateData = data;
-            document.getElementById('templateScreen').style.display = 'none';
-            document.getElementById('editorScreen').style.display = 'flex';
+            document.getElementById('camOverlay').style.display = 'flex';
+            const vid = document.getElementById('camPreview');
             
-            const vid = document.getElementById('mainVideo');
-            vid.src = data.videoUrl;
-            vid.crossOrigin = "anonymous";
-            vid.play();
+            try {
+                camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                vid.srcObject = camStream;
+            } catch(e) { alert("Camera access denied"); location.reload(); }
+        };
+
+        window.toggleRecording = () => {
+            const btn = document.getElementById('recBtn');
+            const timer = document.getElementById('recTimer');
             
-            document.getElementById('templateBadge').style.display = 'block';
-            
-            // Apply Template Effects (Mock)
-            if(data.filter) activeEffect = data.filter;
-        };
-
-        // 3. EDITOR TABS
-        window.switchTab = (id) => {
-            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-            document.getElementById('p-'+id).style.display = 'block';
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        };
-
-        // 4. EFFECTS LOGIC
-        window.setEffect = (code, btn) => {
-            activeEffect = code;
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            // Preview Filter via CSS
-            const v = document.getElementById('mainVideo');
-            v.style.filter = code.includes('sepia') ? 'sepia(1)' : (code.includes('negate') ? 'invert(1)' : 'none');
-        };
-
-        window.setAudioEffect = (code, btn) => {
-            audioEffect = code; // Applied on upload
-            alert("Voice effect will apply after upload!");
-        };
-
-        window.setSpeed = (val) => {
-            playSpeed = val;
-            document.getElementById('mainVideo').playbackRate = val;
-            document.getElementById('speedVal').innerText = val + 'x';
-        };
-
-        // 5. CHROMA KEY (Green Screen)
-        window.updateChroma = (val) => {
-            chromaTolerance = val;
-            document.getElementById('chromaVal').innerText = val + "%";
-        };
-        window.toggleChroma = () => {
-            // Chroma is processed on server "e_make_transparent:10"
-            alert(`Green screen with ${chromaTolerance}% tolerance will be removed on upload.`);
-        };
-
-        // 6. STICKERS & TEXT
-        window.searchGiphy = async (q) => {
-            if(q.length < 3) return;
-            const res = await fetch(`https://api.giphy.com/v1/stickers/search?api_key=Dc1s1G2K&q=${q}&limit=10`);
-            const data = await res.json();
-            const div = document.getElementById('stickerResults');
-            div.innerHTML = "";
-            data.data.forEach(gif => {
-                const img = document.createElement('img');
-                img.className = 'sticker-thumb';
-                img.src = gif.images.fixed_height_small.url;
-                img.onclick = () => addSticker(gif.images.fixed_height.url);
-                div.appendChild(img);
-            });
-        };
-
-        window.addSticker = (url) => {
-            activeStickerUrl = url;
-            const layer = document.getElementById('stickerLayer');
-            document.getElementById('stickerImg').src = url;
-            layer.style.display = 'block';
-        };
-
-        window.addTextOverlay = () => {
-            const txt = prompt("Enter Text:");
-            if(txt) {
-                const l = document.getElementById('textLayer');
-                l.innerText = txt;
-                l.style.display = 'block';
+            if(btn.classList.contains('recording')) {
+                // STOP
+                mediaRecorder.stop();
+                btn.classList.remove('recording');
+                timer.style.display = 'none';
+            } else {
+                // START
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(camStream);
+                mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                    // Convert to File and Open Editor
+                    const file = new File([blob], "rec.mp4", { type: 'video/mp4' });
+                    initEditor(file);
+                    closeCamera();
+                };
+                mediaRecorder.start();
+                btn.classList.add('recording');
+                timer.style.display = 'block';
             }
         };
 
-        // Drag Logic
-        function initDrag() {
-            document.querySelectorAll('.overlay-layer').forEach(el => {
-                el.addEventListener('touchmove', (e) => {
-                    const t = e.touches[0];
-                    const rect = document.getElementById('previewArea').getBoundingClientRect();
-                    el.style.left = (t.clientX - rect.left) + 'px';
-                    el.style.top = (t.clientY - rect.top) + 'px';
-                });
-            });
+        window.closeCamera = () => {
+            if(camStream) camStream.getTracks().forEach(track => track.stop());
+            document.getElementById('camOverlay').style.display = 'none';
+        };
+
+        // 2. EDITOR INITIALIZATION (Canvas Engine)
+        window.initEditor = (file) => {
+            if(!file) return;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('camOverlay').style.display = 'none';
+            document.getElementById('editorScreen').style.display = 'flex';
+
+            video = document.getElementById('sourceVideo');
+            canvas = document.getElementById('mainCanvas');
+            ctx = canvas.getContext('2d');
+
+            video.src = URL.createObjectURL(file);
+            video.onloadedmetadata = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                video.play();
+                drawLoop();
+            };
+
+            // Touch Drag Logic
+            canvas.addEventListener('mousedown', startDrag);
+            canvas.addEventListener('touchstart', startDrag);
+            canvas.addEventListener('mousemove', drag);
+            canvas.addEventListener('touchmove', drag);
+            canvas.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('touchend', endDrag);
+        };
+
+        // 3. RENDER LOOP (The Heart of Editor)
+        function drawLoop() {
+            if(video.paused || video.ended) {
+                if(video.ended) video.play(); // Loop
+            }
+
+            // A. Draw Video with Filter
+            ctx.filter = filters.filter;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.filter = "none";
+
+            // B. Draw Text
+            if(textObj.text) {
+                const size = canvas.width * 0.08;
+                ctx.font = `bold ${size}px ${textObj.font}`;
+                ctx.fillStyle = textObj.color;
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 4;
+                ctx.textAlign = "center";
+                ctx.strokeText(textObj.text, textObj.x, textObj.y);
+                ctx.fillText(textObj.text, textObj.x, textObj.y);
+            }
+
+            // C. Draw Sticker
+            if(stickerObj.text) {
+                ctx.font = `${canvas.width * 0.15}px Arial`;
+                ctx.fillText(stickerObj.text, stickerObj.x, stickerObj.y);
+            }
+
+            animationId = requestAnimationFrame(drawLoop);
         }
 
-        // 7. FINAL UPLOAD (Cloudinary Magic)
-        window.uploadFinal = async () => {
-            // Show metadata box first
-            const metaBox = document.getElementById('metaBox');
-            if(metaBox.style.display === 'none') {
-                metaBox.style.display = 'block';
-                return;
-            }
-
-            document.getElementById('loader').style.display = 'flex';
-            
-            // If Template Mode: We just save new entry pointing to old video but with modifications
-            let finalUrl = "";
-
-            if(isTemplateMode) {
-                // Just use existing URL but add new transformations on top
-                finalUrl = templateData.videoUrl;
-                // Add modifications to URL string logic here...
-            } else {
-                // Upload New File
-                const fd = new FormData();
-                fd.append("file", selectedFile);
-                fd.append("upload_preset", UPLOAD_PRESET);
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, { method: "POST", body: fd });
-                const data = await res.json();
-                finalUrl = data.secure_url;
-            }
-
-            // --- BUILD TRANSFORM URL ---
-            let transforms = [];
-            if(activeEffect) transforms.push(activeEffect);
-            if(playSpeed !== 1) transforms.push(playSpeed < 1 ? "e_accelerate:-50" : "e_accelerate:50");
-            if(chromaTolerance > 0) transforms.push(`e_make_transparent:${chromaTolerance}`);
-            if(audioEffect) transforms.push(audioEffect);
-            
-            if(activeStickerUrl) {
-                // Add sticker layer (Complex in raw URL, simplified here)
-                // transforms.push(`l_fetch:${btoa(activeStickerUrl)},w_150`);
-            }
-
-            transforms.push("q_auto");
-
-            if(transforms.length > 0 && !isTemplateMode) {
-                const i = finalUrl.indexOf("/upload/") + 8;
-                finalUrl = finalUrl.slice(0, i) + transforms.join(",") + "/" + finalUrl.slice(i);
-            }
-
-            // Save to Firebase
-            const uSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const username = uSnap.exists() ? uSnap.val().username : "User";
-            const allowTmpl = document.getElementById('allowRemix').checked;
-
-            await push(ref(db, 'gameplay_clips'), {
-                videoUrl: finalUrl,
-                caption: document.getElementById('caption').value,
-                uid: currentUser.uid,
-                uploader: username,
-                timestamp: Date.now(),
-                isHD: true,
-                allowTemplate: allowTmpl, // Permission Flag
-                parentTemplateId: isTemplateMode ? templateData.key : null
-            });
-
-            window.location.href = 'profile';
+        // 4. INTERACTION
+        window.updateTextObj = () => textObj.text = document.getElementById('textInput').value;
+        window.addSticker = (s) => stickerObj.text = s;
+        window.switchTab = (id, el) => {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('p-'+id).classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
         };
+
+        // Dragging Logic
+        function startDrag(e) {
+            isDragging = true;
+            const pos = getPos(e);
+            // Simple check: closer to text?
+            if(Math.hypot(pos.x - textObj.x, pos.y - textObj.y) < 100) dragTarget = textObj;
+            else if(Math.hypot(pos.x - stickerObj.x, pos.y - stickerObj.y) < 100) dragTarget = stickerObj;
+            else dragTarget = null;
+        }
+        function drag(e) {
+            if(isDragging && dragTarget) {
+                const pos = getPos(e);
+                dragTarget.x = pos.x;
+                dragTarget.y = pos.y;
+            }
+        }
+        function endDrag() { isDragging = false; dragTarget = null; }
+        
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        // 5. EXPORT & UPLOAD (Client Side Rendering)
+        window.startRendering = () => {
+            document.getElementById('renderScreen').style.display = 'flex';
+            video.currentTime = 0; // Start from 0
+            
+            // Prepare MediaRecorder on Canvas Stream
+            const stream = canvas.captureStream(30);
+            
+            // Add Audio from Video Source
+            const audioCtx = new AudioContext();
+            const dest = audioCtx.createMediaStreamDestination();
+            const source = audioCtx.createMediaElementSource(video);
+            source.connect(dest);
+            
+            // Combine Tracks
+            const tracks = [...stream.getVideoTracks(), ...dest.stream.getAudioTracks()];
+            const combinedStream = new MediaStream(tracks);
+
+            const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm;codecs=vp9' });
+            const chunks = [];
+
+            recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+            
+            recorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                uploadFinal(blob);
+            };
+
+            recorder.start();
+            video.play();
+
+            // Progress Bar Animation
+            const duration = video.duration * 1000;
+            const startTime = Date.now();
+            const interval = setInterval(() => {
+                const p = Math.min(95, ((Date.now() - startTime) / duration) * 100);
+                document.getElementById('renderBar').style.width = p + "%";
+            }, 100);
+
+            video.onended = () => {
+                recorder.stop();
+                clearInterval(interval);
+            };
+        };
+
+        async function uploadFinal(fileBlob) {
+            const fd = new FormData();
+            fd.append("file", fileBlob, "edited.webm");
+            fd.append("upload_preset", "paravideo");
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
+            
+            xhr.onload = async () => {
+                if(xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    const uSnap = await get(ref(db, 'users/' + currentUser.uid));
+                    const username = uSnap.exists() ? uSnap.val().username : "User";
+
+                    await push(ref(db, 'gameplay_clips'), {
+                        videoUrl: data.secure_url,
+                        caption: textObj.text || "My Canvas Edit",
+                        uid: currentUser.uid,
+                        uploader: username,
+                        timestamp: Date.now(),
+                        isHD: true
+                    });
+                    window.location.href = 'profile';
+                } else {
+                    alert("Upload Error");
+                    location.reload();
+                }
+            };
+            xhr.send(fd);
+        }
 
     </script>
 </body>
