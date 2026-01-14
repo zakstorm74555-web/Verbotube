@@ -3,170 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <meta name="google-site-verification" content="P-k91lzb4kFrII5FrhlUCLdlr8AlGuVd83VlLeFXQTA" />
-    
-    <title>Verbotube - Short Video Platform</title>
-    <link rel="manifest" href="manifest.json">
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker Registered'))
-                    .catch(err => console.log('Service Worker Failed', err));
-            });
-        }
-    </script>
-    
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="shortcut icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
+    <title>Verbotube - Creator's Feed</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cloudinary-core/2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- VERBOTUBE THEME --- */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background-color: #000; color: white; font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 0; overflow: hidden; 
-            transform: translateZ(0);
-        }
-
-        @media (min-width: 768px) {
-            body { background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-            #appScreen { width: 100%; max-width: 450px; height: 100vh; background: #000; position: relative; border-left: 1px solid #333; border-right: 1px solid #333; overflow: hidden; }
-            .bottom-nav { max-width: 450px; left: 50% !important; transform: translateX(-50%); }
-        }
+        body { background-color: #000; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
         /* HEADER */
         header { 
             position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; 
             background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
-            display: flex; justify-content: space-between; align-items: center; pointer-events: auto;
+            display: flex; justify-content: space-between; align-items: center; 
         }
-        .header-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
-        .tab-btn { cursor: pointer; transition: 0.3s; }
-        .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 3px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-        
-        .header-right { display: flex; gap: 15px; align-items: center; }
-        .search-icon { font-size: 20px; cursor: pointer; color: white; }
-        .auth-btn-header { font-size: 12px; background: #222; padding: 5px 12px; border-radius: 20px; border: 1px solid #FFD700; color: #FFD700; cursor: pointer; display: none; }
-
-        /* 🔥 NEW INSTALL BUTTON (Initially Hidden) */
-        .install-app-btn {
-            display: none; /* JS will show this if user is in browser */
-            background: linear-gradient(135deg, #FFD700, #FF0000);
-            color: black; font-weight: bold; font-size: 11px;
-            padding: 6px 12px; border-radius: 20px;
-            text-transform: uppercase; cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-            animation: pulseBtn 2s infinite;
-        }
-        @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .header-tabs { display: flex; gap: 20px; font-weight: bold; color: #aaa; text-shadow: 1px 1px 2px black; }
+        .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
         /* FEED */
-        .feed-container { 
-            width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; 
-            scroll-behavior: auto; -webkit-overflow-scrolling: touch; 
-            padding-bottom: 60px; 
-        }
+        .feed-container { width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .feed-container::-webkit-scrollbar { display: none; }
-
+        
         .video-card { 
             background: #000; width: 100%; height: 100vh; position: relative; 
-            scroll-snap-align: start; display: flex; align-items: center; justify-content: center; overflow: hidden; 
-            will-change: transform; 
+            scroll-snap-align: start; display: flex; justify-content: center; overflow: hidden; 
         }
-        
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; transform: translateZ(0); }
-        
-        /* LOADER SPINNER */
-        .loader-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 15; display: none; pointer-events: none;
-        }
-        .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid #FFD700; border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* SEEK BAR */
-        .seek-container {
-            position: absolute; bottom: 62px; left: 0; width: 100%; z-index: 50; padding: 0 10px;
-        }
-        .video-seeker {
-            width: 100%; -webkit-appearance: none; height: 3px; background: rgba(255,255,255,0.3);
-            border-radius: 5px; outline: none; cursor: pointer;
-        }
-        .video-seeker::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
-            background: #FFD700; cursor: pointer; box-shadow: 0 0 5px #FFD700;
-        }
+        video { width: 100%; height: 100%; object-fit: contain; }
 
         /* SIDEBAR */
         .sidebar { 
-            position: absolute; right: 10px; bottom: 170px; 
+            position: absolute; right: 10px; bottom: 120px; 
             display: flex; flex-direction: column; gap: 20px; align-items: center; 
             z-index: 30; text-shadow: 1px 1px 2px black; 
         }
         .action-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .action-btn span { font-size: 12px; margin-top: 5px; font-weight: 600; }
-        .liked { color: #FF0000 !important; animation: pop 0.3s ease; text-shadow: 0 0 10px rgba(255, 0, 0, 0.6); }
+        .action-btn span { font-size: 10px; margin-top: 5px; font-weight: 600; }
+        .liked { color: #FF0000 !important; animation: pop 0.3s ease; }
         @keyframes pop { 50% { transform: scale(1.2); } }
 
-        /* INFO */
         .video-info { 
-            position: absolute; bottom: 70px; left: 0; width: 100%; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-            padding: 20px; padding-bottom: 25px; z-index: 20; pointer-events: none; 
+            position: absolute; bottom: 40px; left: 0; width: 100%; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 20px; z-index: 20; pointer-events: none; 
         }
         .video-info * { pointer-events: auto; }
-        .username { font-weight: bold; font-size: 17px; margin-bottom: 5px; cursor: pointer; text-shadow: 1px 1px 2px black; }
-        .caption { font-size: 15px; color: #eee; margin-bottom: 10px; max-width: 75%; line-height: 1.2; text-shadow: 1px 1px 2px black; }
-        .music-marquee { display: flex; align-items: center; gap: 10px; font-size: 14px; overflow: hidden; white-space: nowrap; width: 60%; }
-        .music-icon-anim { animation: pulse 2s infinite; color: #FFD700; }
-        .marquee-track { display: inline-block; animation: marquee 6s linear infinite; will-change: transform; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
 
-        /* DISC */
-        .disc-area { position: absolute; bottom: 85px; right: 10px; width: 50px; height: 50px; z-index: 35; }
-        .disc-bg { 
-            width: 100%; height: 100%; border-radius: 50%; background: #111; 
-            border: 8px solid #333; display: flex; justify-content: center; align-items: center; 
-            animation: spin 5s linear infinite; will-change: transform;
-            background-image: url('icon.png'); background-size: cover;
+        /* 🔥 GROUP MENU (MASTI) 🔥 */
+        .fun-menu {
+            position: absolute; right: 70px; bottom: 200px;
+            display: none; flex-direction: column; gap: 15px;
+            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 30px;
+            border: 1px solid #FFD700; z-index: 200;
+            animation: slideLeft 0.2s ease-out;
         }
-        .playing .disc-bg { animation-play-state: running; }
-        .paused .disc-bg { animation-play-state: paused; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes slideLeft { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* PLAY ICON */
-        .touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
-        .play-icon { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 60px; opacity: 0.8; color: #FFD700; 
-            pointer-events: none; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); 
+        .fun-item {
+            font-size: 24px; cursor: pointer; width: 40px; height: 40px; 
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* SHARE SHEET */
-        .share-sheet {
-            position: fixed; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000;
-            border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700;
+        /* 🥚 TOMATO BARRAGE LAYERS */
+        .reaction-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden; }
+        .flying-obj { position: absolute; font-size: 40px; z-index: 101; animation: throw 0.6s forwards; }
+        .splat-obj { position: absolute; font-size: 60px; z-index: 100; animation: fade 3s forwards; }
+        @keyframes throw { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1.5) rotate(720deg); opacity: 1; } }
+        @keyframes fade { 0% { transform: scale(1.5); } 10% { transform: scale(1); } 100% { opacity: 0; transform: translateY(100px); } }
+
+        /* 🖌️ DRAWING LAYER */
+        .draw-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 50; pointer-events: none; touch-action: none;
         }
-        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; text-align: center; }
-        .share-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: white; cursor: pointer; }
-        .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
-        .s-whatsapp { background: #25D366; }
-        .s-copy { background: #333; border: 1px solid #555; }
-        .s-download { background: #FFD700; color: black; }
-        .close-share { margin-top: 20px; width: 100%; padding: 12px; background: #222; border: none; color: white; border-radius: 10px; font-weight: bold; }
+        .draw-layer.active { pointer-events: auto; background: rgba(0,0,0,0.2); cursor: crosshair; }
+        
+        .palette {
+            position: absolute; top: 50%; right: 60px; transform: translateY(-50%);
+            display: none; flex-direction: column; gap: 15px;
+            background: #222; padding: 15px; border-radius: 20px; z-index: 201; border: 1px solid #FFD700;
+        }
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
+        .send-art-btn {
+            background: #FFD700; color: black; border: none; padding: 10px; border-radius: 50%;
+            font-size: 16px; cursor: pointer; box-shadow: 0 0 10px #FFD700;
+        }
 
         /* BOTTOM NAV */
         .bottom-nav { 
@@ -174,369 +95,308 @@
             background: #000; border-top: 1px solid #222; 
             display: flex; justify-content: space-around; align-items: center; z-index: 1000; 
         }
-        .nav-item { color: #888; font-size: 22px; cursor: pointer; transition: 0.2s; }
-        .nav-item.active { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
-        .add-btn-nav { 
-            width: 45px; height: 30px; 
-            background: linear-gradient(135deg, #FFD700, #FF0000); 
-            border-radius: 8px; display: flex; justify-content: center; align-items: center; 
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); 
-        }
-        .add-btn-nav i { color: black; font-size: 16px; }
+        .add-btn-nav { width: 45px; height: 30px; background: linear-gradient(135deg, #FFD700, #FF0000); border-radius: 8px; display: flex; justify-content: center; align-items: center; }
 
     </style>
 </head>
 <body>
 
-    <div id="appScreen">
-        <header>
-            <div class="header-tabs">
-                <span class="tab-btn active" id="tabForYou" onclick="switchFeed('foryou')">For You</span>
-                <span class="tab-btn" id="tabFollowing" onclick="switchFeed('following')">Following</span>
-            </div>
-            
-            <div class="header-right">
-                <div id="installBtn" class="install-app-btn" onclick="window.location.href='download.html'">
-                    <i class="fas fa-download"></i> Get App
-                </div>
+    <header>
+        <div class="header-tabs"><span class="tab-btn active">For You</span></div>
+        <div style="color:white;"><i class="fas fa-search"></i></div>
+    </header>
 
-                <div class="search-icon" onclick="window.location.href='search'"><i class="fas fa-search"></i></div>
-                <div id="authBtn" class="auth-btn-header" onclick="goToLogin()">Login</div>
-            </div>
-        </header>
+    <div class="feed-container" id="feed">
+        <p style="text-align:center; color:#555; margin-top:50vh;">Loading...</p>
+    </div>
 
-        <div class="feed-container" id="feed">
-            <p style="text-align:center; color:#555; margin-top:50vh;">Loading...</p>
-        </div>
-
-        <div class="bottom-nav">
-            <i class="fas fa-home nav-item active"></i>
-            <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends'"></i>
-            <div class="add-btn-nav" onclick="checkLoginAndUpload()"><i class="fas fa-plus"></i></div>
-            <i class="fas fa-inbox nav-item" onclick="window.location.href='friends'"></i>
-            <i class="fas fa-user nav-item" onclick="window.location.href='profile'"></i>
-        </div>
-
-        <div class="share-sheet" id="shareSheet">
-            <h3 style="margin:0; text-align:center; color:#FFD700;">Share to</h3>
-            <div class="share-grid">
-                <div class="share-item" onclick="shareToWhatsapp()">
-                    <div class="share-icon-box s-whatsapp"><i class="fab fa-whatsapp"></i></div>
-                    <span>WhatsApp</span>
-                </div>
-                <div class="share-item" onclick="copyLink()">
-                    <div class="share-icon-box s-copy"><i class="fas fa-link"></i></div>
-                    <span>Copy Link</span>
-                </div>
-                <div class="share-item" onclick="downloadVideo()">
-                    <div class="share-icon-box s-download"><i class="fas fa-download"></i></div>
-                    <span>Save</span>
-                </div>
-            </div>
-            <button class="close-share" onclick="closeShare()">Cancel</button>
-        </div>
+    <div class="bottom-nav">
+        <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
+        <div class="add-btn-nav" onclick="checkLoginAndUpload()"><i class="fas fa-plus"></i></div>
+        <i class="fas fa-user" style="color:#888; font-size:22px;" onclick="window.location.href='profile'"></i>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, get, set, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        // CLOUDINARY
-        const cl = cloudinary.Cloudinary.new({ cloud_name: 'dusj0vpsi' }); 
+        import { getDatabase, ref, onValue, get, set, push, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-
         let currentUser = null;
-        let activeTab = 'foryou';
-        let currentShareUrl = "";
-        
-        // 🔥 SMART APP DETECTION LOGIC 🔥
-        function checkAppMode() {
-            const installBtn = document.getElementById('installBtn');
-            
-            // Ye check karega agar App Installed Mode (Standalone) mein khula hai
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                               (window.navigator.standalone) || 
-                               document.referrer.includes('android-app://');
 
-            if (isStandalone) {
-                // Agar App hai, to Download button chhupa do
-                installBtn.style.display = 'none';
-                console.log("App Mode Detected: Hiding Install Button");
-            } else {
-                // Agar Browser hai, to Download Button dikhao
-                installBtn.style.display = 'block';
-                console.log("Browser Mode Detected: Showing Install Button");
-            }
-        }
-        // Run check on load
-        checkAppMode();
-        
-        onAuthStateChanged(auth, user => {
-            if (user) { 
-                currentUser = user; 
-                loadVideos(); 
-            } else {
-                window.location.href = 'login';
-            }
-        });
+        onAuthStateChanged(auth, user => { if (user) { currentUser = user; loadVideos(); } else { window.location.href = 'login'; } });
 
-        window.goToLogin = () => { window.location.href = 'login'; };
         window.checkLoginAndUpload = () => { currentUser ? window.location.href = 'upload' : window.location.href = 'login'; };
-
-        window.switchFeed = (type) => {
-            activeTab = type;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(type === 'foryou' ? 'tabForYou' : 'tabFollowing').classList.add('active');
-            loadVideos();
-        };
 
         function loadVideos() {
             const feed = document.getElementById('feed');
-            const params = new URLSearchParams(window.location.search);
-            const deepLinkId = params.get('video');
-
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
-                if (!snap.exists()) { feed.innerHTML = "<p style='text-align:center; padding-top:50vh; color:#555;'>No videos found.</p>"; return; }
+                if (!snap.exists()) { feed.innerHTML = "<p style='color:#555; margin-top:50vh; text-align:center;'>No videos.</p>"; return; }
                 
-                let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v }));
-                videos.sort((a, b) => b.timestamp - a.timestamp);
+                let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => b.timestamp - a.timestamp);
 
                 videos.forEach(item => {
                     const div = document.createElement('div');
                     div.className = "video-card";
                     div.setAttribute('data-id', item.key);
-
-                    // Handle Video URL
+                    
                     let videoUrl = item.videoUrl;
-                    if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/"); 
-                    
-                    const hasRemix = (item.remixUrl && item.remixUrl !== "");
-                    
-                    div.innerHTML = `
-                        <div class="loader-overlay"><div class="spinner"></div></div>
+                    if(item.isHD && !videoUrl.includes("q_auto")) videoUrl = videoUrl.replace("/upload/", "/upload/q_auto,w_720/");
 
-                        <video src="${videoUrl}" playsinline loop preload="auto" ${hasRemix ? 'muted' : ''}></video>
-                        
-                        ${hasRemix ? `<audio src="${item.remixUrl}" loop preload="auto"></audio>` : ''}
-                        
+                    div.innerHTML = `
+                        <div class="reaction-container" id="react-area-${item.key}"></div>
+                        <canvas id="canvas-${item.key}" class="draw-layer"></canvas> <video src="${videoUrl}" playsinline loop id="vid-${item.key}"></video>
                         <div class="touch-layer" onclick="togglePlay(this)"></div>
-                        <div class="play-icon"><i class="fas fa-play"></i></div>
+                        <div class="play-icon" style="position:absolute; font-size:60px; opacity:0.8; color:#FFD700; pointer-events:none;"><i class="fas fa-play"></i></div>
+
+                        <div id="fun-menu-${item.key}" class="fun-menu">
+                            <div class="fun-item" onclick="throwReaction('${item.key}', 'tomato')" title="Tomato">🍅</div>
+                            <div class="fun-item" onclick="throwReaction('${item.key}', 'egg')" title="Egg">🥚</div>
+                            <div class="fun-item" onclick="toggleDrawing('${item.key}')" title="Munchkin Mode">🖍️</div>
+                        </div>
+
+                        <div id="palette-${item.key}" class="palette">
+                            <div class="color-dot" style="background:red;" onclick="setPenColor('${item.key}', 'red')"></div>
+                            <div class="color-dot" style="background:#FFD700;" onclick="setPenColor('${item.key}', '#FFD700')"></div>
+                            <div class="color-dot" style="background:white;" onclick="setPenColor('${item.key}', 'white')"></div>
+                            <button class="send-art-btn" onclick="sendArt('${item.key}')"><i class="fas fa-paper-plane"></i></button>
+                        </div>
 
                         <div class="sidebar">
-                            <div class="action-btn" onclick="window.location.href='profile?uid=${item.uid}'">
+                            <div class="action-btn">
                                 <img src="icon.png" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white;">
                             </div>
+
                             <button class="action-btn" onclick="handleLike('${item.key}')">
                                 <i class="fas fa-heart" id="like-icon-${item.key}"></i>
                                 <span id="like-count-${item.key}">0</span>
                             </button>
-                            <button class="action-btn">
-                                <i class="fas fa-comment-dots"></i>
-                                <span>0</span>
+
+                            <button class="action-btn" onclick="toggleFunMenu('${item.key}')">
+                                <i class="fas fa-laugh-squint" style="color:#FFD700;"></i>
+                                <span>Masti</span>
                             </button>
-                            <button class="action-btn" onclick="openShare('https://verbotube.vercel.app/?video=${item.key}')">
-                                <i class="fas fa-share"></i>
-                                <span>Share</span>
-                            </button>
-                            <button class="action-btn" onclick="useSound('${item.remixUrl || item.videoUrl}')">
-                                <i class="fas fa-compact-disc"></i>
-                                <span>Remix</span>
-                            </button>
+
+                            <button class="action-btn"><i class="fas fa-share"></i><span>Share</span></button>
                         </div>
 
                         <div class="video-info">
-                            <div class="username" id="name-${item.key}">...</div>
-                            <div class="caption">${item.caption}</div>
-                            <div class="music-marquee">
-                                <i class="fas fa-music music-icon-anim"></i> 
-                                <span class="marquee-track">${item.caption ? item.caption : 'Original Sound'} - ${item.uploader}</span>
-                            </div>
+                            <div style="font-weight:bold;">@${item.uploader}</div>
+                            <div>${item.caption}</div>
                         </div>
-
-                        <div class="seek-container">
-                            <input type="range" class="video-seeker" min="0" max="100" value="0" step="0.1" oninput="handleSeek(this)">
-                        </div>
-
-                        <div class="disc-area"><div class="disc-bg" id="disc-bg-${item.key}"></div></div>
                     `;
 
-                    const video = div.querySelector('video');
-                    const audio = div.querySelector('audio');
-                    const seeker = div.querySelector('.video-seeker');
-                    const icon = div.querySelector('.play-icon');
-                    const loader = div.querySelector('.loader-overlay');
-
-                    // ✅ SYNC LOGIC
-                    const handleBuffer = (isLoading) => {
-                        if(isLoading) {
-                            loader.style.display = 'block';
-                            icon.style.opacity = 0; 
-                        } else {
-                            loader.style.display = 'none';
-                        }
-                    };
-
-                    if(audio) {
-                        audio.addEventListener('waiting', () => { video.pause(); handleBuffer(true); });
-                        video.addEventListener('waiting', () => { audio.pause(); handleBuffer(true); });
-                        
-                        audio.addEventListener('playing', () => { 
-                            if(video.readyState >= 2) { video.play().catch(()=>{}); handleBuffer(false); } 
-                        });
-                        video.addEventListener('playing', () => { 
-                            if(audio.readyState >= 2) { audio.play().catch(()=>{}); handleBuffer(false); } 
-                        });
-                    } else {
-                        video.addEventListener('waiting', () => handleBuffer(true));
-                        video.addEventListener('playing', () => handleBuffer(false));
-                    }
-
-                    // Seek Bar Update
-                    video.addEventListener('timeupdate', () => {
-                        const val = (video.currentTime / video.duration) * 100;
-                        seeker.value = val || 0;
-                        if(audio && Math.abs(audio.currentTime - video.currentTime) > 0.3) {
-                            audio.currentTime = video.currentTime;
-                        }
-                    });
-
-                    video.addEventListener('ended', () => {
-                        if(audio) { audio.currentTime = 0; audio.play(); }
-                    });
-
-                    onValue(ref(db, 'users/' + item.uid), uSnap => {
-                        const u = uSnap.val();
-                        if (u) {
-                            const pic = (u.photo && u.photo !== "") ? u.photo : "icon.png";
-                            document.getElementById(`pic-${item.key}`).src = pic;
-                            document.getElementById(`name-${item.key}`).innerText = `${u.username || item.uploader}`;
-                            document.getElementById(`disc-bg-${item.key}`).style.backgroundImage = `url('${pic}')`;
-                        }
-                    });
-
+                    // Load User Pic
+                    onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()) document.getElementById(`pic-${item.key}`).src = u.val().photo || "icon.png"; });
+                    
+                    // Likes
                     onValue(ref(db, `gameplay_likes/${item.key}`), s => {
                         document.getElementById(`like-count-${item.key}`).innerText = s.size || 0;
-                        if(currentUser) {
-                            document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
+                        if(currentUser) document.getElementById(`like-icon-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
+                    });
+
+                    // 🔥 BARRAGE (EGG/TOMATO) - Sabke liye
+                    onValue(ref(db, `gameplay_clips/${item.key}/reactions`), rSnap => {
+                        if(rSnap.exists() && !div.dataset.barrageFired) {
+                            div.dataset.barrageFired = "true";
+                            const r = rSnap.val();
+                            if(r.tomato > 0) triggerBarrage(item.key, 'tomato', r.tomato);
+                            if(r.egg > 0) triggerBarrage(item.key, 'egg', r.egg);
                         }
                     });
+
+                    // 🔥🔥 SECRET: CHECK IF CURRENT USER IS AUTHOR 🔥🔥
+                    // Agar main hi Author hoon, to mujhe Drawings dikhao
+                    if(currentUser && currentUser.uid === item.uid) {
+                        listenForArt(item.key);
+                    }
 
                     feed.appendChild(div);
                 });
                 
-                if(deepLinkId) {
-                    setTimeout(() => {
-                        const target = document.querySelector(`[data-id="${deepLinkId}"]`);
-                        if(target) target.scrollIntoView();
-                    }, 500);
-                }
-
-                setupObserver();
+                // Play/Pause Observer
+                const obs = new IntersectionObserver(e => e.forEach(en => {
+                    const vid = en.target.querySelector('video');
+                    const icon = en.target.querySelector('.play-icon');
+                    if(en.isIntersecting) { vid.play(); icon.style.opacity = 0; }
+                    else { vid.pause(); icon.style.opacity = 0.8; }
+                }), { threshold: 0.6 });
+                document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
             });
         }
 
         window.togglePlay = (layer) => {
-            const card = layer.parentElement;
-            const video = card.querySelector('video');
-            const audio = card.querySelector('audio');
-            const icon = card.querySelector('.play-icon');
-
-            if (!video.paused) {
-                video.pause();
-                if(audio) audio.pause();
-                icon.style.opacity = 0.8;
-                card.classList.remove('playing');
-            } else {
-                video.play();
-                if(audio) { audio.play(); } 
-                icon.style.opacity = 0;
-                card.classList.add('playing');
-            }
-        };
-
-        window.handleSeek = (slider) => {
-            const card = slider.closest('.video-card');
-            const video = card.querySelector('video');
-            const audio = card.querySelector('audio');
-            const time = (slider.value / 100) * video.duration;
-            video.currentTime = time;
-            if(audio) audio.currentTime = time;
+            const vid = layer.parentElement.querySelector('video');
+            const icon = layer.parentElement.querySelector('.play-icon');
+            if(vid.paused) { vid.play(); icon.style.opacity = 0; }
+            else { vid.pause(); icon.style.opacity = 0.8; }
         };
 
         window.handleLike = (key) => {
             const r = ref(db, `gameplay_likes/${key}/${currentUser.uid}`);
             get(r).then(s => s.exists() ? remove(r) : set(r, true));
         };
-        
-        window.useSound = (url) => window.location.href = `upload?sound=${encodeURIComponent(url)}`;
 
-        window.openShare = (url) => {
-            currentShareUrl = url;
-            document.getElementById('shareSheet').style.bottom = "0";
+        // --- 🔥 GROUP MENU ---
+        window.toggleFunMenu = (key) => {
+            const menu = document.getElementById(`fun-menu-${key}`);
+            const isVisible = menu.style.display === 'flex';
+            document.querySelectorAll('.fun-menu').forEach(m => m.style.display = 'none');
+            if(!isVisible) menu.style.display = 'flex';
         };
-        window.closeShare = () => document.getElementById('shareSheet').style.bottom = "-100%";
 
-        window.shareToWhatsapp = () => window.open(`whatsapp://send?text=Check out this video on Verbotube! ${currentShareUrl}`);
-        window.copyLink = () => navigator.clipboard.writeText(currentShareUrl).then(() => alert("Link Copied!"));
-        
-        window.downloadVideo = async () => {
-            alert("Downloading...");
-            try {
-                const videoElement = document.querySelector('.video-card.playing video'); 
-                const rawUrl = videoElement ? videoElement.src : currentShareUrl; 
+        // --- 🔥 EGG/TOMATO LOGIC ---
+        window.throwReaction = (key, type) => {
+            const reactRef = ref(db, `gameplay_clips/${key}/reactions/${type}`);
+            runTransaction(reactRef, (count) => (count || 0) + 1);
+            fireSingleProjectile(key, type);
+            if(navigator.vibrate) navigator.vibrate(50);
+        };
 
-                const res = await fetch(rawUrl);
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'verbotube_video.mp4';
-                document.body.appendChild(a); a.click();
-                window.URL.revokeObjectURL(url);
-            } catch(e) { 
-                const videoElement = document.querySelector('.video-card.playing video');
-                window.open(videoElement ? videoElement.src : currentShareUrl, '_blank'); 
+        function fireSingleProjectile(key, type) {
+            const container = document.getElementById(`react-area-${key}`);
+            const emoji = type === 'tomato' ? '🍅' : '🥚';
+            const flyer = document.createElement('div');
+            flyer.innerText = emoji; flyer.className = 'flying-obj';
+            
+            const startX = Math.random() < 0.5 ? -20 : 120;
+            const startY = Math.random() * 80 + 10;
+            const endX = Math.random() * 60 + 20;
+            const endY = Math.random() * 60 + 20;
+
+            flyer.style.left = startX + '%'; flyer.style.top = startY + '%';
+            const anim = flyer.animate([{ left: startX + '%', top: startY + '%', transform: 'scale(0.5)' }, { left: endX + '%', top: endY + '%', transform: 'scale(1.5) rotate(720deg)' }], { duration: 500 });
+            
+            container.appendChild(flyer);
+            anim.onfinish = () => {
+                flyer.remove();
+                const splat = document.createElement('div'); splat.className = 'splat-obj'; splat.innerText = emoji;
+                splat.style.left = endX + '%'; splat.style.top = endY + '%';
+                container.appendChild(splat);
+                setTimeout(() => splat.remove(), 3000);
+            };
+        }
+
+        function triggerBarrage(key, type, count) {
+            let i = 0;
+            const max = Math.min(count, 50); // Max 50 taake hang na ho
+            const int = setInterval(() => { if(i++ >= max) clearInterval(int); fireSingleProjectile(key, type); }, 150);
+        }
+
+        // --- 🔥 MUNCHKIN (DRAWING) LOGIC ---
+        let drawCtx = null;
+        let isDrawing = false;
+        let currentStrokes = []; // To save current drawing
+        let currentColor = "red";
+
+        window.toggleDrawing = (key) => {
+            const canvas = document.getElementById(`canvas-${key}`);
+            const vid = document.getElementById(`vid-${key}`);
+            const palette = document.getElementById(`palette-${key}`);
+
+            if(canvas.classList.contains('active')) {
+                // OFF
+                canvas.classList.remove('active');
+                palette.style.display = 'none';
+                vid.play();
+                document.getElementById(`fun-menu-${key}`).style.display = 'none';
+                currentStrokes = []; // Clear temp
+            } else {
+                // ON
+                canvas.classList.add('active');
+                palette.style.display = 'flex';
+                vid.pause();
+                setupCanvas(canvas);
+                alert("Draw something for the Creator! 🤫");
             }
         };
 
-        function setupObserver() {
-            const obs = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    const card = entry.target;
-                    const video = card.querySelector('video');
-                    const audio = card.querySelector('audio');
-                    const icon = card.querySelector('.play-icon');
-                    
-                    if (entry.isIntersecting) {
-                        const vidId = card.getAttribute('data-id');
-                        window.history.replaceState(null, null, "?video=" + vidId);
+        window.setPenColor = (key, color) => { currentColor = color; setupCanvas(document.getElementById(`canvas-${key}`)); };
 
-                        video.play().catch(()=>{});
-                        if(audio) audio.play().catch(()=>{});
-                        
-                        icon.style.opacity = 0;
-                        card.classList.add('playing');
+        // 🔥 SAVE DRAWING TO DB
+        window.sendArt = (key) => {
+            if(currentStrokes.length === 0) { alert("Draw something first!"); return; }
+            
+            // Push to DB
+            push(ref(db, `gameplay_clips/${key}/graffiti`), {
+                strokes: currentStrokes,
+                author: currentUser.uid,
+                timestamp: Date.now()
+            });
 
-                        if (!sessionStorage.getItem('viewed_' + vidId)) {
-                            sessionStorage.setItem('viewed_' + vidId, 'true');
-                            const viewRef = ref(db, `gameplay_clips/${vidId}/views`);
-                            runTransaction(viewRef, (currentViews) => (currentViews || 0) + 1);
-                        }
+            alert("Sent to Creator! 🎭");
+            // Clean up
+            const c = document.getElementById(`canvas-${key}`);
+            c.getContext('2d').clearRect(0,0,c.width,c.height);
+            toggleDrawing(key); // Close mode
+        };
 
-                    } else {
-                        video.pause();
-                        if(audio) audio.pause();
-                        icon.style.opacity = 0.8;
-                        card.classList.remove('playing');
-                    }
-                });
-            }, { threshold: 0.6 }); 
-            document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
+        function setupCanvas(canvas) {
+            canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 5;
+            ctx.strokeStyle = currentColor;
+            drawCtx = ctx;
+
+            const start = (e) => { 
+                isDrawing = true; ctx.beginPath(); 
+                // Start a new path in memory
+                currentStrokes.push({ color: currentColor, points: [] });
+                draw(e); 
+            };
+            const end = () => { isDrawing = false; ctx.beginPath(); };
+            const draw = (e) => {
+                if(!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                
+                // Draw Visual
+                ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+                
+                // Save Data (Simple Compression: only save non-decimals)
+                const lastStroke = currentStrokes[currentStrokes.length - 1];
+                lastStroke.points.push({x: Math.round(x), y: Math.round(y)});
+            };
+
+            canvas.ontouchstart = start; canvas.onmousedown = start;
+            canvas.ontouchend = end; canvas.onmouseup = end;
+            canvas.ontouchmove = draw; canvas.onmousemove = draw;
         }
+
+        // 🔥🔥 AUTHOR VIEW: LOAD GRAFFITI 🔥🔥
+        function listenForArt(key) {
+            onValue(ref(db, `gameplay_clips/${key}/graffiti`), snap => {
+                if(snap.exists()) {
+                    const canvas = document.getElementById(`canvas-${key}`);
+                    // Ensure Canvas size matches
+                    canvas.width = canvas.offsetWidth || window.innerWidth;
+                    canvas.height = canvas.offsetHeight || window.innerHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 5;
+
+                    snap.forEach(child => {
+                        const art = child.val();
+                        if(art.strokes) {
+                            art.strokes.forEach(stroke => {
+                                ctx.beginPath();
+                                ctx.strokeStyle = stroke.color;
+                                if(stroke.points.length > 0) {
+                                    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                                    stroke.points.forEach(p => ctx.lineTo(p.x, p.y));
+                                    ctx.stroke();
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
