@@ -10,6 +10,7 @@
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
         
         .logo-area { margin-bottom: 30px; animation: float 3s infinite ease-in-out; }
+        /* Bhai aapka icon.png yahan chamkega */
         .logo-img { width: 100px; height: 100px; border-radius: 20px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4); border: 2px solid #FFD700; }
         
         h1 { margin: 0; color: #FFD700; font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
@@ -17,7 +18,7 @@
 
         .btn-container { margin-top: 40px; width: 100%; max-width: 300px; }
         
-        /* Android Button Style */
+        /* Android Button Style - Isme aapka bataya hua gradient hai */
         .download-btn {
             background: linear-gradient(135deg, #FFD700, #FF0000);
             color: black; border: none; padding: 15px 30px; border-radius: 50px;
@@ -45,8 +46,7 @@
     <p>Watch. Create. Go Viral.<br>Download the App now.</p>
 
     <div class="btn-container">
-        
-        <a id="androidBtn" href="https://drive.google.com/uc?export=download&id=1nvX1_R7XCXvgibUrE7eJksoosNgyIVFA" class="download-btn">
+        <a id="androidBtn" href="https://link-to-be-replaced-manually.com" class="download-btn">
             <i class="fab fa-android"></i> Download APK
         </a>
 
@@ -62,17 +62,23 @@
     <p style="margin-top: 30px; font-size: 11px; opacity: 0.5;">Version 1.0 • Secure Build</p>
 
     <script>
-        // Check Device Type
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        // Direct Download Link Setup
+        const driveID = "1pU_unycv3eXonj-ea1DsAhNjzPmNub7_";
+        const directLink = `https://drive.google.com/uc?export=download&id=${driveID}`;
+        
         const androidBtn = document.getElementById('androidBtn');
         const iosPanel = document.getElementById('iosPanel');
+        
+        // Link update kar rahe hain
+        androidBtn.href = directLink;
+
+        // Check Device Type
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
         if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            // iOS
             androidBtn.style.display = 'none';
             iosPanel.style.display = 'block';
         } else {
-            // Android / PC
             iosPanel.style.display = 'none';
             androidBtn.style.display = 'flex';
         }
