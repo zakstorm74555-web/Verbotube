@@ -6,7 +6,7 @@
     
     <title>Verbotube - Watch, Create & Share Viral Moments</title>
     <meta name="description" content="Verbotube is the ultimate platform for gaming clips and viral moments.">
-    <link rel="icon" type="image/png" href="icon.png?v=17">
+    <link rel="icon" type="image/png" href="icon.png?v=18">
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,12 +29,8 @@
         .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.3); border-top: 4px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; animation: spin-load 1s linear infinite; display: none; z-index: 10; }
         @keyframes spin-load { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* Sidebar Spacing Fix */
         .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; }
-        .profile-pic-container { position: relative; margin-bottom: 5px; cursor: pointer; }
         .sidebar-pic { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #FFD700; }
-        .follow-plus { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #FFD700; color: #000; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #000; }
-        .followed { display: none; }
         
         .action-btn { background: none; border: none; color: white; font-size: 30px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .action-btn span { font-size: 12px; margin-top: 4px; font-weight: 600; }
@@ -43,17 +39,19 @@
         .video-info { position: absolute; bottom: 70px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
         .username { font-weight: bold; font-size: 17px; margin-bottom: 8px; color: #FFD700; pointer-events: auto; }
         .caption { font-size: 14px; color: #eee; margin-bottom: 10px; }
-        
         .music-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #FFD700; margin-top: 5px; }
 
-        /* Remix Music Disc Animation */
-        .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; margin-top: 5px; }
+        .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .prog-container { position: absolute; bottom: 62px; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.2); cursor: pointer; z-index: 100; }
         .prog-bar { height: 100%; background: #FFD700; width: 0%; pointer-events: none; }
-
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70px; color: rgba(255,215,0,0.4); opacity: 0; pointer-events: none; z-index: 15; }
+
+        /* Share Sheet */
+        .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
+        .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
+        .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: auto; font-size: 20px; }
 
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
     </style>
@@ -71,12 +69,19 @@
 
         <div class="feed-container" id="feed"></div>
 
+        <div class="share-sheet" id="ss">
+            <div class="share-grid">
+                <div onclick="window.open('whatsapp://send?text='+curU)"><div class="share-icon-box" style="background:#25D366;"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span></div>
+                <div onclick="copyU()"><div class="share-icon-box" style="background:#333;"><i class="fas fa-link"></i></div><span>Link</span></div>
+                <div onclick="dlV()"><div class="share-icon-box" style="background:#FFD700; color:black;"><i class="fas fa-download"></i></div><span>Download</span></div>
+            </div>
+            <button onclick="closeSS()" style="width:100%; margin-top:15px; background:#222; color:white; border:none; padding:10px; border-radius:10px;">Cancel</button>
+        </div>
+
         <div class="bottom-nav">
             <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
             <i class="fas fa-user-friends" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
-            <div style="width:45px; height:30px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:8px; display:flex; justify-content:center; align-items:center; border: 2px solid #fff;" onclick="window.location.href='upload'">
-                <i class="fas fa-plus" style="color:#000; font-size:16px;"></i>
-            </div>
+            <div style="width:45px; height:30px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:8px; display:flex; justify-content:center; align-items:center; border: 2px solid #fff;" onclick="window.location.href='upload'"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
             <i class="fas fa-comment-alt" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
             <i class="fas fa-user" style="color:#888; font-size:22px;" onclick="window.location.href='profile'"></i>
         </div>
@@ -91,7 +96,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        let currentUser = null;
+        let currentUser = null; window.curU = "";
 
         onAuthStateChanged(auth, user => { if (user) { currentUser = user; loadVideos(); } else { window.location.href = 'login'; } });
 
@@ -110,42 +115,42 @@
                     div.innerHTML = `
                         <div class="loading-spinner" id="loader-${item.key}"></div>
                         <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${hasRemix ? 'muted' : ''}></video>
-                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
+                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}"></audio>` : ''}
                         
                         <div class="prog-container" onclick="seek(event, '${item.key}')">
                             <div class="prog-bar" id="pb-${item.key}"></div>
                         </div>
-
-                        <div class="play-icon" id="play-icon-${item.key}"><i class="fas fa-play"></i></div>
-                        
+                        <div class="play-icon" id="play-${item.key}"><i class="fas fa-play"></i></div>
                         <div class="video-info">
-                            <div class="username" id="name-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
+                            <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
                             <div class="caption">${item.caption || ''}</div>
                             <div class="music-info"><i class="fas fa-music"></i> <span>${hasRemix ? 'Verbotube Remix' : 'Original sound - ' + item.uploader}</span></div>
                         </div>
-
                         <div class="sidebar">
-                            <div class="profile-pic-container" onclick="handleFollow('${item.uid}', '${item.key}')">
-                                <img src="icon.png" class="sidebar-pic" id="pic-${item.key}">
-                                <div class="follow-plus" id="follow-${item.key}"><i class="fas fa-plus"></i></div>
-                            </div>
+                            <img src="icon.png" class="sidebar-pic" id="pic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
                             <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="heart-${item.key}"></i><span id="lcnt-${item.key}">0</span></div>
-                            <div class="action-btn" onclick="toggleInput('${item.key}')"><i class="fas fa-comment-dots"></i><span id="ccnt-${item.key}">0</span></div>
-                            <div class="action-btn" onclick="navigator.share({url:'${item.videoUrl}'})"><i class="fas fa-share"></i><span>Share</span></div>
+                            <div class="action-btn" onclick="openSS('${item.videoUrl}')"><i class="fas fa-share"></i><span>Share</span></div>
                             <div class="music-disc-btn" id="disc-${item.key}" onclick="window.location.href='upload?sound=${encodeURIComponent(item.remixUrl || item.videoUrl)}'"></div>
                         </div>
                     `;
 
                     const v = div.querySelector('video'), a = div.querySelector('audio'), pIcon = div.querySelector('.play-icon'), ldr = div.querySelector('.loading-spinner');
                     
-                    v.onwaiting = () => { ldr.style.display = 'block'; if(a) a.pause(); };
-                    v.onplaying = () => { ldr.style.display = 'none'; if(a) a.play(); };
+                    // 🔥 Remix & Browser ID Fix
+                    v.onplay = () => { 
+                        history.replaceState(null, null, `?v=${item.key}`); // Browser ID Show
+                        if(a) a.play(); 
+                    };
+                    v.onpause = () => { if(a) a.pause(); };
+                    
+                    // 🔥 Audio/Video Loop Sync Fix
+                    v.onended = () => { if(a) a.currentTime = 0; v.play(); };
 
-                    div.addEventListener('click', (e) => {
+                    div.onclick = (e) => {
                         if(e.target.closest('.sidebar') || e.target.closest('.prog-container')) return;
-                        if(v.paused) { v.play(); if(a) a.play(); pIcon.style.opacity = 0; } 
-                        else { v.pause(); if(a) a.pause(); pIcon.style.opacity = 1; }
-                    });
+                        if(v.paused) { v.play(); pIcon.style.opacity = 0; } 
+                        else { v.pause(); pIcon.style.opacity = 1; }
+                    };
 
                     v.ontimeupdate = () => {
                         const bar = document.getElementById(`pb-${item.key}`);
@@ -159,40 +164,22 @@
             });
         }
 
-        window.handleFollow = (targetUid, k) => {
-            if(!currentUser) return;
-            const r = ref(db, `following/${currentUser.uid}/${targetUid}`);
-            get(r).then(s => { if(s.exists()) remove(r); else set(r, true); });
-        };
+        window.openSS = (u) => { window.curU = u; document.getElementById('ss').style.bottom = "0"; };
+        window.closeSS = () => { document.getElementById('ss').style.bottom = "-100%"; };
+        window.copyU = () => { navigator.clipboard.writeText(window.curU); alert("Copied!"); closeSS(); };
+        window.dlV = async () => { try { const r=await fetch(window.curU), b=await r.blob(), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='Verbotube.mp4'; a.click(); } catch(e){ window.open(window.curU,'_blank'); } };
 
         function loadSidebarData(item) {
             onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()){ 
                 const d = u.val();
                 document.getElementById(`pic-${item.key}`).src = d.photo || "icon.png";
                 document.getElementById(`disc-${item.key}`).style.backgroundImage = `url('${d.photo || "icon.png"}')`;
-                document.getElementById(`name-${item.key}`).innerText = d.username || item.uploader;
             }});
-            if(currentUser) {
-                onValue(ref(db, `following/${currentUser.uid}/${item.uid}`), s => {
-                    const f = document.getElementById(`follow-${item.key}`);
-                    if(s.exists()) f.classList.add('followed'); else f.classList.remove('followed');
-                });
-            }
             onValue(ref(db, `gameplay_likes/${item.key}`), s => {
                 document.getElementById(`lcnt-${item.key}`).innerText = s.size || 0;
                 if(currentUser) document.getElementById(`heart-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
             });
-            onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => {
-                document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0;
-            });
         }
-
-        window.seek = (e, k) => {
-            const v = document.getElementById(`vid-${k}`), a = document.getElementById(`aud-${k}`);
-            const rect = e.currentTarget.getBoundingClientRect();
-            const time = ((e.clientX - rect.left) / rect.width) * v.duration;
-            v.currentTime = time; if(a) a.currentTime = time;
-        };
 
         window.handleLike = (k) => { const r = ref(db, `gameplay_likes/${k}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
 
@@ -200,12 +187,19 @@
             const obs = new IntersectionObserver(es => {
                 es.forEach(en => {
                     const v = en.target.querySelector('video'), a = en.target.querySelector('audio'), pIcon = en.target.querySelector('.play-icon');
-                    if (en.isIntersecting) { v.play().catch(()=>{}); if(a) a.play().catch(()=>{}); pIcon.style.opacity = 0; } 
+                    if (en.isIntersecting) { v.play().catch(()=>{}); pIcon.style.opacity = 0; } 
                     else { v.pause(); if(a) a.pause(); pIcon.style.opacity = 0; }
                 });
             }, { threshold: 0.7 });
             document.querySelectorAll('.video-card').forEach(x => obs.observe(x));
         }
+        
+        window.seek = (e, k) => {
+            const v = document.getElementById(`vid-${k}`), a = document.getElementById(`aud-${k}`);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const time = ((e.clientX - rect.left) / rect.width) * v.duration;
+            v.currentTime = time; if(a) a.currentTime = time;
+        };
     </script>
 </body>
 </html>
