@@ -4,64 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Verbotube - Home</title>
-    <link rel="icon" type="image/png" href="icon.png?v=13">
+    <link rel="icon" type="image/png" href="icon.png?v=14">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #111; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        body { background-color: #000; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
         #app-frame { width: 100%; height: 100%; max-width: 450px; background: #000; position: relative; overflow: hidden; }
         
-        header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); display: flex; justify-content: space-between; align-items: center; }
-        .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; font-weight: bold; }
-        
+        /* TikTok Header Style */
+        header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 20px 15px; display: flex; justify-content: center; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); }
+        .header-tabs { display: flex; gap: 15px; font-size: 17px; font-weight: bold; color: rgba(255,255,255,0.6); }
+        .tab-btn.active { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 5px; }
+        .search-icon { position: absolute; right: 20px; font-size: 20px; color: #fff; }
+
         .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .feed-container::-webkit-scrollbar { display: none; }
-        
-        .video-card { background: #000; width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; justify-content: center; align-items: center; }
+        .video-card { width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; background: #000; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Sidebar Spacing Fix - Ab button ek dusre par nahi charhein ge */
-        .sidebar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; }
-        .action-btn { background: none; border: none; color: white; font-size: 26px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .action-btn span { font-size: 10px; margin-top: 5px; font-weight: 600; }
-        .liked { color: #FF0000 !important; }
-
-        .video-info { position: absolute; bottom: 85px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
-        .username { font-weight: bold; font-size: 16px; color: #FFD700; margin-bottom: 5px; }
+        /* TikTok Sidebar - Spacing Fixed */
+        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 30; }
+        .profile-pic-container { position: relative; margin-bottom: 10px; }
+        .sidebar-pic { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #fff; }
+        .follow-plus { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #fe2c55; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
         
-        /* Progress Bar Styling */
-        .prog-container { position: absolute; bottom: 60px; left: 0; width: 100%; height: 5px; background: rgba(255,255,255,0.2); cursor: pointer; z-index: 1001; }
-        .prog-bar { height: 100%; background: #FFD700; width: 0%; pointer-events: none; }
+        .action-btn { background: none; border: none; color: white; font-size: 30px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .action-btn span { font-size: 12px; margin-top: 4px; font-weight: 600; }
+        .liked { color: #fe2c55 !important; }
 
-        .disc-area { position: absolute; bottom: 120px; right: 10px; width: 45px; height: 45px; z-index: 25; transform: translateY(70px); }
-        .disc-bg { width: 100%; height: 100%; border-radius: 50%; background: #111; border: 4px solid #222; animation: spin 5s linear infinite; background-size: cover; }
+        /* Video Info Area */
+        .video-info { position: absolute; bottom: 70px; left: 15px; width: 75%; z-index: 20; pointer-events: none; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        .username { font-weight: bold; font-size: 17px; margin-bottom: 8px; color: #fff; pointer-events: auto; }
+        .caption { font-size: 14px; color: #eee; margin-bottom: 10px; line-height: 1.4; }
+        
+        /* Music Disc Animation - Fixed Position */
+        .music-disc { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; position: relative; top: 10px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; color: #FFD700; opacity: 0; pointer-events: none; z-index: 15; }
-        .comments-overlay { position: absolute; bottom: 170px; left: 15px; max-height: 100px; overflow-y: auto; width: 60%; z-index: 40; pointer-events: none; }
-        .comment-item { background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; font-size: 12px; margin-bottom: 4px; }
-        .comment-input-bar { position: absolute; bottom: 65px; left: 0; width: 100%; background: #111; padding: 10px; display: none; z-index: 2000; border-top: 1px solid #333; }
-        .comment-input { flex: 1; padding: 8px; border-radius: 20px; border: none; outline: none; }
+        /* TikTok Progress Bar */
+        .prog-container { position: absolute; bottom: 62px; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.2); cursor: pointer; z-index: 100; }
+        .prog-bar { height: 100%; background: #fff; width: 0%; pointer-events: none; }
+
+        /* TikTok Play Icon Overlay */
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70px; color: rgba(255,255,255,0.4); opacity: 0; pointer-events: none; z-index: 15; }
+
+        .comments-overlay { position: absolute; bottom: 180px; left: 15px; max-height: 120px; overflow-y: auto; width: 65%; z-index: 40; pointer-events: none; }
+        .comment-item { background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 12px; font-size: 12px; margin-bottom: 5px; }
+
+        .comment-input-bar { position: absolute; bottom: 60px; left: 0; width: 100%; background: #121212; padding: 12px; display: none; z-index: 2000; border-top: 1px solid #333; }
+        .comment-input { flex: 1; padding: 10px 15px; border-radius: 25px; border: none; background: #262626; color: #fff; outline: none; }
+
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid rgba(255,255,255,0.2); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
     </style>
 </head>
 <body>
     <div id="app-frame">
         <header>
-            <div style="display:flex; gap:20px; color:#aaa;">
+            <div class="header-tabs">
                 <span class="tab-btn active">For You</span>
-                <span class="tab-btn" onclick="window.location.href='friends'">Following</span>
+                <span onclick="window.location.href='friends'">Following</span>
             </div>
-            <i class="fas fa-search" style="color:white; font-size:20px;" onclick="window.location.href='search'"></i>
+            <i class="fas fa-search search-icon" onclick="window.location.href='search'"></i>
         </header>
 
         <div class="feed-container" id="feed"></div>
 
-        <div class="bottom-nav" style="position:absolute; bottom:0; width:100%; height:60px; background:#000; display:flex; justify-content:space-around; align-items:center; z-index:1000; border-top:1px solid #222;">
-            <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
+        <div class="bottom-nav">
+            <i class="fas fa-home" style="color:#fff; font-size:22px;"></i>
             <i class="fas fa-user-friends" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
-            <div style="width:40px; height:25px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:5px; display:flex; justify-content:center; align-items:center;" onclick="window.location.href='upload'"><i class="fas fa-plus" style="color:black; font-size:14px;"></i></div>
-            <i class="fas fa-inbox" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
+            <div style="width:45px; height:30px; background:linear-gradient(to right, #24f1f9 10%, #fe2c55 90%); border-radius:8px; display:flex; justify-content:center; align-items:center; border: 2px solid #fff;" onclick="window.location.href='upload'">
+                <i class="fas fa-plus" style="color:#000; font-size:16px;"></i>
+            </div>
+            <i class="fas fa-comment-alt" style="color:#888; font-size:22px;" onclick="window.location.href='friends'"></i>
             <i class="fas fa-user" style="color:#888; font-size:22px;" onclick="window.location.href='profile'"></i>
         </div>
     </div>
@@ -93,55 +108,77 @@
 
                     div.innerHTML = `
                         <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${hasRemix ? 'muted' : ''}></video>
-                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}"></audio>` : ''}
+                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         
                         <div class="prog-container" onclick="seek(event, '${item.key}')">
                             <div class="prog-bar" id="pb-${item.key}"></div>
                         </div>
 
-                        <div class="play-icon" id="play-${item.key}"><i class="fas fa-play"></i></div>
+                        <div class="play-icon" id="play-icon-${item.key}"><i class="fas fa-play"></i></div>
+                        
                         <div class="comments-overlay" id="comments-${item.key}"></div>
                         
                         <div class="video-info">
-                            <div class="username" id="name-${item.key}">${item.uploader || 'user'}</div>
+                            <div class="username" id="name-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
                             <div class="caption">${item.caption || ''}</div>
                         </div>
 
                         <div class="sidebar">
-                            <img src="icon.png" id="pic-${item.key}" style="width:45px; height:45px; border-radius:50%; border:2px solid white; cursor:pointer;" onclick="window.location.href='profile?uid=${item.uid}'">
-                            <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="heart-${item.key}"></i><span id="lcnt-${item.key}">0</span></div>
-                            <div class="action-btn" onclick="toggleInput('${item.key}')"><i class="fas fa-comment-dots"></i><span>Chat</span></div>
-                            <div class="action-btn" onclick="window.location.href='upload?sound=${encodeURIComponent(item.remixUrl || item.videoUrl)}'"><i class="fas fa-compact-disc"></i><span>Remix</span></div>
-                            <div class="action-btn" onclick="navigator.share({url:'${item.videoUrl}'})"><i class="fas fa-share"></i><span>Share</span></div>
+                            <div class="profile-pic-container" onclick="window.location.href='profile?uid=${item.uid}'">
+                                <img src="icon.png" class="sidebar-pic" id="pic-${item.key}">
+                                <div class="follow-plus"><i class="fas fa-plus"></i></div>
+                            </div>
+                            <div class="action-btn" onclick="handleLike('${item.key}')">
+                                <i class="fas fa-heart" id="heart-${item.key}"></i>
+                                <span id="lcnt-${item.key}">0</span>
+                            </div>
+                            <div class="action-btn" onclick="toggleInput('${item.key}')">
+                                <i class="fas fa-comment-dots"></i>
+                                <span id="ccnt-${item.key}">0</span>
+                            </div>
+                            <div class="action-btn" onclick="window.location.href='upload?sound=${encodeURIComponent(item.remixUrl || item.videoUrl)}'">
+                                <i class="fas fa-share"></i>
+                                <span>Remix</span>
+                            </div>
+                            <div class="action-btn" onclick="navigator.share({url:'${item.videoUrl}'})">
+                                <i class="fas fa-arrow-right"></i>
+                                <span>Share</span>
+                            </div>
+                            <div class="music-disc" id="disc-${item.key}"></div>
                         </div>
 
-                        <div class="disc-area"><div class="disc-bg" id="disc-${item.key}"></div></div>
-
                         <div class="comment-input-bar" id="bar-${item.key}">
-                            <input type="text" class="comment-input" id="in-${item.key}" placeholder="Add comment...">
-                            <i class="fas fa-paper-plane" style="color:#FFD700; margin-left:10px;" onclick="sendComment('${item.key}')"></i>
+                            <input type="text" class="comment-input" id="in-${item.key}" placeholder="Add a comment...">
+                            <i class="fas fa-paper-plane" style="color:#fe2c55; margin-left:10px; font-size:20px;" onclick="sendComment('${item.key}')"></i>
                         </div>
                     `;
 
                     const v = div.querySelector('video'), a = div.querySelector('audio'), pIcon = div.querySelector('.play-icon');
                     
-                    // Toggle Play Logic
-                    div.onclick = (e) => {
+                    // TikTok Play/Pause Logic - Fixed
+                    div.addEventListener('click', (e) => {
                         if(e.target.closest('.sidebar') || e.target.closest('.prog-container') || e.target.closest('.comment-input-bar')) return;
-                        if(v.paused) { v.play(); if(a) a.play(); pIcon.style.opacity = 0; }
-                        else { v.pause(); if(a) a.pause(); pIcon.style.opacity = 0.8; }
-                    };
+                        if(v.paused) { 
+                            v.play(); if(a) a.play(); 
+                            pIcon.style.opacity = 0; 
+                        } else { 
+                            v.pause(); if(a) a.pause(); 
+                            pIcon.style.opacity = 1; 
+                        }
+                    });
 
-                    // Progress Update Logic
+                    // Remix Sound Owner Logic
+                    if(hasRemix) {
+                        v.addEventListener('playing', () => { if(a) a.play(); });
+                        v.addEventListener('pause', () => { if(a) a.pause(); });
+                        v.addEventListener('waiting', () => { if(a) a.pause(); });
+                    }
+
+                    // Progress Update
                     v.ontimeupdate = () => {
                         const bar = document.getElementById(`pb-${item.key}`);
                         if(bar) bar.style.width = (v.currentTime / v.duration) * 100 + "%";
                     };
-
-                    if(hasRemix) {
-                        v.onwaiting = () => { if(a) a.pause(); };
-                        v.onplaying = () => { if(a) a.play(); };
-                    }
 
                     feed.appendChild(div);
                     loadSidebarData(item);
@@ -170,6 +207,7 @@
             });
             onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => {
                 const box = document.getElementById(`comments-${item.key}`); box.innerHTML = "";
+                document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0;
                 if(s.exists()) Object.values(s.val()).forEach(c => {
                     const d = document.createElement('div'); d.className="comment-item";
                     d.innerHTML = `<b>${c.username}:</b> ${c.text}`; box.appendChild(d);
@@ -190,8 +228,11 @@
             const obs = new IntersectionObserver(es => {
                 es.forEach(en => {
                     const v = en.target.querySelector('video'), a = en.target.querySelector('audio'), pIcon = en.target.querySelector('.play-icon');
-                    if (en.isIntersecting) { v.play().catch(()=>{}); if(a) a.play().catch(()=>{}); pIcon.style.opacity = 0; }
-                    else { v.pause(); if(a) a.pause(); pIcon.style.opacity = 0.8; }
+                    if (en.isIntersecting) { 
+                        v.play().catch(()=>{}); if(a) a.play().catch(()=>{}); pIcon.style.opacity = 0; 
+                    } else { 
+                        v.pause(); if(a) a.pause(); pIcon.style.opacity = 0; 
+                    }
                 });
             }, { threshold: 0.7 });
             document.querySelectorAll('.video-card').forEach(x => obs.observe(x));
