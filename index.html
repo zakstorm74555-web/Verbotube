@@ -7,7 +7,7 @@
     <title>Verbotube - Watch, Create & Share Viral Moments</title>
     <meta name="description" content="Verbotube is the ultimate platform for gaming clips and viral moments.">
     <meta name="author" content="Verbotube">
-    <link rel="icon" type="image/png" href="icon.png?v=21">
+    <link rel="icon" type="image/png" href="icon.png?v=22">
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,9 +24,12 @@
         .video-card { width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-        /* 🔥 Loading Spinner Wapis Aa Gaya */
         .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.2); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin-load 1s linear infinite; display: none; z-index: 100; }
         @keyframes spin-load { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* 🔥 Video Progress Line (Seek Bar) 🔥 */
+        .prog-container { position: absolute; bottom: 62px; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); cursor: pointer; z-index: 1001; }
+        .prog-bar { height: 100%; background: #FFD700; width: 0%; pointer-events: none; }
 
         .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; }
         .sidebar-pic { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #FFD700; }
@@ -35,16 +38,15 @@
         .action-btn span { font-size: 12px; margin-top: 4px; font-weight: 600; }
         .liked { color: #FF0000 !important; }
 
-        .video-info { position: absolute; bottom: 70px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
-        .username { font-weight: bold; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
-        .music-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #FFD700; margin-top: 5px; }
-
-        /* 🔥 Remix Music Disc Wapis Aa Gaya */
+        /* 🔥 Remix Music Disc Button 🔥 */
         .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; margin-top: 5px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .comment-input-bar { position: absolute; bottom: 60px; left: 0; width: 100%; background: #121212; padding: 12px; display: none; z-index: 2000; border-top: 1px solid #333; }
-        .comment-input { flex: 1; padding: 10px 15px; border-radius: 25px; border: none; background: #262626; color: #fff; outline: none; }
+        .video-info { position: absolute; bottom: 75px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
+        .username { font-weight: bold; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
+        .music-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #FFD700; margin-top: 5px; }
+
+        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70px; color: rgba(255,215,0,0.4); opacity: 0; pointer-events: none; z-index: 15; }
 
         .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
@@ -75,15 +77,10 @@
             <button onclick="closeSS()" style="width:100%; margin-top:15px; background:#222; color:white; border:none; padding:10px; border-radius:10px; cursor:pointer;">Cancel</button>
         </div>
 
-        <div class="comment-input-bar" id="commentBar">
-            <input type="text" class="comment-input" id="commentIn" placeholder="Add a comment...">
-            <i class="fas fa-paper-plane" style="color:#FFD700; margin-left:10px; cursor:pointer;" id="sendBtn"></i>
-        </div>
-
         <div class="bottom-nav">
             <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
             <i class="fas fa-user-friends" style="color:#888; font-size:22px; cursor:pointer;" onclick="window.location.href='friends'"></i>
-            <div style="width:45px; height:30px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:8px; display:flex; justify-content:center; align-items:center; border: 2px solid #fff; cursor:pointer;" onclick="window.location.href='upload'"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
+            <div style="width:45px; height:30px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:5px; display:flex; justify-content:center; align-items:center; border: 2px solid #fff; cursor:pointer;" onclick="window.location.href='upload'"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
             <i class="fas fa-comment-alt" style="color:#888; font-size:22px; cursor:pointer;" onclick="window.location.href='friends'"></i>
             <i class="fas fa-user" style="color:#888; font-size:22px; cursor:pointer;" onclick="window.location.href='profile'"></i>
         </div>
@@ -98,7 +95,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        let currentUser = null; window.curU = ""; let activeKey = "";
+        let currentUser = null; window.curU = "";
 
         onAuthStateChanged(auth, user => { if (user) { currentUser = user; loadVideos(); } else { window.location.href = 'login'; } });
 
@@ -119,6 +116,12 @@
                         <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${hasRemix ? 'muted' : ''}></video>
                         ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         
+                        <div class="prog-container" onclick="seek(event, '${item.key}')">
+                            <div class="prog-bar" id="pb-${item.key}"></div>
+                        </div>
+
+                        <div class="play-icon" id="play-icon-${item.key}"><i class="fas fa-play"></i></div>
+                        
                         <div class="video-info">
                             <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
                             <div class="caption">${item.caption || ''}</div>
@@ -127,13 +130,12 @@
                         <div class="sidebar">
                             <img src="icon.png" class="sidebar-pic" id="pic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
                             <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="heart-${item.key}"></i><span id="lcnt-${item.key}">0</span></div>
-                            <div class="action-btn" onclick="openComment('${item.key}')"><i class="fas fa-comment-dots"></i><span id="ccnt-${item.key}">0</span></div>
                             <div class="action-btn" onclick="openSS('${item.videoUrl}')"><i class="fas fa-share"></i><span>Share</span></div>
                             <div class="music-disc-btn" id="disc-${item.key}" onclick="window.location.href='upload?sound=${encodeURIComponent(item.remixUrl || item.videoUrl)}'"></div>
                         </div>
                     `;
 
-                    const v = div.querySelector('video'), a = div.querySelector('audio'), ldr = div.querySelector('.loading-spinner');
+                    const v = div.querySelector('video'), a = div.querySelector('audio'), ldr = div.querySelector('.loading-spinner'), pIcon = div.querySelector('.play-icon');
                     
                     v.onwaiting = () => { ldr.style.display = 'block'; if(a) a.pause(); };
                     v.onplaying = () => { ldr.style.display = 'none'; if(a) a.play(); };
@@ -141,7 +143,17 @@
                     v.onpause = () => { if(a) a.pause(); };
                     v.onended = () => { if(a) a.currentTime = 0; v.play(); };
 
-                    div.onclick = (e) => { if(!e.target.closest('.sidebar')) v.paused ? v.play() : v.pause(); };
+                    div.onclick = (e) => { 
+                        if(e.target.closest('.sidebar') || e.target.closest('.prog-container')) return;
+                        if(v.paused) { v.play(); pIcon.style.opacity = 0; } 
+                        else { v.pause(); pIcon.style.opacity = 1; }
+                    };
+
+                    v.ontimeupdate = () => {
+                        const bar = document.getElementById(`pb-${item.key}`);
+                        if(bar) bar.style.width = (v.currentTime / v.duration) * 100 + "%";
+                    };
+
                     feed.appendChild(div);
                     loadSidebarData(item);
                 });
@@ -149,12 +161,11 @@
             });
         }
 
-        window.openComment = (k) => { activeKey = k; document.getElementById('commentBar').style.display = 'flex'; };
-        document.getElementById('sendBtn').onclick = async () => {
-            const i = document.getElementById('commentIn'); if(!i.value.trim()) return;
-            const u = await get(ref(db, 'users/'+currentUser.uid));
-            await push(ref(db, `gameplay_clips/${activeKey}/comments`), {text: i.value, username: u.val().username || "User"});
-            i.value = ""; document.getElementById('commentBar').style.display = 'none';
+        window.seek = (e, k) => {
+            const v = document.getElementById(`vid-${k}`), a = document.getElementById(`aud-${k}`);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const time = ((e.clientX - rect.left) / rect.width) * v.duration;
+            v.currentTime = time; if(a) a.currentTime = time;
         };
 
         window.openSS = (u) => { window.curU = u; document.getElementById('ss').style.bottom = "0"; };
@@ -171,9 +182,6 @@
             onValue(ref(db, `gameplay_likes/${item.key}`), s => {
                 document.getElementById(`lcnt-${item.key}`).innerText = s.size || 0;
                 if(currentUser) document.getElementById(`heart-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid));
-            });
-            onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => {
-                document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0;
             });
         }
 
