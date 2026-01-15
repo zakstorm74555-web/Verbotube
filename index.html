@@ -6,8 +6,8 @@
     
     <title>Verbotube - Watch, Create & Share Viral Moments</title>
     <meta name="description" content="Verbotube is the ultimate platform for gaming clips and viral moments.">
-    <meta name="author" content="Verbotube"> <meta name="robots" content="index, follow">
-    <link rel="icon" type="image/png" href="icon.png?v=20">
+    <meta name="author" content="Verbotube">
+    <link rel="icon" type="image/png" href="icon.png?v=21">
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,13 +17,16 @@
         #app-frame { width: 100%; height: 100%; max-width: 450px; background: #000; position: relative; overflow: hidden; }
         
         header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .header-tabs { display: flex; gap: 15px; font-size: 17px; font-weight: bold; color: #888; margin-left: auto; margin-right: auto; }
-        .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 5px; } 
+        .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 5px; font-weight: bold; } 
 
         .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; }
         .feed-container::-webkit-scrollbar { display: none; }
         .video-card { width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+        /* 🔥 Loading Spinner Wapis Aa Gaya */
+        .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.2); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin-load 1s linear infinite; display: none; z-index: 100; }
+        @keyframes spin-load { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 
         .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; }
         .sidebar-pic { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #FFD700; }
@@ -33,11 +36,11 @@
         .liked { color: #FF0000 !important; }
 
         .video-info { position: absolute; bottom: 70px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
-        .username { font-weight: bold; font-size: 17px; margin-bottom: 8px; color: #FFD700; pointer-events: auto; }
-        .caption { font-size: 14px; color: #eee; margin-bottom: 10px; }
+        .username { font-weight: bold; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
         .music-info { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #FFD700; margin-top: 5px; }
 
-        .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; }
+        /* 🔥 Remix Music Disc Wapis Aa Gaya */
+        .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; margin-top: 5px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .comment-input-bar { position: absolute; bottom: 60px; left: 0; width: 100%; background: #121212; padding: 12px; display: none; z-index: 2000; border-top: 1px solid #333; }
@@ -54,9 +57,9 @@
     <div id="app-frame">
         <header>
             <button style="background:linear-gradient(135deg,#FFD700,#FF0000); border:none; padding:5px 12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="window.location.href='download.html'">Get App</button>
-            <div class="header-tabs">
+            <div style="display:flex; gap:15px; margin-left:auto; margin-right:auto;">
                 <span class="tab-btn active">For You</span>
-                <span onclick="window.location.href='friends'">Following</span>
+                <span style="color:#888; font-weight:bold;" onclick="window.location.href='friends'">Following</span>
             </div>
             <i class="fas fa-search" style="color:#fff; font-size:20px; cursor:pointer;" onclick="window.location.href='search'"></i>
         </header>
@@ -112,8 +115,9 @@
                     const hasRemix = (item.remixUrl && item.remixUrl !== "");
 
                     div.innerHTML = `
+                        <div class="loading-spinner" id="loader-${item.key}"></div>
                         <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${hasRemix ? 'muted' : ''}></video>
-                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}"></audio>` : ''}
+                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         
                         <div class="video-info">
                             <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
@@ -129,16 +133,15 @@
                         </div>
                     `;
 
-                    const v = div.querySelector('video'), a = div.querySelector('audio');
+                    const v = div.querySelector('video'), a = div.querySelector('audio'), ldr = div.querySelector('.loading-spinner');
+                    
+                    v.onwaiting = () => { ldr.style.display = 'block'; if(a) a.pause(); };
+                    v.onplaying = () => { ldr.style.display = 'none'; if(a) a.play(); };
                     v.onplay = () => { history.replaceState(null, null, `?v=${item.key}`); if(a) a.play(); };
                     v.onpause = () => { if(a) a.pause(); };
                     v.onended = () => { if(a) a.currentTime = 0; v.play(); };
 
-                    div.onclick = (e) => {
-                        if(e.target.closest('.sidebar')) return;
-                        v.paused ? v.play() : v.pause();
-                    };
-
+                    div.onclick = (e) => { if(!e.target.closest('.sidebar')) v.paused ? v.play() : v.pause(); };
                     feed.appendChild(div);
                     loadSidebarData(item);
                 });
@@ -180,8 +183,7 @@
             const obs = new IntersectionObserver(es => {
                 es.forEach(en => {
                     const v = en.target.querySelector('video'), a = en.target.querySelector('audio');
-                    if (en.isIntersecting) { v.play().catch(()=>{}); } 
-                    else { v.pause(); if(a) a.pause(); }
+                    if (en.isIntersecting) v.play().catch(()=>{}); else { v.pause(); if(a) a.pause(); }
                 });
             }, { threshold: 0.7 });
             document.querySelectorAll('.video-card').forEach(x => obs.observe(x));
