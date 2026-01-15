@@ -7,7 +7,7 @@
     <title>Verbotube - Watch, Create & Share Viral Moments</title>
     <meta name="description" content="Verbotube is the ultimate platform for gaming clips and viral moments.">
     <meta name="author" content="Verbotube">
-    <link rel="icon" type="image/png" href="icon.png?v=24">
+    <link rel="icon" type="image/png" href="icon.png?v=25">
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,7 +16,6 @@
         body { background-color: #000; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
         #app-frame { width: 100%; height: 100%; max-width: 450px; background: #000; position: relative; overflow: hidden; }
         
-        /* Header Style */
         header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
         .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 5px; font-weight: bold; } 
 
@@ -25,38 +24,33 @@
         .video-card { width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
         video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-        /* Loading Spinner */
         .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.2); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin-load 1s linear infinite; display: none; z-index: 100; }
         @keyframes spin-load { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* Progress Seek Line */
         .prog-container { position: absolute; bottom: 62px; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); cursor: pointer; z-index: 1001; }
         .prog-bar { height: 100%; background: #FFD700; width: 0%; pointer-events: none; }
 
-        /* Sidebar Spacing Fix */
-        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 18px; align-items: center; z-index: 30; }
+        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; }
         .sidebar-pic { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #FFD700; cursor: pointer; }
         
-        .action-btn { background: none; border: none; color: white; font-size: 28px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .action-btn span { font-size: 11px; margin-top: 2px; font-weight: 600; }
+        .action-btn { background: none; border: none; color: white; font-size: 30px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .action-btn span { font-size: 12px; margin-top: 4px; font-weight: 600; }
         .liked { color: #FF0000 !important; }
 
-        /* Remix Disc Animation */
         .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .video-info { position: absolute; bottom: 75px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
         .username { font-weight: bold; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
-        .music-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; margin-top: 5px; }
+        .caption { font-size: 14px; color: #eee; margin-bottom: 8px; }
+        .music-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; }
 
         .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70px; color: rgba(255,215,0,0.4); opacity: 0; pointer-events: none; z-index: 15; }
 
-        /* Share Sheet */
         .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
         .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: auto; font-size: 20px; }
 
-        /* Comment Bar */
         .comment-input-bar { position: absolute; bottom: 65px; left: 0; width: 100%; background: #121212; padding: 10px; display: none; z-index: 2005; border-top: 1px solid #333; }
         .comment-input { flex: 1; padding: 10px; border-radius: 20px; border: none; background: #222; color: #fff; outline: none; }
 
@@ -130,11 +124,13 @@
                         ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         <div class="prog-container" onclick="seek(event, '${item.key}')"><div class="prog-bar" id="pb-${item.key}"></div></div>
                         <div class="play-icon" id="play-${item.key}"><i class="fas fa-play"></i></div>
+                        
                         <div class="video-info">
                             <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
                             <div class="caption">${item.caption || ''}</div>
-                            <div class="music-info"><i class="fas fa-music"></i> <span>Original sound - ${item.uploader}</span></div>
+                            <div class="music-info"><i class="fas fa-music"></i> <span id="sound-name-${item.key}">Loading sound...</span></div>
                         </div>
+
                         <div class="sidebar">
                             <img src="icon.png" class="sidebar-pic" id="pic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
                             <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="heart-${item.key}"></i><span id="lcnt-${item.key}">0</span></div>
@@ -162,6 +158,40 @@
             });
         }
 
+        // Logic for fetching Sound owner's caption
+        async function fetchSoundName(item) {
+            const soundSpan = document.getElementById(`sound-name-${item.key}`);
+            if(!item.remixUrl) {
+                soundSpan.innerText = "Original sound - " + (item.uploader || 'user');
+                return;
+            }
+            // Remix ki surat mein sound ki detail dhoondega
+            onValue(ref(db, 'gameplay_clips'), (snap) => {
+                if(snap.exists()) {
+                    let found = false;
+                    snap.forEach(child => {
+                        const val = child.val();
+                        if(val.videoUrl === item.remixUrl) {
+                            soundSpan.innerText = (val.caption || "Remix") + " - " + (val.uploader || "user");
+                            found = true;
+                        }
+                    });
+                    if(!found) soundSpan.innerText = "Verbotube Remix Sound";
+                }
+            }, { onlyOnce: true });
+        }
+
+        function loadSidebarData(item) {
+            onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()){ 
+                const d = u.val(); document.getElementById(`pic-${item.key}`).src = d.photo || "icon.png";
+                document.getElementById(`disc-${item.key}`).style.backgroundImage = `url('${d.photo || "icon.png"}')`;
+            }});
+            onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`lcnt-${item.key}`).innerText = s.size || 0; if(currentUser) document.getElementById(`heart-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
+            onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => { document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0; });
+            fetchSoundName(item);
+        }
+
+        // ... Baki bache hue functions (openComment, sendBtn, seek, etc.) wahi hain ...
         window.openComment = (k) => { activeK = k; document.getElementById('commentBar').style.display = 'flex'; };
         document.getElementById('sendBtn').onclick = async () => {
             const i = document.getElementById('commentIn'); if(!i.value.trim()) return;
@@ -176,14 +206,6 @@
         window.handleLike = (k) => { const r = ref(db, `gameplay_likes/${k}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
         window.seek = (e, k) => { const v = document.getElementById(`vid-${k}`), a = document.getElementById(`aud-${k}`); const rect = e.currentTarget.getBoundingClientRect(); const time = ((e.clientX - rect.left) / rect.width) * v.duration; v.currentTime = time; if(a) a.currentTime = time; };
 
-        function loadSidebarData(item) {
-            onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()){ 
-                const d = u.val(); document.getElementById(`pic-${item.key}`).src = d.photo || "icon.png";
-                document.getElementById(`disc-${item.key}`).style.backgroundImage = `url('${d.photo || "icon.png"}')`;
-            }});
-            onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`lcnt-${item.key}`).innerText = s.size || 0; if(currentUser) document.getElementById(`heart-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-            onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => { document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0; });
-        }
         function setupObserver() {
             const obs = new IntersectionObserver(es => {
                 es.forEach(en => {
