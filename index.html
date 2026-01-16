@@ -2,219 +2,338 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <title>Verbotube - Watch, Create & Share Viral Moments</title>
-    <meta name="description" content="Verbotube is the ultimate platform for gaming clips and viral moments.">
-    <meta name="author" content="Verbotube">
-    <link rel="icon" type="image/png" href="icon.png?v=25">
-    <link rel="manifest" href="manifest.json">
-
+    <title>Verbotube -  home</title>
+    
+    <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
-        #app-frame { width: 100%; height: 100%; max-width: 450px; background: #000; position: relative; overflow: hidden; }
+        /* BASE DETAILING */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
-        header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: 20px 15px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .tab-btn.active { color: #FFD700; border-bottom: 2px solid #FFD700; padding-bottom: 5px; font-weight: bold; } 
+        body { 
+            background-color: #000; color: #fff; margin: 0; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            height: 100svh; width: 100vw; overflow: hidden; 
+            display: flex; justify-content: center; 
+        }
 
-        .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; }
+        #app-frame { 
+            width: 100%; height: 100%; max-width: 480px; 
+            background: #000; position: relative; overflow: hidden; 
+        }
+
+        /* HEADER GLASSMORPHISM */
+        header { 
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 100; 
+            padding: env(safe-area-inset-top) 15px 25px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); 
+        }
+
+        .tab-btn { font-weight: 700; font-size: 17px; cursor: pointer; transition: 0.3s; color: rgba(255,255,255,0.6); }
+        .tab-btn.active { color: #FFD700; border-bottom: 3px solid #FFD700; padding-bottom: 4px; }
+
+        /* FEED & CARDS */
+        .feed-container { 
+            width: 100%; height: 100%; 
+            overflow-y: scroll; scroll-snap-type: y mandatory; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
         .feed-container::-webkit-scrollbar { display: none; }
-        .video-card { width: 100%; height: 100%; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-        .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.2); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin-load 1s linear infinite; display: none; z-index: 100; }
-        @keyframes spin-load { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        .video-card { 
+            width: 100%; height: 100svh; 
+            position: relative; scroll-snap-align: start; 
+            display: flex; align-items: center; justify-content: center; 
+        }
 
-        .prog-container { position: absolute; bottom: 62px; left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.2); cursor: pointer; z-index: 1001; }
-        .prog-bar { height: 100%; background: #FFD700; width: 0%; pointer-events: none; }
+        video { width: 100%; height: 100%; object-fit: contain; }
 
-        .sidebar { position: absolute; right: 10px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 30; }
-        .sidebar-pic { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #FFD700; cursor: pointer; }
+        /* LOADING SPINNER */
+        .loading-spinner { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            border: 4px solid rgba(255, 215, 0, 0.1); border-top: 4px solid #FFD700; 
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; 
+            display: none; z-index: 50; 
+        }
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* SIDEBAR PRO DETAILING */
+        .sidebar { 
+            position: absolute; right: 12px; bottom: 120px; 
+            display: flex; flex-direction: column; gap: 22px; 
+            align-items: center; z-index: 40; 
+        }
+
+        .profile-container { position: relative; margin-bottom: 5px; }
+        .sidebar-pic { 
+            width: 52px; height: 52px; border-radius: 50%; 
+            border: 2px solid #fff; box-shadow: 0 0 15px rgba(0,0,0,0.5); 
+        }
+        .follow-badge {
+            position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            background: #FF0050; color: #fff; width: 20px; height: 20px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; border: 2px solid #fff;
+        }
+
+        .action-btn { 
+            background: none; border: none; color: #fff; 
+            display: flex; flex-direction: column; align-items: center; cursor: pointer; 
+        }
+        .action-btn i { font-size: 32px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
+        .action-btn span { font-size: 13px; font-weight: 600; margin-top: 4px; }
+        .liked { color: #FF0050 !important; animation: beat 0.3s ease; }
+        @keyframes beat { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        /* DISC SPINNING */
+        .music-disc { 
+            width: 48px; height: 48px; border-radius: 50%; 
+            background: radial-gradient(circle, #333 20%, #111 100%); 
+            border: 8px solid rgba(255,255,255,0.1); animation: discSpin 5s linear infinite; 
+            background-size: cover; box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        @keyframes discSpin { 100% { transform: rotate(360deg); } }
+
+        /* VIDEO INFO GLASS EFFECT */
+        .video-info { 
+            position: absolute; bottom: 90px; left: 15px; width: 75%; 
+            z-index: 30; pointer-events: none; 
+            text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+        }
+        .username { font-weight: 800; font-size: 18px; color: #FFD700; margin-bottom: 6px; pointer-events: auto; }
+        .caption { font-size: 14px; line-height: 1.4; color: #f1f1f1; margin-bottom: 12px; }
         
-        .action-btn { background: none; border: none; color: white; font-size: 30px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .action-btn span { font-size: 12px; margin-top: 4px; font-weight: 600; }
-        .liked { color: #FF0000 !important; }
+        .music-ticker { 
+            display: flex; align-items: center; gap: 10px; 
+            font-size: 14px; color: #fff; font-weight: 500; 
+            overflow: hidden; width: fit-content;
+        }
 
-        .music-disc-btn { width: 48px; height: 48px; border-radius: 50%; background: #222; border: 8px solid #333; animation: spin 4s linear infinite; background-size: cover; cursor: pointer; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* PROGRESS BAR */
+        .prog-container { 
+            position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); 
+            left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.15); 
+            z-index: 100; cursor: pointer;
+        }
+        .prog-bar { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 8px #FFD700; }
 
-        .video-info { position: absolute; bottom: 75px; left: 15px; width: 75%; z-index: 20; pointer-events: none; }
-        .username { font-weight: bold; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
-        .caption { font-size: 14px; color: #eee; margin-bottom: 8px; }
-        .music-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; }
+        /* BOTTOM NAV - FIX FOR MOBILE */
+        .bottom-nav { 
+            position: absolute; bottom: 0; left: 0; width: 100%; 
+            height: calc(65px + env(safe-area-inset-bottom)); 
+            background: #000; border-top: 0.5px solid rgba(255,255,255,0.1); 
+            display: flex; justify-content: space-around; align-items: center; 
+            z-index: 1000; padding-bottom: env(safe-area-inset-bottom);
+        }
 
-        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 70px; color: rgba(255,215,0,0.4); opacity: 0; pointer-events: none; z-index: 15; }
+        /* UPLOAD BUTTON DETAILING */
+        .upload-wrapper {
+            width: 45px; height: 30px; border-radius: 10px;
+            background: linear-gradient(to right, #00f2ea 20%, #ff0050 80%);
+            display: flex; justify-content: center; align-items: center;
+            position: relative; border: none; cursor: pointer;
+        }
+        .upload-inner {
+            background: #fff; width: 36px; height: 100%; 
+            border-radius: 8px; display: flex; justify-content: center; align-items: center;
+        }
 
-        .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.3s; border-top: 2px solid #FFD700; }
-        .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
-        .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: auto; font-size: 20px; }
-
-        .comment-input-bar { position: absolute; bottom: 65px; left: 0; width: 100%; background: #121212; padding: 10px; display: none; z-index: 2005; border-top: 1px solid #333; }
-        .comment-input { flex: 1; padding: 10px; border-radius: 20px; border: none; background: #222; color: #fff; outline: none; }
-
-        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: #000; border-top: 0.5px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        /* DOUBLE TAP HEART ANIMATION */
+        .dt-heart {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            font-size: 100px; color: #fff; z-index: 200; pointer-events: none;
+            filter: drop-shadow(0 0 20px rgba(255,0,80,0.8));
+        }
+        .dt-heart.active { animation: heartPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes heartPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
+            40% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
     </style>
 </head>
 <body>
+
     <div id="app-frame">
         <header>
-            <button style="background:linear-gradient(135deg,#FFD700,#FF0000); border:none; padding:5px 12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="window.location.href='download.html'">Get App</button>
-            <div style="display:flex; gap:15px; margin-left:auto; margin-right:auto;">
+            <button onclick="window.location.href='download.html'" style="background:linear-gradient(135deg,#FFD700,#FF8C00); border:none; padding:6px 16px; border-radius:6px; font-weight:bold; color:#000; font-size:12px; cursor:pointer;">GET APP</button>
+            <div style="display:flex; gap:20px;">
                 <span class="tab-btn active">For You</span>
-                <span style="color:#888; font-weight:bold; cursor:pointer;" onclick="window.location.href='friends'">Following</span>
+                <span class="tab-btn" onclick="window.location.href='friends'">Following</span>
             </div>
-            <i class="fas fa-search" style="color:#fff; font-size:20px; cursor:pointer;" onclick="window.location.href='search'"></i>
+            <i class="fas fa-search" style="font-size:22px; cursor:pointer;" onclick="window.location.href='search'"></i>
         </header>
 
         <div class="feed-container" id="feed"></div>
 
-        <div class="share-sheet" id="ss">
-            <div class="share-grid">
-                <div onclick="window.open('whatsapp://send?text='+curU)"><div class="share-icon-box" style="background:#25D366;"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span></div>
-                <div onclick="copyU()"><div class="share-icon-box" style="background:#333;"><i class="fas fa-link"></i></div><span>Link</span></div>
-                <div onclick="dlV()"><div class="share-icon-box" style="background:#FFD700; color:black;"><i class="fas fa-download"></i></div><span>Download</span></div>
-            </div>
-            <button onclick="closeSS()" style="width:100%; margin-top:15px; background:#222; color:white; border:none; padding:10px; border-radius:10px; cursor:pointer;">Cancel</button>
-        </div>
-
-        <div class="comment-input-bar" id="commentBar">
-            <input type="text" class="comment-input" id="commentIn" placeholder="Add a comment...">
-            <i class="fas fa-paper-plane" style="color:#FFD700; margin-left:10px; cursor:pointer;" id="sendBtn"></i>
+        <div class="prog-container" id="prog-parent">
+            <div class="prog-bar" id="prog-master"></div>
         </div>
 
         <div class="bottom-nav">
-            <i class="fas fa-home" style="color:#FFD700; font-size:22px;"></i>
-            <i class="fas fa-user-friends" style="color:#888; font-size:22px; cursor:pointer;" onclick="window.location.href='friends'"></i>
-            <div style="width:45px; height:30px; background:linear-gradient(135deg,#FFD700,#FF0000); border-radius:8px; display:flex; justify-content:center; align-items:center; border: 2px solid #fff; cursor:pointer;" onclick="window.location.href='upload'"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
-            <i class="fas fa-comment-alt" style="color:#888; font-size:22px; cursor:pointer;" onclick="window.location.href='friends'"></i>
-            <i class="fas fa-user" style="color:#888; font-size:22px; cursor:pointer;" onclick="window.location.href='profile'"></i>
+            <i class="fas fa-home" style="color:#fff; font-size:24px;"></i>
+            <i class="fas fa-user-friends" style="color:#888; font-size:24px; cursor:pointer;" onclick="window.location.href='friends'"></i>
+            <div class="upload-wrapper" onclick="window.location.href='upload'">
+                <div class="upload-inner"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
+            </div>
+            <i class="fas fa-comment-alt" style="color:#888; font-size:24px; cursor:pointer;" onclick="window.location.href='friends'"></i>
+            <i class="fas fa-user" style="color:#888; font-size:24px; cursor:pointer;" onclick="window.location.href='profile'"></i>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, get, set, remove, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", 
+            authDomain: "paravideo-1ac3b.firebaseapp.com", 
+            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", 
+            projectId: "paravideo-1ac3b", 
+            storageBucket: "paravideo-1ac3b.firebasestorage.app", 
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" 
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        let currentUser = null; window.curU = ""; let activeK = "";
+        let currentUser = null;
 
-        onAuthStateChanged(auth, user => { if (user) { currentUser = user; loadVideos(); } else { window.location.href = 'login'; } });
+        onAuthStateChanged(auth, user => { if(user) { currentUser = user; loadVideos(); } else { window.location.href='login'; } });
 
         function loadVideos() {
             const feed = document.getElementById('feed');
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
-                if (!snap.exists()) return;
-                let videos = Object.entries(snap.val()).map(([k, v]) => ({ key: k, ...v })).sort((a, b) => b.timestamp - a.timestamp);
+                if(!snap.exists()) return;
+                let data = Object.entries(snap.val()).map(([k,v]) => ({key:k, ...v})).sort((a,b)=> b.timestamp - a.timestamp);
 
-                videos.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = "video-card";
-                    const hasRemix = (item.remixUrl && item.remixUrl !== "");
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "video-card";
+                    const isRemix = (item.remixUrl && item.remixUrl !== "");
 
-                    div.innerHTML = `
-                        <div class="loading-spinner" id="loader-${item.key}"></div>
-                        <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${hasRemix ? 'muted' : ''}></video>
-                        ${hasRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
-                        <div class="prog-container" onclick="seek(event, '${item.key}')"><div class="prog-bar" id="pb-${item.key}"></div></div>
-                        <div class="play-icon" id="play-${item.key}"><i class="fas fa-play"></i></div>
+                    card.innerHTML = `
+                        <div class="loading-spinner" id="ldr-${item.key}"></div>
+                        <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${isRemix ? 'muted' : ''}></video>
+                        ${isRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         
+                        <div class="dt-heart" id="pop-${item.key}"><i class="fas fa-heart"></i></div>
+
                         <div class="video-info">
-                            <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">${item.uploader || 'user'}</div>
+                            <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader || 'user'}</div>
                             <div class="caption">${item.caption || ''}</div>
-                            <div class="music-info"><i class="fas fa-music"></i> <span id="sound-name-${item.key}">Loading sound...</span></div>
+                            <div class="music-ticker"><i class="fas fa-music"></i> <marquee scrollamount="4">Original Sound - ${item.uploader || 'user'}</marquee></div>
                         </div>
 
                         <div class="sidebar">
-                            <img src="icon.png" class="sidebar-pic" id="pic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
-                            <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="heart-${item.key}"></i><span id="lcnt-${item.key}">0</span></div>
-                            <div class="action-btn" onclick="openComment('${item.key}')"><i class="fas fa-comment-dots"></i><span id="ccnt-${item.key}">0</span></div>
-                            <div class="action-btn" onclick="openSS('${item.videoUrl}')"><i class="fas fa-share"></i><span>Share</span></div>
-                            <div class="music-disc-btn" id="disc-${item.key}" onclick="window.location.href='upload?sound=${encodeURIComponent(item.remixUrl || item.videoUrl)}'"></div>
+                            <div class="profile-container">
+                                <img src="icon.png" class="sidebar-pic" id="upic-${item.key}">
+                                <div class="follow-badge"><i class="fas fa-plus"></i></div>
+                            </div>
+                            <div class="action-btn" onclick="handleLike('${item.key}')">
+                                <i class="fas fa-heart" id="hrt-${item.key}"></i>
+                                <span id="lcnt-${item.key}">0</span>
+                            </div>
+                            <div class="action-btn" onclick="window.location.href='upload?remix=${encodeURIComponent(item.videoUrl)}'">
+                                <i class="fas fa-compact-disc"></i>
+                                <span>Remix</span>
+                            </div>
+                            <div class="action-btn"><i class="fas fa-share"></i><span>Share</span></div>
+                            <div class="music-disc" id="disc-${item.key}"></div>
                         </div>
                     `;
 
-                    const v = div.querySelector('video'), a = div.querySelector('audio'), ldr = div.querySelector('.loading-spinner'), pIcon = div.querySelector('.play-icon');
-                    v.onwaiting = () => { ldr.style.display = 'block'; if(a) a.pause(); };
-                    v.onplaying = () => { ldr.style.display = 'none'; if(a) a.play(); };
-                    v.onplay = () => { history.replaceState(null, null, `?v=${item.key}`); if(a) a.play(); };
-                    v.onpause = () => { if(a) a.pause(); };
-                    v.onended = () => { if(a) a.currentTime = 0; v.play(); };
-                    div.onclick = (e) => { 
-                        if(e.target.closest('.sidebar') || e.target.closest('.prog-container')) return;
-                        v.paused ? (v.play(), pIcon.style.opacity = 0) : (v.pause(), pIcon.style.opacity = 1);
+                    // MASTER LOGIC FOR AUDIO SYNC & DOUBLE TAP
+                    const v = card.querySelector('video'), a = card.querySelector('audio'), ldr = card.querySelector('.loading-spinner');
+                    let lastClick = 0;
+
+                    card.onclick = (e) => {
+                        const now = Date.now();
+                        if(now - lastClick < 300) { // DOUBLE TAP ACTION
+                            handleLike(item.key, true);
+                            const pop = document.getElementById(`pop-${item.key}`);
+                            pop.classList.add('active');
+                            setTimeout(()=> pop.classList.remove('active'), 800);
+                        } else { // PLAY-PAUSE SYNC
+                            if(v.paused) { 
+                                v.play(); if(a) { a.currentTime = v.currentTime; a.play(); } 
+                            } else { 
+                                v.pause(); if(a) a.pause(); 
+                            }
+                        }
+                        lastClick = now;
                     };
-                    v.ontimeupdate = () => { const bar = document.getElementById(`pb-${item.key}`); if(bar) bar.style.width = (v.currentTime / v.duration) * 100 + "%"; };
-                    feed.appendChild(div);
-                    loadSidebarData(item);
+
+                    v.onwaiting = () => ldr.style.display = "block";
+                    v.onplaying = () => { 
+                        ldr.style.display = "none"; 
+                        if(a) { a.currentTime = v.currentTime; a.play(); } 
+                    };
+                    
+                    v.ontimeupdate = () => {
+                        if(card.getAttribute('active') === 'true') {
+                            const masterBar = document.getElementById('prog-master');
+                            masterBar.style.width = (v.currentTime / v.duration) * 100 + "%";
+                        }
+                    };
+
+                    feed.appendChild(card);
+                    fetchUserDet(item);
                 });
-                setupObserver();
+                setupScrollObserver();
             });
         }
 
-        // Logic for fetching Sound owner's caption
-        async function fetchSoundName(item) {
-            const soundSpan = document.getElementById(`sound-name-${item.key}`);
-            if(!item.remixUrl) {
-                soundSpan.innerText = "Original sound - " + (item.uploader || 'user');
-                return;
-            }
-            // Remix ki surat mein sound ki detail dhoondega
-            onValue(ref(db, 'gameplay_clips'), (snap) => {
-                if(snap.exists()) {
-                    let found = false;
-                    snap.forEach(child => {
-                        const val = child.val();
-                        if(val.videoUrl === item.remixUrl) {
-                            soundSpan.innerText = (val.caption || "Remix") + " - " + (val.uploader || "user");
-                            found = true;
-                        }
-                    });
-                    if(!found) soundSpan.innerText = "Verbotube Remix Sound";
+        function handleLike(k, forceLike = false) {
+            const r = ref(db, `gameplay_likes/${k}/${currentUser.uid}`);
+            get(r).then(s => {
+                if(s.exists() && !forceLike) remove(r);
+                else set(r, true);
+            });
+        }
+
+        function fetchUserDet(item) {
+            onValue(ref(db, 'users/'+item.uid), snap => {
+                if(snap.exists()){
+                    const u = snap.val();
+                    document.getElementById(`upic-${item.key}`).src = u.photo || 'icon.png';
+                    document.getElementById(`disc-${item.key}`).style.backgroundImage = `url('${u.photo || 'icon.png'}')`;
                 }
-            }, { onlyOnce: true });
+            });
+            onValue(ref(db, `gameplay_likes/${item.key}`), snap => {
+                document.getElementById(`lcnt-${item.key}`).innerText = snap.size || 0;
+                if(snap.hasChild(currentUser.uid)) document.getElementById(`hrt-${item.key}`).classList.add('liked');
+                else document.getElementById(`hrt-${item.key}`).classList.remove('liked');
+            });
         }
 
-        function loadSidebarData(item) {
-            onValue(ref(db, 'users/' + item.uid), u => { if(u.exists()){ 
-                const d = u.val(); document.getElementById(`pic-${item.key}`).src = d.photo || "icon.png";
-                document.getElementById(`disc-${item.key}`).style.backgroundImage = `url('${d.photo || "icon.png"}')`;
-            }});
-            onValue(ref(db, `gameplay_likes/${item.key}`), s => { document.getElementById(`lcnt-${item.key}`).innerText = s.size || 0; if(currentUser) document.getElementById(`heart-${item.key}`).classList.toggle('liked', s.hasChild(currentUser.uid)); });
-            onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => { document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0; });
-            fetchSoundName(item);
-        }
-
-        // ... Baki bache hue functions (openComment, sendBtn, seek, etc.) wahi hain ...
-        window.openComment = (k) => { activeK = k; document.getElementById('commentBar').style.display = 'flex'; };
-        document.getElementById('sendBtn').onclick = async () => {
-            const i = document.getElementById('commentIn'); if(!i.value.trim()) return;
-            const u = await get(ref(db, 'users/'+currentUser.uid));
-            await push(ref(db, `gameplay_clips/${activeK}/comments`), {text: i.value, username: u.val().username || "User"});
-            i.value = ""; document.getElementById('commentBar').style.display = 'none';
-        };
-        window.openSS = (u) => { window.curU = u; document.getElementById('ss').style.bottom = "0"; };
-        window.closeSS = () => { document.getElementById('ss').style.bottom = "-100%"; };
-        window.copyU = () => { navigator.clipboard.writeText(window.curU); alert("Copied!"); closeSS(); };
-        window.dlV = async () => { try { const r=await fetch(window.curU), b=await r.blob(), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download='Verbotube.mp4'; a.click(); } catch(e){ window.open(window.curU,'_blank'); } };
-        window.handleLike = (k) => { const r = ref(db, `gameplay_likes/${k}/${currentUser.uid}`); get(r).then(s => s.exists() ? remove(r) : set(r, true)); };
-        window.seek = (e, k) => { const v = document.getElementById(`vid-${k}`), a = document.getElementById(`aud-${k}`); const rect = e.currentTarget.getBoundingClientRect(); const time = ((e.clientX - rect.left) / rect.width) * v.duration; v.currentTime = time; if(a) a.currentTime = time; };
-
-        function setupObserver() {
-            const obs = new IntersectionObserver(es => {
-                es.forEach(en => {
-                    const v = en.target.querySelector('video'), a = en.target.querySelector('audio');
-                    if (en.isIntersecting) v.play().catch(()=>{}); else { v.pause(); if(a) a.pause(); }
+        function setupScrollObserver() {
+            const obs = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const v = entry.target.querySelector('video'), a = entry.target.querySelector('audio');
+                    if(entry.isIntersecting) {
+                        entry.target.setAttribute('active', 'true');
+                        v.play().catch(()=>{});
+                        if(a) { a.currentTime = v.currentTime; a.play().catch(()=>{}); }
+                    } else {
+                        entry.target.setAttribute('active', 'false');
+                        v.pause(); if(a) a.pause();
+                    }
                 });
-            }, { threshold: 0.7 });
-            document.querySelectorAll('.video-card').forEach(x => obs.observe(x));
+            }, { threshold: 0.8 });
+            document.querySelectorAll('.video-card').forEach(c => obs.observe(c));
         }
+
+        // BROWSER FIX: Auto-scroll to hide URL bar on low-end devices
+        window.addEventListener("load", () => setTimeout(() => window.scrollTo(0, 1), 500));
     </script>
 </body>
 </html>
