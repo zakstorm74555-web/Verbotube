@@ -2,116 +2,208 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Friends - Verbotube</title>
     
     <link rel="icon" type="image/png" href="icon.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- VERBOTUBE THEME --- */
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        /* --- TIKTOK DARK THEME --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; color: white; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow-x: hidden; }
         
+        /* Glassmorphism Header */
         .header { 
-            padding: 15px; background: #111; border-bottom: 1px solid #333; 
-            display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 10;
+            padding: 15px; background: rgba(0,0,0,0.9); border-bottom: 0.5px solid #222; 
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
         }
         .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-        
-        /* Gold Title */
-        h2 { margin: 0; font-size: 18px; color: #FFD700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
-        
-        .user-list { padding: 10px; }
+        h2 { margin: 0; font-size: 17px; font-weight: 700; flex: 1; text-align: center; margin-right: 20px; }
+
+        /* Search Bar Detailing */
+        .search-container { padding: 10px 15px; background: #000; }
+        .search-box {
+            background: #222; border-radius: 8px; display: flex; align-items: center; padding: 8px 12px;
+            border: 1px solid transparent; transition: 0.3s;
+        }
+        .search-box:focus-within { border-color: #FFD700; }
+        .search-box input {
+            background: none; border: none; color: white; flex: 1; margin-left: 10px; outline: none; font-size: 15px;
+        }
+
+        /* User List Styling */
+        .section-title { padding: 15px 15px 5px; font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .user-list { padding-bottom: 80px; }
         
         .user-card { 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: 0.2s; 
+            padding: 12px 15px; transition: 0.2s; 
         }
         .user-card:active { background: #111; }
         
-        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-info { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
         
-        /* Gold Border for Profile Pic */
+        /* Profile Image with Online Indicator logic */
+        .img-wrapper { position: relative; }
         .profile-pic { 
-            width: 45px; height: 45px; border-radius: 50%; object-fit: cover; 
-            border: 2px solid #FFD700; 
+            width: 55px; height: 55px; border-radius: 50%; object-fit: cover; 
+            border: 1.5px solid #333; 
         }
         
-        .names { display: flex; flex-direction: column; }
-        .username { font-weight: bold; font-size: 16px; }
-        .status { font-size: 12px; color: #aaa; }
+        .names { display: flex; flex-direction: column; gap: 2px; }
+        .username { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 5px; }
+        .full-name { font-size: 13px; color: #888; }
         
-        /* Yellow-Red Gradient Button */
-        .chat-btn { 
-            background: linear-gradient(135deg, #FFD700, #FF0000); 
-            color: black; 
-            border: none; padding: 8px 15px; border-radius: 20px; 
-            font-weight: bold; font-size: 12px; 
-            box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+        /* Action Buttons Grid */
+        .actions { display: flex; gap: 8px; }
+        
+        .btn-follow { 
+            background: #FF0050; color: white; border: none; 
+            padding: 7px 18px; border-radius: 4px; font-weight: 600; font-size: 14px; 
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-following {
+            background: #333; color: white; border: none;
+            padding: 7px 14px; border-radius: 4px; font-weight: 600; font-size: 14px;
+        }
+
+        .chat-icon-btn {
+            background: #222; color: #FFD700; border: none;
+            width: 35px; height: 35px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
+        }
+
+        /* Bottom Nav Fix */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 60px;
+            background: #000; border-top: 0.5px solid #222;
+            display: flex; justify-content: space-around; align-items: center;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <button class="back-btn" onclick="window.location.href='index'"><i class="fas fa-arrow-left"></i></button>
-        <h2>Find Friends</h2>
+        <button class="back-btn" onclick="window.location.href='index'"><i class="fas fa-chevron-left"></i></button>
+        <h2>Friends</h2>
+        <i class="fas fa-user-plus" style="font-size: 18px; color: #FFD700;"></i>
     </div>
 
+    <div class="search-container">
+        <div class="search-box">
+            <i class="fas fa-search" style="color: #666;"></i>
+            <input type="text" id="searchInput" placeholder="Search friends...">
+        </div>
+    </div>
+
+    <div class="section-title">Suggested for you</div>
+
     <div class="user-list" id="list">
-        <p style="text-align:center; color:#555; margin-top:50px;">Loading...</p>
+        <p style="text-align:center; color:#444; margin-top:30px;">Loading Verbotube users...</p>
+    </div>
+
+    <div class="bottom-nav">
+        <i class="fas fa-home" style="color:#888;" onclick="window.location.href='index'"></i>
+        <i class="fas fa-user-friends" style="color:#fff;"></i>
+        <i class="fas fa-plus-square" style="font-size:24px; color:#FFD700;" onclick="window.location.href='upload'"></i>
+        <i class="fas fa-comment-alt" style="color:#888;"></i>
+        <i class="fas fa-user" style="color:#888;" onclick="window.location.href='profile'"></i>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", 
+            authDomain: "paravideo-1ac3b.firebaseapp.com", 
+            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", 
+            projectId: "paravideo-1ac3b", 
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" 
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        let allUsers = [];
 
         onAuthStateChanged(auth, user => {
-            if (user) loadFollowing(user.uid);
-            // ✅ CLEAN URL: Redirects to 'login' not 'index.html' or 'login.html'
+            if (user) loadUsers(user.uid);
             else window.location.href = 'login';
         });
 
-        function loadFollowing(myUid) {
-            const userRef = ref(db, 'users'); 
-            
+        function loadUsers(myUid) {
+            const userRef = ref(db, 'users');
             onValue(userRef, (snap) => {
                 const list = document.getElementById('list');
                 list.innerHTML = "";
-                
-                if(!snap.exists()) { list.innerHTML = "<p style='text-align:center'>No users found.</p>"; return; }
+                allUsers = [];
+
+                if(!snap.exists()) return;
 
                 snap.forEach(child => {
                     const u = child.val();
-                    if(child.key !== auth.currentUser.uid) { 
-                        const div = document.createElement('div');
-                        div.className = "user-card";
-                        div.innerHTML = `
-                            <div class="user-info">
-                                <img src="${u.photo || 'icon.png'}" class="profile-pic">
-                                <div class="names">
-                                    <span class="username">${u.username || 'User'}</span>
-                                    <span class="status">Tap to chat</span>
-                                </div>
-                            </div>
-                            <button class="chat-btn"><i class="fas fa-comment"></i> Chat</button>
-                        `;
-                        // ✅ CLEAN URL: chat.html -> chat
-                        div.onclick = () => {
-                            window.location.href = `chat?uid=${child.key}&name=${u.username || 'User'}`;
-                        };
-                        list.appendChild(div);
+                    const uid = child.key;
+                    if(uid !== myUid) {
+                        allUsers.push({ uid, ...u });
+                        renderUserCard(uid, u, myUid);
                     }
                 });
             });
         }
+
+        async function renderUserCard(uid, u, myUid) {
+            const list = document.getElementById('list');
+            const div = document.createElement('div');
+            div.className = "user-card";
+            
+            // Checking Follow Status
+            const followSnap = await get(ref(db, `following/${myUid}/${uid}`));
+            const isFollowing = followSnap.exists();
+
+            div.innerHTML = `
+                <div class="user-info" onclick="window.location.href='profile?uid=${uid}'">
+                    <div class="img-wrapper">
+                        <img src="${u.photo || 'icon.png'}" class="profile-pic">
+                    </div>
+                    <div class="names">
+                        <span class="username">${u.username || 'User'} <i class="fas fa-check-circle" style="color:#20d5ec; font-size:12px;"></i></span>
+                        <span class="full-name">${u.email ? u.email.split('@')[0] : 'Verbotube Member'}</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    ${isFollowing ? 
+                        `<button class="chat-icon-btn" onclick="window.location.href='chat?uid=${uid}&name=${u.username}'"><i class="fas fa-envelope"></i></button>
+                         <button class="btn-following" onclick="toggleFollow('${uid}', true)">Following</button>` : 
+                        `<button class="btn-follow" onclick="toggleFollow('${uid}', false)">Follow</button>`
+                    }
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        window.toggleFollow = async (targetUid, isCurrentlyFollowing) => {
+            const myUid = auth.currentUser.uid;
+            if (isCurrentlyFollowing) {
+                await remove(ref(db, `following/${myUid}/${targetUid}`));
+                await remove(ref(db, `followers/${targetUid}/${myUid}`));
+            } else {
+                await set(ref(db, `following/${myUid}/${targetUid}`), true);
+                await set(ref(db, `followers/${targetUid}/${myUid}`), true);
+            }
+        };
+
+        // Search Filter Logic
+        document.getElementById('searchInput').oninput = (e) => {
+            const term = e.target.value.toLowerCase();
+            const list = document.getElementById('list');
+            list.innerHTML = "";
+            allUsers.filter(u => u.username.toLowerCase().includes(term))
+                    .forEach(u => renderUserCard(u.uid, u, auth.currentUser.uid));
+        };
     </script>
 </body>
 </html>
