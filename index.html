@@ -9,53 +9,48 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* FULL DETAILING CSS */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background-color: #000; color: #fff; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100svh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
         #app-frame { width: 100%; height: 100%; max-width: 480px; background: #000; position: relative; overflow: hidden; }
         
-        /* HEADER GOLD DETAILING */
         header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: env(safe-area-inset-top) 15px 25px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
         .tab-btn { font-weight: 700; font-size: 17px; cursor: pointer; transition: 0.3s; color: rgba(255,255,255,0.6); }
         .tab-btn.active { color: #FFD700; border-bottom: 3px solid #FFD700; padding-bottom: 4px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
 
-        /* FEED & VIDEO */
         .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .feed-container::-webkit-scrollbar { display: none; }
-        .video-card { width: 100%; height: 100svh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
+        .video-card { width: 100%; height: 100svh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; background: #000; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        /* SIDEBAR PRO */
-        .sidebar { position: absolute; right: 12px; bottom: 130px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 40; }
-        .profile-container { position: relative; }
+        .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.1); border-top: 4px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; display: none; z-index: 50; }
+        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        .sidebar { position: absolute; right: 12px; bottom: 130px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 40; }
         .sidebar-pic { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #FFD700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-        .follow-badge { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: #FF0050; color: #fff; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid #fff; }
-        
         .action-btn { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .action-btn i { font-size: 32px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
         .action-btn span { font-size: 12px; font-weight: 600; margin-top: 4px; }
         .liked { color: #FF0050 !important; }
 
-        /* INFO & TICKER */
         .video-info { position: absolute; bottom: 100px; left: 15px; width: 75%; z-index: 30; pointer-events: none; }
         .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
         .caption { font-size: 14px; color: #f1f1f1; margin-bottom: 10px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-        .music-ticker { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; }
+        .music-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; overflow: hidden; white-space: nowrap; }
 
-        /* PROGRESS & NAV */
         .prog-container { position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.1); z-index: 100; }
         .prog-bar { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 10px #FFD700; }
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom)); background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
 
-        /* SHARE SHEET & COMMENTS (NEW DETAILING) */
-        .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-top: 2px solid #FFD700; }
+        /* SHARE & COMMENT PANELS */
+        .share-sheet { position: absolute; bottom: -100%; left: 0; width: 100%; background: #111; z-index: 2000; border-radius: 20px 20px 0 0; padding: 20px; transition: 0.4s; border-top: 2px solid #FFD700; }
         .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
         .share-icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: auto; font-size: 22px; }
 
         .comment-bar { position: absolute; bottom: 65px; left: 0; width: 100%; background: #111; padding: 12px; display: none; z-index: 2005; border-top: 1px solid #333; }
         .comment-input { flex: 1; padding: 10px 15px; border-radius: 25px; border: none; background: #222; color: #fff; }
 
-        /* HEART POP */
-        .dt-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 100px; color: #fff; z-index: 200; pointer-events: none; filter: drop-shadow(0 0 20px #FF0050); }
+        .dt-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 100px; color: #fff; z-index: 200; pointer-events: none; }
         .dt-heart.active { animation: heartPop 0.8s forwards; }
         @keyframes heartPop { 0% { scale: 0; opacity: 1; } 50% { scale: 1.3; opacity: 1; } 100% { scale: 1.6; opacity: 0; } }
     </style>
@@ -63,12 +58,12 @@
 <body>
     <div id="app-frame">
         <header>
-            <button onclick="window.location.href='download.html'" style="background:#FFD700; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">GET APP</button>
+            <button onclick="window.location.href='download.html'" style="background:#FFD700; border:none; padding:6px 15px; border-radius:6px; font-weight:bold;">GET APP</button>
             <div style="display:flex; gap:20px;">
                 <span class="tab-btn active">For You</span>
                 <span class="tab-btn" onclick="window.location.href='friends'">Following</span>
             </div>
-            <i class="fas fa-search" style="font-size:22px; color:#fff;" onclick="window.location.href='search'"></i>
+            <i class="fas fa-search" style="font-size:22px; cursor:pointer;" onclick="window.location.href='search'"></i>
         </header>
 
         <div class="feed-container" id="feed"></div>
@@ -77,9 +72,9 @@
 
         <div class="share-sheet" id="ss">
             <div class="share-grid">
-                <div onclick="window.open('whatsapp://send?text='+curV)"><div class="share-icon-box" style="background:#25D366;"><i class="fab fa-whatsapp"></i></div><span style="font-size:12px;">WhatsApp</span></div>
-                <div onclick="copyLink()"><div class="share-icon-box" style="background:#333;"><i class="fas fa-link"></i></div><span style="font-size:12px;">Copy Link</span></div>
-                <div onclick="downloadVideo()"><div class="share-icon-box" style="background:#FFD700; color:#000;"><i class="fas fa-download"></i></div><span style="font-size:12px;">Download</span></div>
+                <div onclick="window.open('whatsapp://send?text='+curV)"><div class="share-icon-box" style="background:#25D366;"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span></div>
+                <div onclick="copyLink()"><div class="share-icon-box" style="background:#333;"><i class="fas fa-link"></i></div><span>Link</span></div>
+                <div onclick="window.open(curV, '_blank')"><div class="share-icon-box" style="background:#FFD700; color:#000;"><i class="fas fa-download"></i></div><span>Download</span></div>
             </div>
             <button onclick="closeSS()" style="width:100%; margin-top:15px; background:#222; color:#fff; border:none; padding:12px; border-radius:10px;">Cancel</button>
         </div>
@@ -93,7 +88,7 @@
             <i class="fas fa-home" style="color:#FFD700; font-size:24px;"></i>
             <i class="fas fa-user-friends" style="color:#888; font-size:24px;" onclick="window.location.href='friends'"></i>
             <div style="width:45px; height:30px; background:linear-gradient(to right, #00f2ea, #ff0050); border-radius:10px; display:flex; justify-content:center; align-items:center;" onclick="window.location.href='upload'">
-                <div style="background:#fff; width:36px; height:100%; border-radius:8px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
+                <div style="background:#fff; width:36px; height:100%; border-radius:8px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000;"></i></div>
             </div>
             <i class="fas fa-comment-alt" style="color:#888; font-size:24px;" onclick="window.location.href='friends'"></i>
             <i class="fas fa-user" style="color:#888; font-size:24px;" onclick="window.location.href='profile'"></i>
@@ -113,6 +108,26 @@
 
         onAuthStateChanged(auth, user => { if(user) { currentUser = user; loadVideos(); } else { window.location.href='login'; } });
 
+        async function fetchSoundName(item) {
+            const soundSpan = document.getElementById(`sound-${item.key}`);
+            if(!item.remixUrl) {
+                soundSpan.innerText = "Original Sound - " + (item.uploader || 'user');
+                return;
+            }
+            onValue(ref(db, 'gameplay_clips'), (snap) => {
+                if(snap.exists()){
+                    let found = false;
+                    snap.forEach(child => {
+                        if(child.val().videoUrl === item.remixUrl) {
+                            soundSpan.innerText = (child.val().caption || "Remix") + " - " + (child.val().uploader || "user");
+                            found = true;
+                        }
+                    });
+                    if(!found) soundSpan.innerText = "Verbotube Remix Sound";
+                }
+            }, { onlyOnce: true });
+        }
+
         function loadVideos() {
             const feed = document.getElementById('feed');
             onValue(ref(db, 'gameplay_clips'), (snap) => {
@@ -126,26 +141,24 @@
                     const isRemix = (item.remixUrl && item.remixUrl !== "");
                     
                     card.innerHTML = `
+                        <div class="loading-spinner" id="ldr-${item.key}"></div>
                         <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${isRemix ? 'muted' : ''}></video>
                         ${isRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         <div class="dt-heart" id="pop-${item.key}"><i class="fas fa-heart"></i></div>
-                        
                         <div class="video-info">
                             <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader || 'user'}</div>
                             <div class="caption">${item.caption || ''}</div>
-                            <div class="music-ticker"><i class="fas fa-music"></i> <marquee scrollamount="4">Original Sound - ${item.uploader || 'user'}</marquee></div>
+                            <div class="music-info"><i class="fas fa-music"></i> <marquee scrollamount="4"><span id="sound-${item.key}">Loading sound...</span></marquee></div>
                         </div>
-
                         <div class="sidebar">
-                            <div class="profile-container"><img src="icon.png" class="sidebar-pic" id="upic-${item.key}"><div class="follow-badge"><i class="fas fa-plus"></i></div></div>
+                            <img src="icon.png" class="sidebar-pic" id="upic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
                             <div class="action-btn" onclick="handleLike('${item.key}')"><i class="fas fa-heart" id="hrt-${item.key}"></i><span id="lcnt-${item.key}">0</span></div>
                             <div class="action-btn" onclick="openComments('${item.key}')"><i class="fas fa-comment-dots"></i><span id="ccnt-${item.key}">0</span></div>
                             <div class="action-btn" onclick="openSS('${item.videoUrl}')"><i class="fas fa-share"></i><span>Share</span></div>
                             <div class="action-btn" onclick="window.location.href='upload?remix=${encodeURIComponent(item.videoUrl)}'"><i class="fas fa-compact-disc"></i><span>Remix</span></div>
-                        </div>
-                    `;
+                        </div>`;
 
-                    const v = card.querySelector('video'), a = card.querySelector('audio');
+                    const v = card.querySelector('video'), a = card.querySelector('audio'), ldr = card.querySelector('.loading-spinner');
                     let lastT = 0;
                     card.onclick = (e) => {
                         if(e.target.closest('.sidebar')) return;
@@ -160,10 +173,13 @@
                         }
                         lastT = now;
                     };
-
+                    v.onwaiting = () => ldr.style.display = "block";
+                    v.onplaying = () => { ldr.style.display = "none"; if(a){ a.currentTime=v.currentTime; a.play(); } };
                     v.ontimeupdate = () => { if(card.getAttribute('active')==='true') document.getElementById('prog-master').style.width = (v.currentTime/v.duration)*100+"%"; };
+                    
                     feed.appendChild(card);
                     fetchStats(item);
+                    fetchSoundName(item);
                 });
                 setupObserver();
             });
@@ -174,6 +190,7 @@
             onValue(ref(db, `gameplay_likes/${item.key}`), s => { 
                 document.getElementById(`lcnt-${item.key}`).innerText = s.size || 0;
                 if(s.hasChild(currentUser.uid)) document.getElementById(`hrt-${item.key}`).classList.add('liked');
+                else document.getElementById(`hrt-${item.key}`).classList.remove('liked');
             });
             onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => { document.getElementById(`ccnt-${item.key}`).innerText = s.size || 0; });
         }
@@ -186,9 +203,8 @@
         window.openSS = (u) => { window.curV = u; document.getElementById('ss').style.bottom = "0"; };
         window.closeSS = () => document.getElementById('ss').style.bottom = "-100%";
         window.copyLink = () => { navigator.clipboard.writeText(window.curV); alert("Link Copied!"); closeSS(); };
-        window.downloadVideo = () => window.open(window.curV, '_blank');
-        
         window.openComments = (k) => { activeK = k; document.getElementById('commentBar').style.display = 'flex'; };
+        
         document.getElementById('sendC').onclick = async () => {
             const i = document.getElementById('cIn'); if(!i.value.trim()) return;
             const uSnap = await get(ref(db, 'users/'+currentUser.uid));
