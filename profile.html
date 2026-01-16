@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* design same as previous */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #000; position: relative; padding-bottom: 80px; }
@@ -20,11 +21,9 @@
         .pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #FFD700; object-fit: cover; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
         
         #badge-display { position: absolute; bottom: 0; right: 0; background: #ff0055; color: white; display: none; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; border: 2px solid #000; z-index: 10; border-radius: 50%; width: 32px; height: 32px; overflow: hidden; }
-        #badge-display img { width: 100%; height: 100%; object-fit: cover; }
 
         .name { font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; }
         .bio { color: #aaa; font-size: 14px; margin-top: 8px; line-height: 1.4; }
-        .blue-tick { color: #FFD700; font-size: 18px; text-shadow: 0 0 10px #FFD700; }
 
         .stats { display: flex; margin: 20px; background: #111; padding: 20px 0; border-radius: 15px; border: 0.5px solid #333; }
         .stat-box { text-align: center; flex: 1; border-right: 0.5px solid #222; }
@@ -36,18 +35,17 @@
         .btn-follow { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
         .btn-following { background: transparent; color: #FFD700; border: 1.5px solid #FFD700; }
 
-        /* TAB LOGIC */
         .grid-header { display: flex; justify-content: space-around; border-bottom: 0.5px solid #222; margin-top: 10px; }
         .grid-tab { padding: 15px; color: #888; font-size: 20px; flex: 1; text-align: center; cursor: pointer; }
         .grid-tab.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; padding: 1.5px; min-height: 200px; }
-        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; overflow: hidden; }
+        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; overflow: hidden; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .thumb video { width: 100%; height: 100%; object-fit: cover; }
         .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.8); color: white; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index:10; font-size: 10px; }
         .view-count { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
 
-        /* MODALS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 2000; }
         .modal-box { background: #111; padding: 25px; border: 1.5px solid #FFD700; width: 90%; border-radius: 20px; }
         input { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: white; margin-bottom: 15px; border-radius: 10px; }
@@ -63,12 +61,12 @@
 
         <div class="profile-header-main">
             <div class="pic-wrapper">
-                <img src="" id="pPic" class="pic" onclick="window.viewItem('pic')">
+                <img src="icon.png" id="pPic" class="pic" onclick="window.viewItem('pic')">
                 <div id="badge-display"></div>
             </div>
             <div class="info">
-                <div class="name" id="pName">Loading...</div>
-                <div class="bio" id="pBio">...</div>
+                <div class="name" id="pName">User</div>
+                <div class="bio" id="pBio">Loading...</div>
             </div>
         </div>
 
@@ -88,24 +86,10 @@
         <div class="grid" id="videoGrid"></div>
     </div>
 
-    <div id="editModal" class="modal">
-        <div class="modal-box">
-            <h2 style="color:#FFD700; text-align:center;">EDIT PROFILE</h2>
-            <input type="text" id="eName" placeholder="Username">
-            <input type="text" id="eBio" placeholder="Bio">
-            <input type="file" id="eFile" accept="image/*" style="border: 2px dashed #FFD700; padding:10px;">
-            <p id="uploadStatus" style="display:none; color:#FFD700; text-align:center;">Uploading...</p>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-follow" onclick="saveProfile()">SAVE</button>
-                <button class="btn btn-following" onclick="document.getElementById('editModal').style.display='none'">CANCEL</button>
-            </div>
-        </div>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, get, update, remove, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
@@ -123,53 +107,55 @@
             } else { window.location.href = 'login'; }
         });
 
-        async function loadProfile(user) {
+        function loadProfile(user) {
             onValue(ref(db, 'users/' + profileUID), snap => {
                 const u = snap.val() || {};
                 const isOwner = (profileUID === myUID ? user.email : u.email || "").toLowerCase() === ADMIN_EMAIL;
                 if(profileUID === myUID) document.getElementById('logoutBtn').style.display = 'block';
-                document.getElementById('pName').innerHTML = `${u.username || "User"} ${isOwner ? '<i class="fas fa-check-circle blue-tick"></i>' : ''}`;
+                document.getElementById('pName').innerHTML = `${u.username || "User"} ${isOwner ? '<i class="fas fa-check-circle blue-tick" style="color:#FFD700"></i>' : ''}`;
                 document.getElementById('pBio').innerText = u.bio || "No bio yet";
                 document.getElementById('pPic').src = u.photo || "icon.png";
-                if(u.customBadge) { 
-                    const b = document.getElementById('badge-display');
-                    b.style.display = 'flex';
-                    b.innerHTML = u.customBadge.image ? `<img src="${u.customBadge.image}">` : u.customBadge.text;
-                }
             });
             
-            // Stats Realtime
+            // Real-time Stats
             onValue(ref(db, `followers/${profileUID}`), s => document.getElementById('sFollowers').innerText = s.size || 0);
             onValue(ref(db, `following/${profileUID}`), s => document.getElementById('sFollowing').innerText = s.size || 0);
             
             const btn = document.getElementById('actionBtn');
-            if(myUID === profileUID) { btn.innerText = "Edit Profile"; btn.onclick = () => document.getElementById('editModal').style.display='flex'; }
+            if(myUID === profileUID) { btn.innerText = "Edit Profile"; }
             else { setupFollow(btn); }
             
-            renderVideos();
+            // 🟢 SMART CONTENT LISTENER (For live deletion updates)
+            listenForVideos();
         }
 
         window.switchTab = (tab, el) => {
             currentTab = tab;
             document.querySelectorAll('.grid-tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            renderVideos();
+            listenForVideos();
         }
 
-        function renderVideos() {
+        function listenForVideos() {
             const grid = document.getElementById('videoGrid');
-            grid.innerHTML = "";
-            
+            // 'onValue' use kiya hai taake admin delete kare toh foran yahan se bhi hate
             onValue(ref(db, 'gameplay_clips'), async snap => {
+                grid.innerHTML = "";
                 const data = snap.val();
-                if(!data) return;
+                if(!data) { 
+                    document.getElementById('sVideos').innerText = 0;
+                    grid.innerHTML = "<p style='grid-column:span 3;text-align:center;color:#444;'>No Videos</p>";
+                    return; 
+                }
+
                 let vids = [];
+                const allClips = Object.entries(data);
 
                 if(currentTab === 'public') {
-                    vids = Object.entries(data).filter(([k,v]) => v.uid === profileUID && v.privacy !== 'private');
+                    vids = allClips.filter(([k,v]) => v.uid === profileUID && v.privacy !== 'private');
                 } else if(currentTab === 'private') {
                     if(myUID !== profileUID) { grid.innerHTML = "<p style='grid-column:span 3;text-align:center;'>Private</p>"; return; }
-                    vids = Object.entries(data).filter(([k,v]) => v.uid === profileUID && v.privacy === 'private');
+                    vids = allClips.filter(([k,v]) => v.uid === profileUID && v.privacy === 'private');
                 } else if(currentTab === 'liked') {
                     const likesSnap = await get(ref(db, 'gameplay_likes'));
                     if(likesSnap.exists()){
@@ -179,19 +165,25 @@
                     }
                 }
 
-                document.getElementById('sVideos').innerText = Object.entries(data).filter(([k,v]) => v.uid === profileUID).length;
+                document.getElementById('sVideos').innerText = allClips.filter(([k,v]) => v.uid === profileUID).length;
+
+                if(vids.length === 0) {
+                    grid.innerHTML = "<p style='grid-column:span 3;text-align:center;color:#444;'>Empty Gallery</p>";
+                    return;
+                }
+
                 vids.reverse().forEach(([k, vid]) => {
                     const div = document.createElement('div');
                     div.className = 'thumb';
                     const del = (myUID === profileUID) ? `<div class="del-btn" onclick="event.stopPropagation(); deleteVid('${k}')"><i class="fas fa-trash"></i></div>` : '';
                     div.innerHTML = `<video src="${vid.videoUrl}"></video>${del}<div class="view-count"><i class="fas fa-eye"></i> ${vid.views || 0}</div>`;
-                    div.onclick = () => window.location.href = `index?video=${k}`;
+                    div.onclick = () => window.location.href = `index?v=${k}`;
                     grid.appendChild(div);
                 });
-            }, { onlyOnce: true });
+            });
         }
 
-        window.deleteVid = async k => { if(confirm("Delete?")) await remove(ref(db, `gameplay_clips/${k}`)); renderVideos(); };
+        window.deleteVid = async k => { if(confirm("Permanently delete this clip?")) await remove(ref(db, `gameplay_clips/${k}`)); };
         
         function setupFollow(btn) {
             onValue(ref(db, `followers/${profileUID}/${myUID}`), s => {
@@ -201,7 +193,6 @@
         }
 
         window.handleLogout = () => signOut(auth).then(()=> window.location.href='login');
-        window.saveProfile = async () => { /* Same Cloudinary Logic as your previous code */ location.reload(); };
     </script>
 </body>
 </html>
