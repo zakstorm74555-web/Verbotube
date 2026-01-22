@@ -6,98 +6,67 @@
     <title>Studio - Verbotube</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Montserrat:wght@900&family=Pacifico&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@900&family=Permanent+Marker&display=swap" rel="stylesheet">
 
     <style>
-        /* 🔥 FIX: 100dvh use kiya taake address bar button ko na chupaye */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        body { background: #000; color: white; margin: 0; height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+        body { background: #000; color: white; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
 
         /* --- SCREEN 1: UPLOAD --- */
         #uploadScreen { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .start-btn { 
-            width: 140px; height: 140px; border-radius: 30px; background: #111; border: 1px solid #333;
+            width: 140px; height: 140px; border-radius: 40px; background: #111; border: 1px solid #333;
             display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.1);
         }
-        .start-btn:active { transform: scale(0.95); border-color: #FFD700; }
         .start-btn i { font-size: 50px; margin-bottom: 15px; color: #FFD700; }
-        .start-btn span { font-weight: bold; color: #fff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .start-btn span { font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* --- SCREEN 2: EDITOR --- */
         #editorScreen { position: relative; width: 100%; height: 100%; background: black; }
-
-        .preview-area { 
-            width: 100%; height: 100%; 
-            display: flex; justify-content: center; align-items: center; 
-            overflow: hidden; position: relative;
-        }
+        .preview-area { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
         video { width: 100%; height: 100%; object-fit: contain; }
         
         #textOverlay { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 30px; font-weight: bold; color: white; text-shadow: 3px 3px 6px black; cursor: grab; 
-            display: none; z-index: 10; padding: 10px; border: 2px dashed rgba(255,215,0,0.5); white-space: nowrap;
+            font-size: 30px; font-weight: bold; color: white; text-shadow: 2px 2px 10px black; cursor: grab; 
+            display: none; z-index: 10; padding: 10px; border: 2px dashed rgba(255,215,0,0.3);
         }
 
-        /* Sidebar Tools (Right Side) */
-        .sidebar { 
-            position: absolute; right: 15px; top: 40px; 
-            display: flex; flex-direction: column; gap: 30px; z-index: 20; 
-        }
-        .tool { display: flex; flex-direction: column; align-items: center; gap: 5px; text-shadow: 0 2px 5px black; cursor: pointer; }
-        .tool i { font-size: 28px; color: white; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-        .tool span { font-size: 10px; font-weight: bold; color: white; text-shadow: 0 1px 3px black; }
+        /* Sidebar Tools */
+        .sidebar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 25px; z-index: 20; }
+        .tool { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+        .tool i { font-size: 26px; filter: drop-shadow(0 2px 4px black); }
+        .tool span { font-size: 10px; font-weight: bold; text-shadow: 0 1px 3px black; }
 
-        /* Remix Badge */
-        .remix-badge {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
-            color: white; padding: 8px 15px; border-radius: 30px; font-size: 12px; font-weight: bold;
-            display: none; z-index: 20; align-items: center; gap: 8px; backdrop-filter: blur(5px);
-        }
-
-        /* 🔥 FLOATING POST BUTTON (Fixed at Bottom Right) */
+        /* Floating Next Button */
         .next-btn { 
-            position: absolute; bottom: 40px; right: 20px; z-index: 100;
-            background: #FFD700; color: black; 
-            padding: 12px 30px; border-radius: 50px; font-weight: 900; border: none; font-size: 16px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5); text-transform: uppercase; letter-spacing: 1px;
-            display: flex; align-items: center; gap: 10px;
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: absolute; bottom: 30px; right: 20px; z-index: 100;
+            background: #FFD700; color: black; padding: 14px 35px; border-radius: 50px; 
+            font-weight: 900; border: none; font-size: 16px; text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3); display: flex; align-items: center; gap: 10px;
         }
-        .next-btn:active { transform: scale(0.95); }
-        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
         /* Popups */
-        .popup { position: fixed; bottom: 0; left: 0; width: 100%; background: #151515; border-radius: 25px 25px 0 0; padding: 25px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; max-height: 70vh; overflow-y: auto; border-top: 2px solid #333; }
+        .popup { position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-radius: 30px 30px 0 0; padding: 25px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; border-top: 1px solid #333; }
         .popup.show { transform: translateY(0); }
-        .popup-header { display: flex; justify-content: space-between; margin-bottom: 25px; font-weight: bold; color: #fff; font-size: 16px; letter-spacing: 1px; }
+        .popup-header { display: flex; justify-content: space-between; margin-bottom: 25px; font-weight: 800; text-transform: uppercase; font-size: 14px; color: #666; }
 
-        /* Sound List */
-        .sound-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
-        .sound-info { display: flex; flex-direction: column; gap: 4px; }
-        .sound-title { color: white; font-weight: bold; font-size: 14px; }
-        .sound-author { color: #666; font-size: 11px; }
+        /* Custom Inputs */
+        .details-input { width: 100%; padding: 18px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 18px; font-size: 14px; margin-bottom: 20px; outline: none; }
+        .vis-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .vis-btn { flex: 1; padding: 15px; background: #1a1a1a; border: 1px solid #333; border-radius: 15px; text-align: center; font-size: 12px; font-weight: bold; color: #555; }
+        .vis-btn.active { border-color: #FFD700; color: #FFD700; background: rgba(255, 215, 0, 0.05); }
 
-        /* Fonts & Colors UI */
-        .font-row { display: flex; gap: 12px; overflow-x: auto; padding: 5px 0; }
-        .font-opt { padding: 8px 16px; background: #222; border-radius: 8px; white-space: nowrap; border: 1px solid #333; color: #888; cursor: pointer; font-size: 13px; }
-        .font-opt.active { border-color: #FFD700; color: #FFD700; background: #000; }
-        
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        #loader { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 500; display: none; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="uploadScreen">
-        <h1 style="color:#FFD700; font-family:'Anton'; letter-spacing:2px; font-size:40px; margin-bottom:10px;">STUDIO</h1>
-        <p style="color:#666; font-size:12px; margin-bottom:40px;">Create. Remix. Viral.</p>
-        
+        <h1 style="color:#FFD700; font-family:'Anton'; font-size:45px; letter-spacing:3px;">STUDIO</h1>
         <div class="start-btn" onclick="document.getElementById('fileInput').click()">
-            <i class="fas fa-plus"></i>
-            <span>Upload Video</span>
+            <i class="fas fa-video"></i>
+            <span>Select Video</span>
         </div>
         <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="handleFile(this.files[0])">
     </div>
@@ -106,231 +75,119 @@
         <div class="preview-area" id="previewArea">
             <video id="mainVideo" playsinline loop onclick="togglePlay()"></video>
             <audio id="bgAudio" loop></audio>
-            
-            <div id="textOverlay">Tap to Edit</div>
-
-            <div class="remix-badge" id="musicBadge" onclick="openPopup('sound')">
-                <i class="fas fa-compact-disc"></i> <span id="soundName">Original Sound</span>
-            </div>
+            <div id="textOverlay">Double Tap to Edit</div>
 
             <div class="sidebar">
-                <div class="tool" onclick="openPopup('text')"><i class="fas fa-font"></i><span>Text</span></div>
-                <div class="tool" onclick="openPopup('filter')"><i class="fas fa-magic"></i><span>Filter</span></div>
-                <div class="tool" onclick="openPopup('sound')"><i class="fas fa-music"></i><span>Sounds</span></div>
+                <div class="tool" onclick="openPopup('text')"><i class="fas fa-text-height"></i><span>Text</span></div>
+                <div class="tool" onclick="openPopup('filter')"><i class="fas fa-fill-drip"></i><span>Filter</span></div>
+                <div class="tool" onclick="openPopup('sound')"><i class="fas fa-music"></i><span>Music</span></div>
             </div>
 
-            <button class="next-btn" onclick="uploadVideo()">
-                Post <i class="fas fa-paper-plane"></i>
+            <button class="next-btn" onclick="openPopup('details')">
+                Next <i class="fas fa-arrow-right"></i>
             </button>
         </div>
     </div>
 
+    <div id="p-details" class="popup">
+        <div class="popup-header">
+            <span onclick="closePopup()" style="color:#ff4444">Back</span>
+            <span>Finalize Post</span>
+            <span onclick="startUpload()" style="color:#FFD700">Publish</span>
+        </div>
+        <textarea id="captionInput" class="details-input" rows="3" placeholder="Write a caption... #viral #remix"></textarea>
+        
+        <p style="font-size: 10px; color: #555; margin-bottom: 10px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Visibility</p>
+        <div class="vis-row">
+            <div id="v-public" class="vis-btn active" onclick="setVis('public')"><i class="fas fa-globe mr-2"></i> Public</div>
+            <div id="v-friends" class="vis-btn" onclick="setVis('friends')"><i class="fas fa-user-friends mr-2"></i> Friends</div>
+            <div id="v-private" class="vis-btn" onclick="setVis('private')"><i class="fas fa-lock mr-2"></i> Private</div>
+        </div>
+    </div>
+
     <div id="p-text" class="popup">
-        <div class="popup-header"><span onclick="closePopup()">Cancel</span>Text<span style="color:#FFD700" onclick="applyText()">Done</span></div>
-        <input type="text" id="textInput" placeholder="Type here..." style="width:100%; padding:15px; background:#222; border:none; color:white; border-radius:12px; margin-bottom:20px; font-size:16px;">
-        <div class="font-row">
-            <div class="font-opt active" onclick="setFont('Montserrat', this)" style="font-family:Montserrat">Modern</div>
-            <div class="font-opt" onclick="setFont('Anton', this)" style="font-family:Anton">Heavy</div>
-            <div class="font-opt" onclick="setFont('Permanent Marker', this)" style="font-family:Permanent Marker">Marker</div>
-            <div class="font-opt" onclick="setFont('Pacifico', this)" style="font-family:Pacifico">Cursive</div>
-            <div class="font-opt" onclick="setFont('Bangers', this)" style="font-family:Bangers">Comic</div>
+        <div class="popup-header"><span></span>Edit Text<span style="color:#FFD700" onclick="applyText()">Done</span></div>
+        <input type="text" id="textInput" class="details-input" placeholder="Enter overlay text...">
         </div>
-        <div style="margin-top:20px; display:flex; align-items:center; gap:15px;">
-            <input type="color" id="colorPicker" value="#ffffff" oninput="setTextColor(this.value)" style="width:50px; height:50px; border:none; border-radius:50%; background:none; cursor:pointer;">
-            <button onclick="toggleTextBg()" style="margin-left:auto; padding:8px 15px; background:#333; color:white; border:none; border-radius:8px;">Bg</button>
-        </div>
-    </div>
-
-    <div id="p-sound" class="popup" style="height:70vh;">
-        <div class="popup-header"><span onclick="closePopup()">Close</span>Sound Library<span></span></div>
-        <div id="soundList" style="display:flex; flex-direction:column;">
-            <p style="text-align:center; color:#555; margin-top:20px;">Loading sounds...</p>
-        </div>
-    </div>
-
-    <div id="p-filter" class="popup">
-        <div class="popup-header"><span onclick="closePopup()">Close</span>Filters<span></span></div>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
-            <div onclick="applyFilter('none')" style="padding:15px; background:#222; text-align:center; border-radius:10px;">Normal</div>
-            <div onclick="applyFilter('grayscale(1)')" style="padding:15px; background:#222; text-align:center; border-radius:10px;">B&W</div>
-            <div onclick="applyFilter('sepia(0.6)')" style="padding:15px; background:#322; color:#ebc; text-align:center; border-radius:10px;">Retro</div>
-            <div onclick="applyFilter('contrast(1.3) saturate(1.4)')" style="padding:15px; background:#000; text-align:center; border-radius:10px; border:1px solid #444;">Vivid</div>
-            <div onclick="applyFilter('hue-rotate(180deg)')" style="padding:15px; background:#112; text-align:center; border-radius:10px;">Neon</div>
-            <div onclick="applyFilter('invert(1)')" style="padding:15px; background:#fff; color:black; text-align:center; border-radius:10px;">X-Ray</div>
-        </div>
-    </div>
 
     <div id="loader">
-        <i class="fas fa-circle-notch fa-spin" style="font-size:50px; color:#FFD700;"></i>
-        <h3 style="margin-top:20px; color:white; letter-spacing:1px;">POSTING...</h3>
+        <div style="width: 50px; height: 50px; border: 5px solid #222; border-top-color: #FFD700; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <h3 id="loadText" style="margin-top:20px; font-size: 14px; letter-spacing: 2px;">UPLOADING...</h3>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
+        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
         const CLOUD_NAME = "dusj0vpsi";
 
-        let currentUser = null;
         let selectedFile = null;
-        let textData = { text: "", font: "Montserrat", color: "#ffffff", hasBg: false, x: 50, y: 50 };
-        let currentFilter = "";
-        let selectedSoundUrl = "";
-        let selectedSoundName = "";
-
-        onAuthStateChanged(auth, user => {
-            if(user) { currentUser = user; loadSounds(); }
-            else window.location.href = 'login';
-        });
+        let videoVisibility = "public";
+        let textData = { text: "", font: "Montserrat", color: "#ffffff", x: 50, y: 50 };
 
         window.handleFile = (file) => {
             if(!file) return;
             selectedFile = file;
-            startEditor(URL.createObjectURL(file));
-        };
-
-        function startEditor(url) {
             document.getElementById('uploadScreen').style.display = 'none';
             document.getElementById('editorScreen').style.display = 'block';
             const vid = document.getElementById('mainVideo');
-            vid.src = url;
+            vid.src = URL.createObjectURL(file);
             vid.play();
-            initDraggableText();
-        }
-
-        const vid = document.getElementById('mainVideo');
-        const aud = document.getElementById('bgAudio');
-
-        vid.addEventListener('ended', () => { vid.play(); if(selectedSoundUrl) { aud.currentTime = 0; aud.play(); } });
-        window.togglePlay = () => { if(vid.paused) { vid.play(); if(selectedSoundUrl) aud.play(); } else { vid.pause(); if(selectedSoundUrl) aud.pause(); } };
-
-        function loadSounds() {
-            const params = new URLSearchParams(window.location.search);
-            const remixUrl = params.get('sound');
-            if(remixUrl) selectSound(decodeURIComponent(remixUrl), "Remix Sound");
-
-            onValue(ref(db, 'gameplay_clips'), snap => {
-                const list = document.getElementById('soundList');
-                list.innerHTML = "";
-                const orig = document.createElement('div');
-                orig.className = 'sound-item';
-                orig.innerHTML = `<div class="sound-info"><span class="sound-title" style="color:#FFD700">Original Sound</span></div>`;
-                orig.onclick = () => removeSound();
-                list.appendChild(orig);
-
-                snap.forEach(c => {
-                    const v = c.val();
-                    const url = v.remixUrl || v.videoUrl;
-                    const name = v.caption ? v.caption.substring(0,25) : 'Original Sound';
-                    const d = document.createElement('div');
-                    d.className = 'sound-item';
-                    d.innerHTML = `<div class="sound-info"><span class="sound-title">${name}</span></div><i class="fas fa-play" style="color:#444;"></i>`;
-                    d.onclick = () => selectSound(url, name);
-                    list.appendChild(d);
-                });
-            });
-        }
-
-        function selectSound(url, name) {
-            selectedSoundUrl = url; selectedSoundName = name;
-            aud.src = url; aud.load(); aud.play();
-            vid.muted = true; vid.currentTime = 0; vid.play();
-            document.getElementById('soundName').innerText = name;
-            document.getElementById('musicBadge').style.display = 'flex';
-            closePopup();
-        }
-
-        function removeSound() {
-            selectedSoundUrl = ""; aud.pause(); vid.muted = false;
-            document.getElementById('musicBadge').style.display = 'none';
-            closePopup();
-        }
-
-        window.applyText = () => {
-            const txt = document.getElementById('textInput').value;
-            const el = document.getElementById('textOverlay');
-            if(txt) { textData.text = txt; el.innerText = txt; el.style.display = 'block'; }
-            else { textData.text = ""; el.style.display = 'none'; }
-            closePopup();
         };
-        window.setFont = (f, el) => { textData.font = f; document.getElementById('textOverlay').style.fontFamily = f; document.querySelectorAll('.font-opt').forEach(b => b.classList.remove('active')); el.classList.add('active'); };
-        window.setTextColor = (c) => { textData.color = c; document.getElementById('textOverlay').style.color = c; };
-        window.toggleTextBg = () => { textData.hasBg = !textData.hasBg; document.getElementById('textOverlay').style.background = textData.hasBg ? "rgba(0,0,0,0.8)" : "transparent"; };
 
-        function initDraggableText() {
-            const el = document.getElementById('textOverlay');
-            el.addEventListener('touchmove', (e) => {
-                const t = e.touches[0];
-                const rect = document.getElementById('previewArea').getBoundingClientRect();
-                let x = ((t.clientX - rect.left) / rect.width) * 100;
-                let y = ((t.clientY - rect.top) / rect.height) * 100;
-                textData.x = Math.max(0, Math.min(100, x));
-                textData.y = Math.max(0, Math.min(100, y));
-                el.style.left = textData.x + '%'; el.style.top = textData.y + '%';
-            });
-        }
+        window.setVis = (v) => {
+            videoVisibility = v;
+            document.querySelectorAll('.vis-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('v-'+v).classList.add('active');
+        };
 
-        window.applyFilter = (c) => { currentFilter = c; vid.style.filter = c; closePopup(); };
-
-        window.uploadVideo = async () => {
+        window.startUpload = async () => {
+            const caption = document.getElementById('captionInput').value;
             document.getElementById('loader').style.display = 'flex';
+            
+            // Cloudinary Upload Logic
             const fd = new FormData();
             fd.append("file", selectedFile);
             fd.append("upload_preset", "paravideo");
 
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`);
-            
-            xhr.onload = async () => {
-                if(xhr.status === 200) {
-                    const data = JSON.parse(xhr.responseText);
-                    let url = data.secure_url;
-                    let transforms = [];
-
-                    if(currentFilter && currentFilter !== 'none') {
-                        if(currentFilter.includes("grayscale")) transforms.push("e_grayscale");
-                        else if(currentFilter.includes("sepia")) transforms.push("e_sepia:60");
-                        else if(currentFilter.includes("contrast")) transforms.push("e_contrast:40");
-                        else if(currentFilter.includes("hue")) transforms.push("e_hue:90");
-                        else if(currentFilter.includes("invert")) transforms.push("e_negate");
-                    }
-
-                    if(textData.text) {
-                        const x = Math.round(textData.x); const y = Math.round(textData.y);
-                        const txt = encodeURIComponent(textData.text).replace(/%20/g, "%20");
-                        const col = textData.color.replace("#", "");
-                        transforms.push(`l_text:${textData.font}_50_bold:${txt},co_rgb:${col},g_center,y_${y-50},x_${x-50}`);
-                    }
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, { method: "POST", body: fd });
+                const data = await res.json();
+                
+                if(data.secure_url) {
+                    const user = auth.currentUser;
+                    const uSnap = await get(ref(db, 'users/' + user.uid));
                     
-                    if(transforms.length > 0) {
-                        const i = url.indexOf("/upload/") + 8;
-                        url = url.slice(0, i) + transforms.join(",") + "/" + url.slice(i);
-                    }
-
-                    const uSnap = await get(ref(db, 'users/' + currentUser.uid));
+                    // Save to Firebase
                     await push(ref(db, 'gameplay_clips'), {
-                        videoUrl: url,
-                        remixUrl: selectedSoundUrl || "",
-                        caption: textData.text || selectedSoundName || "Verbotube Remix",
-                        uid: currentUser.uid,
-                        uploader: uSnap.exists() ? uSnap.val().username : "User",
+                        videoUrl: data.secure_url,
+                        caption: caption || "Verbotube Short",
+                        visibility: videoVisibility,
+                        uploader: uSnap.exists() ? uSnap.val().username : "Anonymous",
+                        uid: user.uid,
                         timestamp: Date.now(),
-                        isHD: true,
+                        likes: 0,
                         views: 0
                     });
+                    
                     window.location.href = 'profile';
-                } else { alert("Upload Failed"); location.reload(); }
-            };
-            xhr.send(fd);
+                }
+            } catch (err) {
+                alert("Upload Failed!");
+                document.getElementById('loader').style.display = 'none';
+            }
         };
 
         window.openPopup = (id) => document.getElementById('p-'+id).classList.add('show');
         window.closePopup = () => document.querySelectorAll('.popup').forEach(p => p.classList.remove('show'));
+        window.togglePlay = () => { const v = document.getElementById('mainVideo'); v.paused ? v.play() : v.pause(); };
     </script>
+
+    <style> @keyframes spin { to { transform: rotate(360deg); } } </style>
 </body>
 </html>
