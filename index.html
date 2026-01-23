@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Verbotube -  Home</title>
+    <title>Verbotube - Home</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,7 +12,12 @@
         body { background-color: #000; color: #fff; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100svh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
         #app-frame { width: 100%; height: 100%; max-width: 480px; background: #000; position: relative; overflow: hidden; }
         
+        /* --- HEADER WITH ABOUT SHORTCUT --- */
         header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: env(safe-area-inset-top) 15px 25px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .about-btn { width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); display: flex; justify-content: center; align-items: center; color: #FFD700; cursor: pointer; transition: 0.3s; }
+        .about-btn:active { transform: scale(0.9); background: #FFD700; color: #000; }
+        
         .tab-btn { font-weight: 700; font-size: 17px; cursor: pointer; color: rgba(255,255,255,0.6); }
         .tab-btn.active { color: #FFD700; border-bottom: 3px solid #FFD700; padding-bottom: 4px; }
 
@@ -24,7 +29,6 @@
         .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.1); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; display: none; z-index: 50; }
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* SIDEBAR DETAILING [Restored Remix, Disc] */
         .sidebar { position: absolute; right: 12px; bottom: 130px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 40; }
         .sidebar-pic { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #FFD700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
         .action-btn { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
@@ -32,15 +36,12 @@
         .action-btn span { font-size: 12px; font-weight: 600; margin-top: 4px; }
         .liked { color: #FF0050 !important; }
 
-        /* MUSIC DISC ANIMATION */
         .music-disc { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, #333 20%, #111 100%); border: 8px solid rgba(255,255,255,0.1); animation: discSpin 5s linear infinite; background-size: cover; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
         @keyframes discSpin { 100% { transform: rotate(360deg); } }
 
         .video-info { position: absolute; bottom: 100px; left: 15px; width: 75%; z-index: 30; pointer-events: none; }
         .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
         .caption { font-size: 14px; color: #f1f1f1; margin-bottom: 10px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
-        
-        /* MUSIC TICKER [Restored] */
         .music-ticker { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; font-weight: 500; overflow: hidden; width: 80%; }
 
         .prog-container { position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.1); z-index: 100; }
@@ -59,7 +60,12 @@
 <body>
     <div id="app-frame">
         <header>
-            <button onclick="window.location.href='download.html'" style="background:#FFD700; border:none; padding:6px 15px; border-radius:6px; font-weight:bold; cursor:pointer;">GET APP</button>
+            <div class="header-left">
+                <div class="about-btn" onclick="window.location.href='about.html'">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <button onclick="window.location.href='download.html'" style="background:#FFD700; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; font-size: 12px;">GET APP</button>
+            </div>
             <div style="display:flex; gap:20px;"><span class="tab-btn active">For You</span><span class="tab-btn" onclick="window.location.href='friends'">Following</span></div>
             <i class="fas fa-search" style="font-size:22px; color:#fff;" onclick="window.location.href='search'"></i>
         </header>
@@ -68,7 +74,7 @@
         <div class="prog-container"><div class="prog-bar" id="prog-master"></div></div>
 
         <div class="share-sheet" id="ss">
-            <div style="font-size: 16px; font-weight: bold; color: #FFD700; margin-bottom: 15px; text-align: center;">Share with Friends</div>
+            <div style="font-size: 16px; font-weight: bold; color: #FFD700; margin-bottom: 15px; text-align: center;">Share Transmission</div>
             <div id="share-friends-list" style="display:flex; gap:15px; overflow-x:auto; padding-bottom:15px;"></div>
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; text-align:center; padding-top:15px; border-top:1px solid #222;">
                 <div onclick="shareToApp('whatsapp')"><i class="fab fa-whatsapp" style="color:#25D366; font-size:24px;"></i><br><span style="font-size:10px;">WhatsApp</span></div>
@@ -148,7 +154,7 @@
                             <div class="video-info">
                                 <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader}</div>
                                 <div class="caption">${item.caption || ''}</div>
-                                <div class="music-ticker"><i class="fas fa-music"></i> <marquee scrollamount="4">Original Sound - ${item.uploader}</marquee></div>
+                                <div class="music-ticker"><i class="fas fa-music"></i> <marquee scrollamount="4">Original Sound - Paradox Studio</marquee></div>
                             </div>
                             <div class="sidebar">
                                 <img src="icon.png" class="sidebar-pic" id="upic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
