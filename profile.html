@@ -7,32 +7,25 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* DESIGN DETAILING */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        
         .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #000; position: relative; padding-bottom: 80px; }
         
         .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 0.5px solid #222; }
         .page-title { font-weight: 800; font-size: 18px; color: #FFD700; text-transform: uppercase; letter-spacing: 1.5px; }
+        
+        /* Logout hidden by default for safety */
         .logout-btn { background: none; border: none; color: #FF4444; font-size: 22px; cursor: pointer; display: none; }
 
         .profile-header-main { padding: 25px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .pic-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 15px; }
         .pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #FFD700; object-fit: cover; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
         
-        /* 🟢 BADGE DETAILING */
-        #badge-display { 
-            position: absolute; bottom: 0; right: 0; 
-            display: none; align-items: center; justify-content: center; 
-            z-index: 10; border-radius: 50%; border: 2px solid #000; 
-            overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-        .badge-image { width: 32px; height: 32px; object-fit: cover; border: 1.5px solid #FFD700; }
-        .badge-text { padding: 4px 10px; font-size: 10px; font-weight: 900; border-radius: 12px; color: white; white-space: nowrap; }
-
+        /* 🔵 BLUE TICK & BADGE */
         .name { font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; }
-        .bio { color: #aaa; font-size: 14px; margin-top: 8px; line-height: 1.4; }
         .blue-tick { color: #FFD700; font-size: 18px; text-shadow: 0 0 10px #FFD700; }
+        .bio { color: #aaa; font-size: 14px; margin-top: 8px; line-height: 1.4; max-width: 80%; }
 
         .stats { display: flex; margin: 20px; background: #111; padding: 20px 0; border-radius: 15px; border: 0.5px solid #333; }
         .stat-box { text-align: center; flex: 1; border-right: 0.5px solid #222; }
@@ -40,36 +33,136 @@
         .stat-num { font-size: 20px; font-weight: 800; color: #FFD700; display: block; }
         .stat-label { font-size: 11px; color: #777; text-transform: uppercase; }
 
-        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; margin-bottom: 12px; font-size: 15px; text-transform: uppercase; }
+        .btn-container { padding: 0 20px; }
+        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; margin-bottom: 12px; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
         .btn-follow { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
-        .btn-following { background: transparent; color: #FFD700; border: 1.5px solid #FFD700; }
+        .btn-edit { background: transparent; color: #fff; border: 1px solid #333; }
 
         .grid-header { display: flex; justify-content: space-around; border-bottom: 0.5px solid #222; margin-top: 10px; }
         .grid-tab { padding: 15px; color: #888; font-size: 20px; flex: 1; text-align: center; cursor: pointer; }
         .grid-tab.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; padding: 1.5px; min-height: 200px; }
-        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; overflow: hidden; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; padding: 1.5px; }
+        .thumb { aspect-ratio: 9/16; background: #111; position: relative; overflow: hidden; }
         .thumb video { width: 100%; height: 100%; object-fit: cover; }
-        .del-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.8); color: white; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center; border-radius: 50%; z-index:10; font-size: 10px; }
+        
+        /* 🚫 DELETE BUTTON (Only shows on your own profile) */
+        .del-btn { 
+            position: absolute; top: 5px; right: 5px; 
+            background: rgba(255,0,0,0.8); color: white; 
+            width: 24px; height: 24px; border-radius: 50%; 
+            display: none; justify-content: center; align-items: center; 
+            z-index: 10; font-size: 12px; border: none;
+        }
+        
         .view-count { position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; height: 65px; background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-item { color: rgba(255,255,255,0.6); display: flex; flex-direction: column; align-items: center; font-size: 10px; text-decoration: none; }
+        .nav-item.active { color: #fff; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
-   
-<div id="px-root"></div>
+
+<div class="container">
+    <nav class="nav-bar">
+        <div style="width: 22px;"></div> <div class="page-title" id="profile-name">Profile</div>
+        <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    </nav>
+
+    <div class="profile-header-main">
+        <div class="pic-wrapper">
+            <img src="https://via.placeholder.com/100" class="pic" alt="Profile Picture">
+        </div>
+        <div class="name">
+            @paradox_ghost <i class="fas fa-check-circle blue-tick"></i>
+        </div>
+        <div class="bio">Official Developer of Paradox Studio. Building Verbotube for the future. 🔥</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-box">
+            <span class="stat-num">1.2M</span>
+            <span class="stat-label">Followers</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-num">450</span>
+            <span class="stat-label">Following</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-num">10.5M</span>
+            <span class="stat-label">Likes</span>
+        </div>
+    </div>
+
+    <div class="btn-container">
+        <button class="btn btn-follow" id="mainActionBtn">Follow</button>
+    </div>
+
+    <div class="grid-header">
+        <div class="grid-tab active"><i class="fas fa-th"></i></div>
+        <div class="grid-tab"><i class="fas fa-heart"></i></div>
+        <div class="grid-tab"><i class="fas fa-lock"></i></div>
+    </div>
+
+    <div class="grid" id="videoGrid">
+        <div class="thumb">
+            <video src="video1.mp4"></video>
+            <button class="del-btn" onclick="deleteVideo(this)"><i class="fas fa-trash"></i></button>
+            <div class="view-count"><i class="fas fa-play"></i> 125K</div>
+        </div>
+        <div class="thumb">
+            <video src="video2.mp4"></video>
+            <button class="del-btn" onclick="deleteVideo(this)"><i class="fas fa-trash"></i></button>
+            <div class="view-count"><i class="fas fa-play"></i> 89K</div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
+        <a href="discover.html" class="nav-item"><i class="fas fa-search"></i>Discover</a>
+        <a href="upload.html" class="nav-item"><i class="fas fa-plus-square" style="font-size:30px;"></i></a>
+        <a href="chat.html" class="nav-item"><i class="fas fa-envelope"></i>Inbox</a>
+        <a href="profile.html" class="nav-item active"><i class="fas fa-user"></i>Me</a>
+    </nav>
+</div>
+
 <script>
-(async function(){
- try{
-  const r=await fetch('https://elitegamer859650-paradox-ghost-security.hf.space/get-shield?id=px_12913b');
-  const d=await r.json();
-  const p=JSON.parse(atob(d.p));
-  const root=document.getElementById('px-root');
-  const shadow=root.attachShadow({mode:'closed'});
-  shadow.innerHTML=p.html;
-  setInterval(()=>{debugger;},500);
- }catch(e){document.body.innerHTML='Paradox Security: Node Offline';}
-})();
+    // 🛡️ SECURITY LOGIC: Is this MY profile or someone else's?
+    const isMyProfile = true; // Later you can connect this to your login system
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    const actionBtn = document.getElementById('mainActionBtn');
+    const deleteBtns = document.querySelectorAll('.del-btn');
+
+    if (isMyProfile) {
+        logoutBtn.style.display = 'block';
+        actionBtn.innerText = "Edit Profile";
+        actionBtn.className = "btn btn-edit";
+        
+        // Show delete buttons only if it's my profile
+        deleteBtns.forEach(btn => btn.style.display = 'flex');
+    } else {
+        logoutBtn.style.display = 'none';
+        actionBtn.innerText = "Follow";
+        actionBtn.className = "btn btn-follow";
+        
+        // Hide delete buttons for others
+        deleteBtns.forEach(btn => btn.style.display = 'none');
+    }
+
+    function deleteVideo(btn) {
+        if (isMyProfile) {
+            if (confirm("Bhai, kya waqai ye video delete karni hai?")) {
+                btn.parentElement.remove();
+            }
+        } else {
+            alert("Bhai, dosron ki video delete nahi kar sakte! 🚫");
+        }
+    }
 </script>
+
 </body>
 </html>
