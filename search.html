@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -74,20 +74,200 @@
 </head>
 <body>
 
-   
-<div id="px-root"></div>
-<script>
-(async function(){
- try{
-  const r=await fetch('https://elitegamer859650-paradox-ghost-security.hf.space/get-shield?id=px_20137a');
-  const d=await r.json();
-  const p=JSON.parse(atob(d.p));
-  const root=document.getElementById('px-root');
-  const shadow=root.attachShadow({mode:'closed'});
-  shadow.innerHTML=p.html;
-  setInterval(()=>{debugger;},500);
- }catch(e){document.body.innerHTML='Paradox Security: Node Offline';}
-})();
-</script>
+    <div class="header">
+        <a href="index" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-bar" id="search" placeholder="Search Users (e.g. 𝕸𝖔𝖍𝖘𝖎𝖓)..." onkeyup="doSearch()">
+        </div>
+    </div>
+    
+    <div id="results">
+        <p style="color:#555; text-align: center; margin-top: 50px;">Type to search...</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        
+        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", messagingSenderId: "384549024202", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let myUid = null;
+        let myFollowing = new Set(); 
+
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                myUid = user.uid;
+                loadMyFollowing();
+                loadTrending(); 
+            } else {
+                window.location.href = 'login';
+            }
+        });
+
+        function loadMyFollowing() {
+            onValue(ref(db, `following/${myUid}`), snap => {
+                myFollowing.clear();
+                if(snap.exists()) {
+                    Object.keys(snap.val()).forEach(key => myFollowing.add(key));
+                }
+            });
+        }
+
+        // ✅ FIX: CHANGED NFD TO NFKC (HANDLES FANCY FONTS)
+        function cleanText(str) {
+            if(!str) return "";
+            // NFKC normalizes compatibility characters (Like 𝕸 -> M)
+            return str.normalize("NFKC")
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]/g, ""); 
+        }
+
+        function loadTrending() {
+            onValue(ref(db, 'gameplay_clips'), snap => {
+                const res = document.getElementById('results');
+                res.innerHTML = "<h4>Trending Now</h4><div class='grid' id='trendGrid'></div>";
+                const grid = document.getElementById('trendGrid');
+                
+                if(snap.exists()) {
+                    let vids = Object.entries(snap.val()).map(([key, val]) => ({ key, ...val }));
+                    vids.sort((a,b) => b.timestamp - a.timestamp);
+                    
+                    vids.slice(0, 6).forEach(v => { 
+                        renderVideoCard(v, grid);
+                    });
+                }
+            }, {onlyOnce: true});
+        }
+
+        function renderVideoCard(v, container) {
+            let userPic = "icon.png";
+            
+            // Create Elements First
+            const div = document.createElement('div');
+            div.className = 'vid-card';
+            div.innerHTML = `
+                <video src="${v.videoUrl}" muted onmouseover="this.play()" onmouseout="this.pause()"></video>
+                <div class="vid-overlay">
+                    <div class="vid-caption">${v.caption || 'No Caption'}</div>
+                    <div class="vid-user">
+                        <img src="icon.png" id="v-pic-${v.key}">
+                        <span>${v.uploader}</span>
+                    </div>
+                </div>
+            `;
+            div.onclick = () => window.location.href = `index?video=${v.key}`;
+            container.appendChild(div);
+
+            // Fetch User Pic Async
+            get(ref(db, `users/${v.uid}`)).then(uSnap => {
+                if(uSnap.exists()) {
+                    const u = uSnap.val();
+                    if(u.photo) document.getElementById(`v-pic-${v.key}`).src = u.photo;
+                }
+            });
+        }
+
+        window.doSearch = () => {
+            const rawQ = document.getElementById('search').value;
+            const q = cleanText(rawQ); 
+            const res = document.getElementById('results');
+            
+            if(rawQ.length === 0) { loadTrending(); return; }
+            if(rawQ.length < 2) return;
+
+            res.innerHTML = ""; 
+
+            // --- SEARCH USERS ---
+            onValue(ref(db, 'users'), snap => {
+                let userHTML = "";
+                let foundUser = false;
+                
+                snap.forEach(c => {
+                    const u = c.val();
+                    // Clean Database Name
+                    const uNameClean = cleanText(u.username);
+                    
+                    // ✅ MATCH LOGIC: Clean vs Clean OR Original vs Original (Contains)
+                    if(uNameClean.includes(q) || (u.username && u.username.toLowerCase().includes(rawQ.toLowerCase()))) {
+                        foundUser = true;
+                        const isFollowing = myFollowing.has(c.key);
+                        const isMe = (c.key === myUid);
+                        
+                        let btnHtml = "";
+                        if(!isMe) {
+                            btnHtml = isFollowing 
+                                ? `<button class="f-btn btn-following" onclick="toggleFollow('${c.key}', this)">Following</button>`
+                                : `<button class="f-btn btn-follow" onclick="toggleFollow('${c.key}', this)">Follow</button>`;
+                        }
+
+                        userHTML += `
+                            <div class="user-item">
+                                <div class="user-left" onclick="window.location.href='profile?uid=${c.key}'">
+                                    <img src="${u.photo || 'icon.png'}" class="u-pic">
+                                    <div class="u-info">
+                                        <div>${u.username}</div>
+                                        <div>View Profile</div>
+                                    </div>
+                                </div>
+                                ${btnHtml}
+                            </div>
+                        `;
+                    }
+                });
+
+                if(foundUser) res.innerHTML += `<h4>Users</h4><div>${userHTML}</div>`;
+            }, {onlyOnce: true});
+
+            // --- SEARCH VIDEOS ---
+            onValue(ref(db, 'gameplay_clips'), snap => {
+                const vidContainer = document.createElement('div');
+                vidContainer.className = 'grid';
+                let foundVideo = false;
+
+                snap.forEach(c => {
+                    const v = c.val();
+                    const vCapClean = cleanText(v.caption);
+                    
+                    if(v.caption && (vCapClean.includes(q) || v.caption.toLowerCase().includes(rawQ.toLowerCase()))) {
+                        foundVideo = true;
+                        renderVideoCard({ key: c.key, ...v }, vidContainer);
+                    }
+                });
+
+                if(foundVideo) {
+                    const title = document.createElement('h4'); title.innerText = "Videos";
+                    res.appendChild(title);
+                    res.appendChild(vidContainer);
+                } else if (!res.innerHTML.includes("Users")) {
+                    res.innerHTML = "<p style='color:#555; text-align:center; margin-top:20px;'>No results found.</p>";
+                }
+            }, {onlyOnce: true});
+        }
+
+        window.toggleFollow = async (targetUid, btn) => {
+            if(!myUid) return;
+            const isFollowing = btn.classList.contains('btn-following');
+            
+            if(isFollowing) {
+                btn.className = "f-btn btn-follow";
+                btn.innerText = "Follow";
+                myFollowing.delete(targetUid);
+                await remove(ref(db, `followers/${targetUid}/${myUid}`));
+                await remove(ref(db, `following/${myUid}/${targetUid}`));
+            } else {
+                btn.className = "f-btn btn-following";
+                btn.innerText = "Following";
+                myFollowing.add(targetUid);
+                await set(ref(db, `followers/${targetUid}/${myUid}`), true);
+                await set(ref(db, `following/${myUid}/${targetUid}`), true);
+            }
+        };
+
+    </script>
 </body>
 </html>
