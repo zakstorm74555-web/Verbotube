@@ -9,7 +9,7 @@
     { "source": "/search", "destination": "/search.html" },
     { "source": "/upload", "destination": "/upload.html" },
     { "source": "/friends", "destination": "/friends.html" },
-    { "source": "/chat", "destination": "/chat.html" }
+    { "source": "/chat", "destination": "/chat.html" },
     { "source": "/about", "destination": "/about.html" }
   ]
 }
