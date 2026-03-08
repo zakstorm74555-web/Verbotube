@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* DESIGN & LAYOUT */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #000; position: relative; padding-bottom: 80px; }
@@ -96,13 +97,13 @@
             <label class="edit-label">Profile Photo</label>
             <input type="file" id="fileInput" accept="image/*" style="display:none">
             <button class="btn" onclick="document.getElementById('fileInput').click()" style="background:#222; color:#fff; border:1px dashed #FFD700">Change Photo</button>
-            <p id="uploadStatus" style="font-size:11px; color:#FFD700; text-align:center; margin-top:-10px;"></p>
+            <p id="uploadStatus" style="font-size:11px; color:#FFD700; text-align:center; margin-top:-10px; min-height:15px;"></p>
 
             <label class="edit-label">Username</label>
             <input type="text" id="editName" class="edit-input" placeholder="Enter Name">
 
             <label class="edit-label">Bio</label>
-            <textarea id="editBio" class="edit-input" style="height:80px; resize:none;" placeholder="Write something about you..."></textarea>
+            <textarea id="editBio" class="edit-input" style="height:80px; resize:none;" placeholder="Write something..."></textarea>
 
             <button class="btn btn-follow" id="saveProfileBtn">Save Changes</button>
             <button class="btn" onclick="closeModal()" style="background:transparent; color:#888;">Cancel</button>
@@ -116,7 +117,7 @@
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dttv7v7on/image/upload";
-        const CLOUDINARY_PRESET = "verbotube"; // Bhai isay dashboard pe 'Unsigned' rkhna
+        const CLOUDINARY_PRESET = "verbotube"; // Bhai isay 'Unsigned' rkhna Cloudinary pe
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -151,6 +152,7 @@
                 } else { badgeBox.style.display = 'none'; }
             });
             
+            // Stats listeners
             onValue(ref(db, `followers/${profileUID}`), s => document.getElementById('sFollowers').innerText = Object.keys(s.val() || {}).length);
             onValue(ref(db, `following/${profileUID}`), s => document.getElementById('sFollowing').innerText = Object.keys(s.val() || {}).length);
             
@@ -162,7 +164,7 @@
             listenForVideos();
         }
 
-        // MODAL FUNCTIONS
+        // --- MODAL & SAVE LOGIC ---
         window.openEditModal = () => {
             document.getElementById('editModal').classList.add('active');
             document.getElementById('editName').value = userData.username || "";
@@ -173,7 +175,6 @@
             document.getElementById('uploadStatus').innerText = "";
         }
 
-        // SAVE LOGIC
         document.getElementById('saveProfileBtn').onclick = async () => {
             const newName = document.getElementById('editName').value;
             const newBio = document.getElementById('editBio').value;
@@ -181,49 +182,55 @@
             const btn = document.getElementById('saveProfileBtn');
             const status = document.getElementById('uploadStatus');
 
-            if(!newName.trim()) { alert("Username is required"); return; }
+            if(!newName.trim()) { alert("Please enter a name."); return; }
 
             btn.disabled = true;
-            btn.innerText = "Saving...";
-            status.innerText = "Processing Profile...";
+            btn.innerText = "Processing...";
+            status.innerText = "Connecting to Cloudinary...";
 
             let photoUrl = userData.photo || "icon.png";
 
+            // 1. Upload to Cloudinary if file exists
             if(file) {
-                status.innerText = "Uploading to Cloudinary...";
+                status.innerText = "Uploading Image... ☁️";
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY_PRESET);
 
                 try {
                     const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                    if(!res.ok) throw new Error("Preset invalid or Upload error");
+                    if(!res.ok) throw new Error("Cloudinary error");
                     const d = await res.json();
                     photoUrl = d.secure_url;
-                    status.innerText = "Upload Complete!";
+                    status.innerText = "Upload Success! ✅";
                 } catch (e) { 
                     alert("Cloudinary Error: Check if preset is 'Unsigned'"); 
                     btn.disabled = false;
                     btn.innerText = "Save Changes";
-                    status.innerText = "Upload Failed";
+                    status.innerText = "Upload Failed ❌";
                     return;
                 }
             }
 
+            // 2. Save to Firebase Realtime Database
+            status.innerText = "Saving to Database... 🔥";
             try {
                 await update(ref(db, 'users/' + myUID), {
                     username: newName,
                     bio: newBio,
                     photo: photoUrl
                 });
-                status.innerText = "Profile Saved!";
+                status.innerText = "Profile Updated! 🎉";
                 setTimeout(closeModal, 800);
-            } catch(e) { alert("Firebase Error!"); }
+            } catch(e) { 
+                alert("Database Update Failed!"); 
+            }
 
             btn.disabled = false;
             btn.innerText = "Save Changes";
         };
 
+        // --- FOLLOW & VIDEO GRID ---
         function setupFollow(btn) {
             onValue(ref(db, `followers/${profileUID}/${myUID}`), s => {
                 if(s.exists()){ 
@@ -246,7 +253,7 @@
 
         function listenForVideos() {
             const grid = document.getElementById('videoGrid');
-            onValue(ref(db, 'gameplay_clips'), snap => {
+            onValue(ref(db, 'gameplay_clips'), async snap => {
                 grid.innerHTML = "";
                 const data = snap.val();
                 if(!data) { document.getElementById('sVideos').innerText = 0; return; }
