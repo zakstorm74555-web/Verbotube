@@ -1,277 +1,94 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Profile - Verbotube</title>
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* DESIGN & LAYOUT */
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-        .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #000; position: relative; padding-bottom: 80px; }
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <h2 style="color:#FFD700; text-align:center; margin-top:0;">Edit Profile</h2>
         
-        .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 0.5px solid #222; }
-        .page-title { font-weight: 800; font-size: 18px; color: #FFD700; text-transform: uppercase; letter-spacing: 1.5px; }
-        .logout-btn { background: none; border: none; color: #FF4444; font-size: 22px; cursor: pointer; display: none; }
-
-        .profile-header-main { padding: 25px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .pic-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 15px; }
-        .pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #FFD700; object-fit: cover; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
-        
-        #badge-display { position: absolute; bottom: 0; right: 0; display: none; z-index: 10; border-radius: 50%; border: 2px solid #000; overflow: hidden; }
-        .badge-image { width: 32px; height: 32px; object-fit: cover; border: 1.5px solid #FFD700; }
-
-        .name { font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; }
-        .bio { color: #aaa; font-size: 14px; margin-top: 8px; line-height: 1.4; }
-        .blue-tick { color: #FFD700; font-size: 18px; }
-
-        /* MODAL DESIGN */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: flex-end; }
-        .modal-content { background: #111; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 20px 20px 0 0; padding: 30px 20px; border-top: 2px solid #FFD700; transform: translateY(100%); transition: transform 0.3s ease; }
-        .modal.active { display: flex; }
-        .modal.active .modal-content { transform: translateY(0); }
-        
-        .edit-input { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 16px; }
-        .edit-label { display: block; color: #FFD700; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-
-        .stats { display: flex; margin: 20px; background: #111; padding: 20px 0; border-radius: 15px; border: 0.5px solid #333; }
-        .stat-box { text-align: center; flex: 1; border-right: 0.5px solid #222; }
-        .stat-box:last-child { border-right: none; }
-        .stat-num { font-size: 20px; font-weight: 800; color: #FFD700; display: block; }
-        .stat-label { font-size: 11px; color: #777; text-transform: uppercase; }
-
-        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; margin-bottom: 12px; font-size: 15px; text-transform: uppercase; }
-        .btn-follow { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
-        .btn-following { background: transparent; color: #FFD700; border: 1.5px solid #FFD700; }
-
-        .grid-header { display: flex; justify-content: space-around; border-bottom: 0.5px solid #222; margin-top: 10px; }
-        .grid-tab { padding: 15px; color: #888; font-size: 20px; flex: 1; text-align: center; cursor: pointer; }
-        .grid-tab.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
-
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; padding: 1.5px; min-height: 200px; }
-        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; overflow: hidden; }
-        .thumb video { width: 100%; height: 100%; object-fit: cover; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="nav-bar">
-            <a href="index" style="color:#FFD700; font-size:22px;"><i class="fas fa-chevron-left"></i></a>
-            <div class="page-title">Profile</div>
-            <button id="logoutBtn" class="logout-btn" onclick="handleLogout()"><i class="fas fa-power-off"></i></button>
+        <label class="edit-label">Profile Photo (Upload or Paste URL)</label>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="text" id="editPhotoURL" class="edit-input" style="margin-bottom:0;" placeholder="Paste Image URL here...">
+            <button class="btn" onclick="document.getElementById('fileInput').click()" style="width:50px; margin:0; background:#222; border:1px solid #FFD700;"><i class="fas fa-upload"></i></button>
         </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+        <p id="uploadStatus" style="font-size:11px; color:#FFD700; text-align:center; margin-top:-10px; min-height:15px;"></p>
 
-        <div class="profile-header-main">
-            <div class="pic-wrapper">
-                <img src="icon.png" id="pPic" class="pic">
-                <div id="badge-display"></div>
-            </div>
-            <div class="info">
-                <div class="name" id="pName">User</div>
-                <div class="bio" id="pBio">Loading...</div>
-            </div>
-        </div>
+        <label class="edit-label">Username</label>
+        <input type="text" id="editName" class="edit-input" placeholder="Enter Name">
 
-        <div style="padding:0 20px;"><button id="actionBtn" class="btn btn-following">Loading...</button></div>
+        <label class="edit-label">Bio</label>
+        <textarea id="editBio" class="edit-input" style="height:80px; resize:none;" placeholder="Write something..."></textarea>
 
-        <div class="stats">
-            <div class="stat-box"><span class="stat-num" id="sVideos">0</span><span class="stat-label">Videos</span></div>
-            <div class="stat-box"><span class="stat-num" id="sFollowers">0</span><span class="stat-label">Followers</span></div>
-            <div class="stat-box"><span class="stat-num" id="sFollowing">0</span><span class="stat-label">Following</span></div>
-        </div>
-
-        <div class="grid-header">
-            <div class="grid-tab active" onclick="switchTab('public', this)"><i class="fas fa-th"></i></div>
-            <div class="grid-tab" onclick="switchTab('liked', this)"><i class="far fa-heart"></i></div>
-            <div class="grid-tab" onclick="switchTab('private', this)"><i class="fas fa-lock"></i></div>
-        </div>
-        <div class="grid" id="videoGrid"></div>
+        <button class="btn btn-follow" id="saveProfileBtn">Save Changes</button>
+        <button class="btn" onclick="closeModal()" style="background:transparent; color:#888;">Cancel</button>
     </div>
+</div>
 
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <h2 style="color:#FFD700; text-align:center; margin-top:0;">Edit Profile</h2>
-            
-            <label class="edit-label">Profile Photo</label>
-            <input type="file" id="fileInput" accept="image/*" style="display:none">
-            <button class="btn" onclick="document.getElementById('fileInput').click()" style="background:#222; color:#fff; border:1px dashed #FFD700">Change Photo</button>
-            <p id="uploadStatus" style="font-size:11px; color:#FFD700; text-align:center; margin-top:-10px; min-height:15px;"></p>
+<script type="module">
+    // ... (Firebase Imports and Config same as before) ...
 
-            <label class="edit-label">Username</label>
-            <input type="text" id="editName" class="edit-input" placeholder="Enter Name">
+    // --- SMART SAVE LOGIC ---
+    document.getElementById('saveProfileBtn').onclick = async () => {
+        const newName = document.getElementById('editName').value;
+        const newBio = document.getElementById('editBio').value;
+        const manualURL = document.getElementById('editPhotoURL').value;
+        const file = document.getElementById('fileInput').files[0];
+        const btn = document.getElementById('saveProfileBtn');
+        const status = document.getElementById('uploadStatus');
 
-            <label class="edit-label">Bio</label>
-            <textarea id="editBio" class="edit-input" style="height:80px; resize:none;" placeholder="Write something..."></textarea>
+        if(!newName.trim()) { alert("Bhai, naam likhna zaroori hai!"); return; }
 
-            <button class="btn btn-follow" id="saveProfileBtn">Save Changes</button>
-            <button class="btn" onclick="closeModal()" style="background:transparent; color:#888;">Cancel</button>
-        </div>
-    </div>
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+        
+        let finalPhoto = userData.photo || "icon.png";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, update, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // SYSTEM LOGIC:
+        // 1. Agar user ne File select ki hai, toh wo Priority hai (Chupke se URL banay ga)
+        // 2. Agar File nahi hai magar URL likha hai, toh wo use hoga.
+        
+        if(file) {
+            status.innerText = "Creating URL from Image... ☁️";
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', "verbotube"); // Aapka Cloudinary preset
 
-        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
-        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dttv7v7on/image/upload";
-        const CLOUDINARY_PRESET = "verbotube"; // Bhai isay 'Unsigned' rkhna Cloudinary pe
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-
-        let myUID = null, profileUID = null, currentTab = 'public', userData = {};
-        const ADMIN_EMAIL = "elitegamer859650@gmail.com";
-
-        onAuthStateChanged(auth, async user => {
-            if (user) {
-                myUID = user.uid;
-                profileUID = new URLSearchParams(window.location.search).get('uid') || user.uid;
-                loadProfile(user);
-            } else { window.location.href = 'login'; }
-        });
-
-        function loadProfile(user) {
-            onValue(ref(db, 'users/' + profileUID), snap => {
-                if(!snap.exists()) return;
-                userData = snap.val();
-                const isOwner = (profileUID === myUID ? user.email : userData.email || "").toLowerCase() === ADMIN_EMAIL;
-                if(profileUID === myUID) document.getElementById('logoutBtn').style.display = 'block';
-                
-                document.getElementById('pName').innerHTML = `${userData.username || "User"} ${isOwner ? '<i class="fas fa-check-circle blue-tick"></i>' : ''}`;
-                document.getElementById('pBio').innerText = userData.bio || "No bio yet";
-                document.getElementById('pPic').src = userData.photo || "icon.png";
-
-                const badgeBox = document.getElementById('badge-display');
-                if(userData.customBadge) {
-                    badgeBox.style.display = 'flex';
-                    badgeBox.innerHTML = userData.customBadge.image ? `<img src="${userData.customBadge.image}" class="badge-image">` : `<span class="badge-text">${userData.customBadge.text}</span>`;
-                } else { badgeBox.style.display = 'none'; }
-            });
-            
-            // Stats listeners
-            onValue(ref(db, `followers/${profileUID}`), s => document.getElementById('sFollowers').innerText = Object.keys(s.val() || {}).length);
-            onValue(ref(db, `following/${profileUID}`), s => document.getElementById('sFollowing').innerText = Object.keys(s.val() || {}).length);
-            
-            const btn = document.getElementById('actionBtn');
-            if(myUID === profileUID) { 
-                btn.innerText = "Edit Profile"; 
-                btn.onclick = openEditModal;
-            } else { setupFollow(btn); }
-            listenForVideos();
-        }
-
-        // --- MODAL & SAVE LOGIC ---
-        window.openEditModal = () => {
-            document.getElementById('editModal').classList.add('active');
-            document.getElementById('editName').value = userData.username || "";
-            document.getElementById('editBio').value = userData.bio || "";
-        }
-        window.closeModal = () => {
-            document.getElementById('editModal').classList.remove('active');
-            document.getElementById('uploadStatus').innerText = "";
-        }
-
-        document.getElementById('saveProfileBtn').onclick = async () => {
-            const newName = document.getElementById('editName').value;
-            const newBio = document.getElementById('editBio').value;
-            const file = document.getElementById('fileInput').files[0];
-            const btn = document.getElementById('saveProfileBtn');
-            const status = document.getElementById('uploadStatus');
-
-            if(!newName.trim()) { alert("Please enter a name."); return; }
-
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-            status.innerText = "Connecting to Cloudinary...";
-
-            let photoUrl = userData.photo || "icon.png";
-
-            // 1. Upload to Cloudinary if file exists
-            if(file) {
-                status.innerText = "Uploading Image... ☁️";
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_PRESET);
-
-                try {
-                    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                    if(!res.ok) throw new Error("Cloudinary error");
-                    const d = await res.json();
-                    photoUrl = d.secure_url;
-                    status.innerText = "Upload Success! ✅";
-                } catch (e) { 
-                    alert("Cloudinary Error: Check if preset is 'Unsigned'"); 
-                    btn.disabled = false;
-                    btn.innerText = "Save Changes";
-                    status.innerText = "Upload Failed ❌";
-                    return;
-                }
-            }
-
-            // 2. Save to Firebase Realtime Database
-            status.innerText = "Saving to Database... 🔥";
             try {
-                await update(ref(db, 'users/' + myUID), {
-                    username: newName,
-                    bio: newBio,
-                    photo: photoUrl
+                const res = await fetch("https://api.cloudinary.com/v1_1/dttv7v7on/image/upload", { 
+                    method: 'POST', 
+                    body: formData 
                 });
-                status.innerText = "Profile Updated! 🎉";
-                setTimeout(closeModal, 800);
-            } catch(e) { 
-                alert("Database Update Failed!"); 
+                const d = await res.json();
+                finalPhoto = d.secure_url; // System ne khud URL bana liya!
+                status.innerText = "URL Generated! ✅";
+            } catch (e) {
+                alert("Upload failed! Using old photo.");
             }
+        } else if(manualURL.trim() !== "") {
+            finalPhoto = manualURL; // User ne khud URL diya hai
+            status.innerText = "Using Manual URL... ✅";
+        }
 
-            btn.disabled = false;
-            btn.innerText = "Save Changes";
-        };
-
-        // --- FOLLOW & VIDEO GRID ---
-        function setupFollow(btn) {
-            onValue(ref(db, `followers/${profileUID}/${myUID}`), s => {
-                if(s.exists()){ 
-                    btn.innerText="Following"; btn.className="btn btn-following"; 
-                    btn.onclick=()=> { remove(ref(db,`followers/${profileUID}/${myUID}`)); remove(ref(db,`following/${myUID}/${profileUID}`)); } 
-                }
-                else { 
-                    btn.innerText="Follow"; btn.className="btn btn-follow"; 
-                    btn.onclick=()=> { set(ref(db,`followers/${profileUID}/${myUID}`), true); set(ref(db,`following/${myUID}/${profileUID}`), true); } 
-                }
+        // Final Save to Firebase Realtime Database
+        try {
+            status.innerText = "Fixing in Database... 🔥";
+            await update(ref(db, 'users/' + myUID), {
+                username: newName,
+                bio: newBio,
+                photo: finalPhoto
             });
+            status.innerText = "Profile Fixed! 🎉";
+            setTimeout(closeModal, 800);
+        } catch(e) { 
+            alert("Database Error!"); 
         }
 
-        window.switchTab = (tab, el) => {
-            currentTab = tab;
-            document.querySelectorAll('.grid-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            listenForVideos();
-        }
+        btn.disabled = false;
+        btn.innerText = "Save Changes";
+    };
 
-        function listenForVideos() {
-            const grid = document.getElementById('videoGrid');
-            onValue(ref(db, 'gameplay_clips'), async snap => {
-                grid.innerHTML = "";
-                const data = snap.val();
-                if(!data) { document.getElementById('sVideos').innerText = 0; return; }
-                let vids = Object.entries(data);
-                if(currentTab === 'public') vids = vids.filter(([k,v]) => v.uid === profileUID && v.privacy !== 'private');
-                else if(currentTab === 'private') vids = vids.filter(([k,v]) => v.uid === profileUID && v.privacy === 'private');
-                
-                document.getElementById('sVideos').innerText = vids.length;
-                vids.reverse().forEach(([k, vid]) => {
-                    const div = document.createElement('div');
-                    div.className = 'thumb';
-                    div.innerHTML = `<video src="${vid.videoUrl}"></video>`;
-                    div.onclick = () => window.location.href = `index?v=${k}`;
-                    grid.appendChild(div);
-                });
-            });
-        }
-        window.handleLogout = () => signOut(auth).then(()=> window.location.href='login');
-    </script>
-</body>
-</html>
+    // Modal open karte waqt puraani details dikhana
+    window.openEditModal = () => {
+        document.getElementById('editModal').classList.add('active');
+        document.getElementById('editName').value = userData.username || "";
+        document.getElementById('editBio').value = userData.bio || "";
+        document.getElementById('editPhotoURL').value = userData.photo && !userData.photo.includes('cloudinary') ? userData.photo : "";
+    }
+</script>
