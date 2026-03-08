@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Verbotube - Home</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,16 +12,13 @@
         #app-frame { width: 100%; height: 100%; max-width: 480px; background: #000; position: relative; overflow: hidden; }
         
         header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: env(safe-area-inset-top) 15px 25px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .about-btn { width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); display: flex; justify-content: center; align-items: center; color: #FFD700; cursor: pointer; transition: 0.3s; }
-        
         .tab-btn { font-weight: 700; font-size: 17px; cursor: pointer; color: rgba(255,255,255,0.6); }
         .tab-btn.active { color: #FFD700; border-bottom: 3px solid #FFD700; padding-bottom: 4px; }
 
         .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
         .feed-container::-webkit-scrollbar { display: none; }
         .video-card { width: 100%; height: 100svh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
         .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.1); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; display: none; z-index: 50; }
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -31,34 +27,27 @@
         .sidebar-pic { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #FFD700; object-fit: cover; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
         .action-btn { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .action-btn i { font-size: 32px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
-        .liked { color: #FFD700 !important; text-shadow: 0 0 10px #FFD700; }
+        .liked { color: #FFD700 !important; }
 
-        .music-disc { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle, #333 20%, #111 100%); border: 8px solid rgba(255,255,255,0.1); animation: discSpin 5s linear infinite; background-size: cover; background-position: center; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .music-disc { width: 48px; height: 48px; border-radius: 50%; background-size: cover; background-position: center; border: 8px solid rgba(255,255,255,0.1); animation: discSpin 5s linear infinite; }
         @keyframes discSpin { 100% { transform: rotate(360deg); } }
 
         .video-info { position: absolute; bottom: 100px; left: 15px; width: 75%; z-index: 30; pointer-events: none; }
-        .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; cursor: pointer; }
-        .caption { font-size: 14px; color: #f1f1f1; margin-bottom: 10px; }
-        .music-ticker { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #FFD700; overflow: hidden; width: 80%; }
+        .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
+        .caption { font-size: 14px; color: #f1f1f1; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
         .prog-container { position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); left: 0; width: 100%; height: 3px; background: rgba(255,255,255,0.1); z-index: 100; }
         .prog-bar { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 10px #FFD700; }
 
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom)); background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .dt-heart { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 100px; color: #fff; z-index: 200; pointer-events: none; }
-        .dt-heart.active { animation: heartPop 0.8s forwards; }
-        @keyframes heartPop { 0% { scale: 0; opacity: 1; } 50% { scale: 1.3; opacity: 1; } 100% { scale: 1.6; opacity: 0; } }
     </style>
 </head>
 <body>
     <div id="app-frame">
         <header>
-            <div class="header-left">
-                <div class="about-btn" onclick="window.location.href='about.html'"><i class="fas fa-info-circle"></i></div>
-                <button onclick="window.location.href='download.html'" style="background:#FFD700; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; font-size: 12px;">GET APP</button>
-            </div>
+            <div style="width:32px;"></div>
             <div style="display:flex; gap:20px;"><span class="tab-btn active">For You</span><span class="tab-btn" onclick="window.location.href='friends'">Following</span></div>
-            <i class="fas fa-search" style="font-size:22px; color:#fff;" onclick="window.location.href='search'"></i>
+            <i class="fas fa-search" style="font-size:22px;"></i>
         </header>
 
         <div class="feed-container" id="feed"></div>
@@ -66,19 +55,19 @@
 
         <div class="bottom-nav">
             <i class="fas fa-home" style="color:#FFD700; font-size:24px;"></i>
-            <i class="fas fa-user-friends" style="color:#888; font-size:24px;" onclick="window.location.href='friends'"></i>
+            <i class="fas fa-user-friends" style="color:#888; font-size:24px;"></i>
             <div style="width:45px; height:30px; background:linear-gradient(to right, #00f2ea, #ff0050); border-radius:10px; display:flex; justify-content:center; align-items:center;" onclick="window.location.href='upload'">
                 <div style="background:#fff; width:36px; height:100%; border-radius:8px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
             </div>
-            <i class="fas fa-comment-alt" style="color:#888; font-size:24px;" onclick="window.location.href='friends'"></i>
+            <i class="fas fa-comment-alt" style="color:#888; font-size:24px;"></i>
             <i class="fas fa-user" style="color:#888; font-size:24px;" onclick="window.location.href='profile'"></i>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, onValue, set, remove, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
@@ -86,64 +75,42 @@
         const auth = getAuth(app);
         let currentUser = null;
 
-        onAuthStateChanged(auth, async user => { 
-            if(user) { 
-                currentUser = user; 
-                loadVideos(); 
-            } else { window.location.href='login'; } 
-        });
+        onAuthStateChanged(auth, user => { if(user) { currentUser = user; loadVideos(); } else { window.location.href='login'; } });
 
+        // --- HYBRID LOAD LOGIC (Old Firebase + New Cloudinary) ---
         function loadVideos() {
             const feed = document.getElementById('feed');
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
                 if(!snap.exists()) return;
                 
+                // Sab purani aur nayi videos ko timestamp ke sath fetch karna
                 let data = Object.entries(snap.val()).map(([k,v]) => ({key:k, ...v}));
-                let sorted = data.sort((a,b)=> b.timestamp - a.timestamp);
-
-                sorted.forEach(item => {
+                data.sort((a,b)=> b.timestamp - a.timestamp).forEach(item => {
                     const card = document.createElement('div');
                     card.className = "video-card"; card.id = `card-${item.key}`;
                     
+                    // Universal player logic
                     card.innerHTML = `
                         <div class="loading-spinner" id="ldr-${item.key}"></div>
                         <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}"></video>
-                        <div class="dt-heart" id="pop-${item.key}"><i class="fas fa-heart"></i></div>
                         <div class="video-info">
                             <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader}</div>
                             <div class="caption">${item.caption || ''}</div>
-                            <div class="music-ticker"><i class="fas fa-music"></i> <marquee scrollamount="4">Original Sound - Verbotube</marquee></div>
                         </div>
                         <div class="sidebar">
                             <img src="icon.png" class="sidebar-pic" id="upic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
                             <div class="action-btn" onclick="handleLike('${item.key}')">
                                 <i class="fas fa-heart" id="hrt-${item.key}"></i>
-                                <span id="lcnt-${item.key}" style="font-size:12px; font-weight:600; margin-top:4px;">0</span>
-                            </div>
-                            <div class="action-btn" onclick="alert('Comments coming soon!')">
-                                <i class="fas fa-comment-dots"></i>
-                                <span style="font-size:12px; font-weight:600; margin-top:4px;">0</span>
+                                <span id="lcnt-${item.key}" style="font-size:12px; margin-top:4px;">0</span>
                             </div>
                             <div class="music-disc" id="disc-${item.key}"></div>
                         </div>`;
 
                     const v = card.querySelector('video'), ldr = card.querySelector('.loading-spinner');
-                    let lastT = 0;
                     
-                    card.onclick = (e) => {
-                        if(e.target.closest('.sidebar')) return;
-                        const now = Date.now();
-                        if(now - lastT < 300) {
-                            handleLike(item.key, true);
-                            const p = document.getElementById(`pop-${item.key}`); p.classList.add('active'); 
-                            setTimeout(()=>p.classList.remove('active'), 800);
-                        } else {
-                            v.paused ? v.play() : v.pause();
-                        }
-                        lastT = now;
-                    };
-
+                    // Play/Pause logic
+                    card.onclick = () => v.paused ? v.play() : v.pause();
                     v.onwaiting = () => ldr.style.display = "block";
                     v.onplaying = () => ldr.style.display = "none";
                     v.ontimeupdate = () => {
@@ -151,7 +118,7 @@
                     };
 
                     feed.appendChild(card);
-                    fetchStats(item);
+                    fetchStats(item); 
                 });
                 setupObserver();
             });
@@ -176,9 +143,9 @@
             });
         }
 
-        window.handleLike = (k, f=false) => {
+        window.handleLike = (k) => {
             const r = ref(db, `gameplay_likes/${k}/${currentUser.uid}`);
-            get(r).then(s => s.exists() && !f ? remove(r) : set(r, true));
+            get(r).then(s => s.exists() ? remove(r) : set(r, true));
         };
 
         function setupObserver() {
