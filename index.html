@@ -8,59 +8,80 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background-color: #000; color: #fff; margin: 0; font-family: 'Segoe UI', sans-serif; height: 100svh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
-        #app-frame { width: 100%; height: 100%; max-width: 480px; background: #000; position: relative; overflow: hidden; }
+        body { background-color: #000; color: #fff; margin: 0; font-family: 'Segoe UI', Roboto, sans-serif; height: 100svh; width: 100vw; overflow: hidden; display: flex; justify-content: center; }
         
-        header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: env(safe-area-inset-top) 15px 25px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .tab-btn { font-weight: 700; font-size: 17px; cursor: pointer; color: rgba(255,255,255,0.6); }
-        .tab-btn.active { color: #FFD700; border-bottom: 3px solid #FFD700; padding-bottom: 4px; }
+        #app-frame { width: 100%; height: 100%; max-width: 480px; background: #000; position: relative; overflow: hidden; box-shadow: 0 0 50px rgba(255, 215, 0, 0.1); }
+        
+        /* Premium Header */
+        header { position: absolute; top: 0; left: 0; width: 100%; z-index: 100; padding: env(safe-area-inset-top) 15px 25px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
+        .tab-btn { font-weight: 700; font-size: 17px; cursor: pointer; color: rgba(255,255,255,0.6); transition: 0.3s; position: relative; }
+        .tab-btn.active { color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: #FFD700; border-radius: 2px; }
 
-        .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .feed-container { width: 100%; height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -ms-overflow-style: none; }
         .feed-container::-webkit-scrollbar { display: none; }
         .video-card { width: 100%; height: 100svh; position: relative; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; background: #000; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        .sidebar { position: absolute; right: 12px; bottom: 130px; display: flex; flex-direction: column; gap: 20px; align-items: center; z-index: 40; }
-        .sidebar-pic { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #FFD700; object-fit: cover; }
-        .action-btn { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .action-btn i { font-size: 32px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
-        .liked { color: #FFD700 !important; }
+        /* Sidebar UI Polish */
+        .sidebar { position: absolute; right: 12px; bottom: 130px; display: flex; flex-direction: column; gap: 22px; align-items: center; z-index: 40; }
+        .sidebar-pic-wrapper { position: relative; margin-bottom: 10px; }
+        .sidebar-pic { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #FFD700; object-fit: cover; box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        .follow-plus { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); background: #FFD700; color: #000; border-radius: 50%; width: 18px; height: 18px; display: flex; justify-content: center; align-items: center; font-size: 10px; border: 2px solid #000; }
 
+        .action-btn { background: none; border: none; color: #fff; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
+        .action-btn:active { transform: scale(0.9); }
+        .action-btn i { font-size: 32px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)); margin-bottom: 4px; }
+        .liked { color: #FFD700 !important; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)) !important; }
+        .action-btn span { font-size: 12px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+        /* Spinning Disc (Music) */
+        .music-disc { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(45deg, #222, #444, #222); border: 8px solid #1a1a1a; display: flex; justify-content: center; align-items: center; animation: rotateDisc 4s linear infinite; animation-play-state: paused; box-shadow: 0 0 10px rgba(0,0,0,0.5); position: relative; }
+        .music-disc::after { content: '🎵'; font-size: 14px; }
+        .playing .music-disc { animation-play-state: running; }
+        @keyframes rotateDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Info Glass UI */
         .video-info { position: absolute; bottom: 100px; left: 15px; width: 75%; z-index: 30; pointer-events: none; }
-        .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 5px; pointer-events: auto; }
-        .caption { font-size: 14px; color: #f1f1f1; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 6px; pointer-events: auto; display: inline-block; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .caption { font-size: 14px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.4; }
 
-        .prog-container { position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); left: 0; width: 100%; height: 2.5px; background: rgba(255,255,255,0.1); z-index: 100; }
-        .prog-bar { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 10px #FFD700; }
+        .prog-container { position: absolute; bottom: calc(65px + env(safe-area-inset-bottom)); left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.1); z-index: 100; }
+        .prog-bar { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 10px #FFD700; transition: width 0.1s linear; }
 
-        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom)); background: #000; border-top: 0.5px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0.95); border-top: 0.5px solid #1a1a1a; display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #888; transition: 0.3s; }
+        .nav-item.active { color: #FFD700; }
         
-        .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255, 215, 0, 0.1); border-top: 4px solid #FFD700; border-radius: 50%; width: 45px; height: 45px; animation: spin 0.8s linear infinite; display: none; }
+        .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 215, 0, 0.1); border-top: 3px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; display: none; z-index: 50; }
         @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
     </style>
 </head>
 <body>
     <div id="app-frame">
         <header>
-            <i class="fas fa-info-circle" style="color:#FFD700; font-size:20px;" onclick="window.location.href='about.html'"></i>
-            <div style="display:flex; gap:20px;"><span class="tab-btn active">For You</span><span class="tab-btn" onclick="window.location.href='friends'">Following</span></div>
-            <i class="fas fa-search" style="font-size:22px;" onclick="window.location.href='search'"></i>
+            <i class="fas fa-info-circle" style="color:#FFD700; font-size:20px; cursor:pointer;" onclick="window.location.href='about.html'"></i>
+            <div style="display:flex; gap:25px;"><span class="tab-btn active">For You</span><span class="tab-btn" onclick="window.location.href='friends'">Following</span></div>
+            <i class="fas fa-search" style="font-size:20px; cursor:pointer;" onclick="window.location.href='search'"></i>
         </header>
 
         <div class="feed-container" id="feed">
-            <div style="text-align:center; margin-top:50svh; color:#555;">Sorry this is site is under update.Wait until update finished.If you want fast update contactus.</div>
+            <div style="text-align:center; margin-top:50svh; color:#555;">Initializing Verbo Engine...</div>
         </div>
         
         <div class="prog-container"><div class="prog-bar" id="prog-master"></div></div>
 
         <div class="bottom-nav">
-            <i class="fas fa-home" style="color:#FFD700; font-size:24px;"></i>
-            <i class="fas fa-user-friends" style="color:#888; font-size:24px;" onclick="window.location.href='friends'"></i>
-            <div style="width:45px; height:30px; background:linear-gradient(to right, #00f2ea, #ff0050); border-radius:10px; display:flex; justify-content:center; align-items:center;" onclick="window.location.href='upload'">
-                <div style="background:#fff; width:36px; height:100%; border-radius:8px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
+            <div class="nav-item active"><i class="fas fa-home" style="font-size:22px;"></i></div>
+            <div class="nav-item" onclick="window.location.href='friends'"><i class="fas fa-user-friends" style="font-size:22px;"></i></div>
+            
+            <div style="width:46px; height:32px; position:relative; cursor:pointer;" onclick="window.location.href='upload'">
+                <div style="position:absolute; width:100%; height:100%; background:linear-gradient(to right, #00f2ea, #ff0050); border-radius:10px; left:0; top:0;"></div>
+                <div style="position:absolute; background:#fff; width:38px; height:100%; border-radius:8px; left:4px; top:0; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
             </div>
-            <i class="fas fa-comment-alt" style="color:#888; font-size:24px;" onclick="window.location.href='friends'"></i>
-            <i class="fas fa-user" style="color:#888; font-size:24px;" onclick="window.location.href='profile'"></i>
+
+            <div class="nav-item" onclick="window.location.href='friends'"><i class="fas fa-comment-alt" style="font-size:22px;"></i></div>
+            <div class="nav-item" onclick="window.location.href='profile'"><i class="fas fa-user" style="font-size:22px;"></i></div>
         </div>
     </div>
 
@@ -69,68 +90,94 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // Firebase Config
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+
+        // Blackblaze B2 Config Context (For reference in upload logic)
+        const B2_CONFIG = {
+            bucketId: "95a4a3b621680bb892ef0e11",
+            keyID: "543618b82fe1",
+            applicationKey: "003b55a458955b4cdc955b65b63c644c71a72f321c"
+        };
+
         let currentUser = null;
 
-        onAuthStateChanged(auth, user => { if(user) { currentUser = user; loadVideos(); } else { window.location.href='login'; } });
+        onAuthStateChanged(auth, user => { 
+            if(user) { 
+                currentUser = user; 
+                loadVideos(); 
+            } else { 
+                window.location.href='login'; 
+            } 
+        });
 
-        // --- NEW LOAD LOGIC (Focus on New Data) ---
         function loadVideos() {
             const feed = document.getElementById('feed');
-            // 'gameplay_clips' node se sari videos load hongi
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
                 if(!snap.exists()) {
-                    feed.innerHTML = "<div style='text-align:center; margin-top:50svh; color:#555;'>No videos found. Be the first to upload!</div>";
+                    feed.innerHTML = "<div style='text-align:center; margin-top:50svh; color:#555;'>No gameplay found. Start the game!</div>";
                     return;
                 }
                 
                 let data = Object.entries(snap.val()).map(([k,v]) => ({key:k, ...v}));
-                // Latest Videos pehle dikhayein
                 data.sort((a,b)=> b.timestamp - a.timestamp).forEach(item => {
                     const card = document.createElement('div');
-                    card.className = "video-card"; card.id = `card-${item.key}`;
+                    card.className = "video-card"; 
+                    card.id = `card-${item.key}`;
                     
-                    // Remix Check
                     const isRemix = (item.remixUrl && item.remixUrl !== "");
 
                     card.innerHTML = `
                         <div class="loading-spinner" id="ldr-${item.key}"></div>
-                        <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${isRemix ? 'muted' : ''}></video>
+                        <video src="${item.videoUrl}" playsinline loop id="vid-${item.key}" ${isRemix ? 'muted' : ''} preload="auto"></video>
                         ${isRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
+                        
                         <div class="video-info">
                             <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader}</div>
-                            <div class="caption">${item.caption || ''}</div>
+                            <div class="caption">${item.caption || 'New Gameplay Clip #Verbotube'}</div>
                         </div>
+
                         <div class="sidebar">
-                            <img src="icon.png" class="sidebar-pic" id="upic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
+                            <div class="sidebar-pic-wrapper">
+                                <img src="icon.png" class="sidebar-pic" id="upic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
+                                <div class="follow-plus"><i class="fas fa-plus"></i></div>
+                            </div>
+                            
                             <div class="action-btn" onclick="handleLike('${item.key}')">
                                 <i class="fas fa-heart" id="hrt-${item.key}"></i>
                                 <span id="lcnt-${item.key}">0</span>
                             </div>
+                            
                             <div class="action-btn" onclick="window.location.href='index?v=${item.key}'">
                                 <i class="fas fa-comment-dots"></i>
                                 <span id="ccnt-${item.key}">0</span>
                             </div>
+                            
                             <div class="action-btn" onclick="window.location.href='upload?remix=${encodeURIComponent(item.videoUrl)}'">
-                                <i class="fas fa-compact-disc"></i>
-                                <span>Remix</span>
+                                <i class="fas fa-share"></i>
+                                <span>Share</span>
+                            </div>
+
+                            <div class="music-disc-wrapper">
+                                <div class="music-disc" id="disc-${item.key}"></div>
                             </div>
                         </div>`;
 
                     const v = card.querySelector('video'), a = card.querySelector('audio'), ldr = card.querySelector('.loading-spinner');
                     
                     card.onclick = () => {
-                        if(v.paused) { v.play(); if(a) a.play(); } 
-                        else { v.pause(); if(a) a.pause(); }
+                        if(v.paused) { v.play(); if(a) a.play(); card.classList.add('playing'); } 
+                        else { v.pause(); if(a) a.pause(); card.classList.remove('playing'); }
                     };
 
                     v.onwaiting = () => ldr.style.display = "block";
                     v.onplaying = () => { 
                         ldr.style.display = "none"; 
+                        card.classList.add('playing');
                         if(a) { a.currentTime = v.currentTime; a.play(); } 
                     };
                     
@@ -147,7 +194,6 @@
             });
         }
 
-        // Stats fetch karke Cloudinary Profile Pics sync karna
         function fetchStats(item) {
             onValue(ref(db, 'users/'+item.uid), s => { 
                 if(s.exists()) document.getElementById(`upic-${item.key}`).src = s.val().photo || 'icon.png';
@@ -177,10 +223,14 @@
                     const v = en.target.querySelector('video'), a = en.target.querySelector('audio');
                     if(en.isIntersecting) { 
                         en.target.setAttribute('active','true'); 
-                        v.play(); if(a) { a.currentTime = v.currentTime; a.play(); }
+                        v.play(); 
+                        en.target.classList.add('playing');
+                        if(a) { a.currentTime = v.currentTime; a.play(); }
                     } else { 
                         en.target.setAttribute('active','false'); 
-                        v.pause(); if(a) a.pause();
+                        v.pause(); 
+                        en.target.classList.remove('playing');
+                        if(a) a.pause();
                     }
                 });
             }, { threshold: 0.8 });
