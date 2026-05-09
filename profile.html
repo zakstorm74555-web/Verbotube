@@ -5,62 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Profile - Verbotube</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* DESIGN DETAILS */
+        /* DESIGN DETAILS - GHOST PREMIUM THEME */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: #000; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-        .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #000; position: relative; padding-bottom: 80px; }
+        body { background: #000; color: white; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .container { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #000; position: relative; padding-bottom: 80px; box-shadow: 0 0 40px rgba(255, 215, 0, 0.05); }
         
-        .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; border-bottom: 0.5px solid #222; }
-        .page-title { font-weight: 800; font-size: 18px; color: #FFD700; text-transform: uppercase; letter-spacing: 1.5px; }
-        .logout-btn { background: none; border: none; color: #FF4444; font-size: 22px; cursor: pointer; display: none; }
+        .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 20px; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 1000; border-bottom: 0.5px solid #1a1a1a; }
+        .page-title { font-weight: 800; font-size: 16px; color: #FFD700; text-transform: uppercase; letter-spacing: 2px; }
+        .logout-btn { background: none; border: none; color: #FF4444; font-size: 20px; cursor: pointer; display: none; }
 
-        .profile-header-main { padding: 25px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .pic-wrapper { position: relative; width: 100px; height: 100px; margin-bottom: 15px; }
-        .pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #FFD700; object-fit: cover; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+        .profile-header-main { padding: 30px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; background: linear-gradient(to bottom, #0a0a0a, #000); }
+        .pic-wrapper { position: relative; width: 110px; height: 110px; margin-bottom: 18px; }
+        .pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #FFD700; object-fit: cover; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); }
         
-        #badge-display { position: absolute; bottom: 0; right: 0; display: none; z-index: 10; border-radius: 50%; border: 2px solid #000; overflow: hidden; }
-        .badge-image { width: 32px; height: 32px; object-fit: cover; border: 1.5px solid #FFD700; }
+        #badge-display { position: absolute; bottom: 5px; right: 5px; display: none; z-index: 10; border-radius: 50%; border: 2px solid #000; overflow: hidden; background: #000; }
+        .badge-image { width: 30px; height: 30px; object-fit: cover; border: 1.5px solid #FFD700; }
 
-        .name { font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; }
-        .bio { color: #aaa; font-size: 14px; margin-top: 8px; line-height: 1.4; }
-        .blue-tick { color: #FFD700; font-size: 18px; }
+        .name { font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .bio { color: #888; font-size: 14px; margin-top: 10px; line-height: 1.5; max-width: 80%; }
+        .blue-tick { color: #FFD700; font-size: 18px; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5)); }
 
-        /* MODAL DESIGN */
-        .modal { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: flex-end; }
-        .modal-content { background: #111; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 20px 20px 0 0; padding: 30px 20px; border-top: 2px solid #FFD700; transform: translateY(100%); transition: transform 0.3s ease; }
-        .modal.active { display: flex; }
-        .modal.active .modal-content { transform: translateY(0); }
-        
-        .edit-input { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 16px; }
-        .edit-label { display: block; color: #FFD700; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-
-        .stats { display: flex; margin: 20px; background: #111; padding: 20px 0; border-radius: 15px; border: 0.5px solid #333; }
-        .stat-box { text-align: center; flex: 1; border-right: 0.5px solid #222; }
+        .stats { display: flex; margin: 20px; background: #0a0a0a; padding: 20px 0; border-radius: 18px; border: 1px solid #1a1a1a; }
+        .stat-box { text-align: center; flex: 1; border-right: 1px solid #1a1a1a; }
         .stat-box:last-child { border-right: none; }
         .stat-num { font-size: 20px; font-weight: 800; color: #FFD700; display: block; }
-        .stat-label { font-size: 11px; color: #777; text-transform: uppercase; }
+        .stat-label { font-size: 10px; color: #555; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
 
-        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; margin-bottom: 12px; font-size: 15px; text-transform: uppercase; }
-        .btn-follow { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
+        .btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; margin-bottom: 12px; font-size: 14px; text-transform: uppercase; transition: 0.3s; }
+        .btn-follow { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2); }
         .btn-following { background: transparent; color: #FFD700; border: 1.5px solid #FFD700; }
 
-        .grid-header { display: flex; justify-content: space-around; border-bottom: 0.5px solid #222; margin-top: 10px; }
-        .grid-tab { padding: 15px; color: #888; font-size: 20px; flex: 1; text-align: center; cursor: pointer; }
+        .grid-header { display: flex; justify-content: space-around; border-bottom: 1px solid #1a1a1a; margin-top: 15px; }
+        .grid-tab { padding: 15px; color: #444; font-size: 18px; flex: 1; text-align: center; cursor: pointer; }
         .grid-tab.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; padding: 1.5px; min-height: 200px; }
-        .thumb { aspect-ratio: 9/16; background: #111; position: relative; cursor: pointer; overflow: hidden; }
-        .thumb video { width: 100%; height: 100%; object-fit: cover; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 2px; background: #000; min-height: 300px; }
+        .thumb { aspect-ratio: 9/16; background: #0a0a0a; position: relative; cursor: pointer; overflow: hidden; }
+        .thumb video { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: flex-end; }
+        .modal-content { background: #0a0a0a; width: 100%; max-width: 500px; margin: 0 auto; border-radius: 25px 25px 0 0; padding: 35px 25px; border-top: 2px solid #FFD700; transform: translateY(100%); transition: transform 0.4s ease; }
+        .modal.active { display: flex; }
+        .modal.active .modal-content { transform: translateY(0); }
+        .edit-input { width: 100%; background: #151515; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 15px; }
+        .edit-label { display: block; color: #FFD700; font-size: 11px; margin-bottom: 8px; text-transform: uppercase; font-weight: 800; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="nav-bar">
-            <a href="index" style="color:#FFD700; font-size:22px;"><i class="fas fa-chevron-left"></i></a>
-            <div class="page-title">Profile</div>
-            <button id="logoutBtn" class="logout-btn" onclick="handleLogout()"><i class="fas fa-power-off"></i></button>
+            <a href="index" style="color:#FFD700; font-size:20px;"><i class="fas fa-arrow-left"></i></a>
+            <div class="page-title" id="navUsername">Profile</div>
+            <button id="logoutBtn" class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
         </div>
 
         <div class="profile-header-main">
@@ -70,20 +69,20 @@
             </div>
             <div class="info">
                 <div class="name" id="pName">User</div>
-                <div class="bio" id="pBio">Loading...</div>
+                <div class="bio" id="pBio">Loading Verbo Profile...</div>
             </div>
         </div>
 
-        <div style="padding:0 20px;"><button id="actionBtn" class="btn btn-following">Loading...</button></div>
+        <div style="padding:0 25px;"><button id="actionBtn" class="btn btn-following">Please Wait...</button></div>
 
         <div class="stats">
-            <div class="stat-box"><span class="stat-num" id="sVideos">0</span><span class="stat-label">Videos</span></div>
+            <div class="stat-box"><span class="stat-num" id="sVideos">0</span><span class="stat-label">Clips</span></div>
             <div class="stat-box"><span class="stat-num" id="sFollowers">0</span><span class="stat-label">Followers</span></div>
             <div class="stat-box"><span class="stat-num" id="sFollowing">0</span><span class="stat-label">Following</span></div>
         </div>
 
         <div class="grid-header">
-            <div class="grid-tab active" onclick="switchTab('public', this)"><i class="fas fa-th"></i></div>
+            <div class="grid-tab active" onclick="switchTab('public', this)"><i class="fas fa-grip-lines"></i></div>
             <div class="grid-tab" onclick="switchTab('liked', this)"><i class="far fa-heart"></i></div>
             <div class="grid-tab" onclick="switchTab('private', this)"><i class="fas fa-lock"></i></div>
         </div>
@@ -92,24 +91,24 @@
 
     <div class="modal" id="editModal">
         <div class="modal-content">
-            <h2 style="color:#FFD700; text-align:center; margin-top:0;">Edit Profile</h2>
+            <h2 style="color:#FFD700; text-align:center; margin-bottom:25px;">Update Profile</h2>
             
-            <label class="edit-label">Profile Image (URL or Upload)</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <input type="text" id="editPhotoURL" class="edit-input" style="margin-bottom:0;" placeholder="Paste URL...">
-                <button class="btn" onclick="document.getElementById('fileInput').click()" style="width:50px; margin:0; background:#222; border:1px solid #FFD700;"><i class="fas fa-camera"></i></button>
+            <label class="edit-label">Profile Logo (Upload to B2)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="editPhotoURL" class="edit-input" style="margin-bottom:0;" placeholder="Image URL (Optional)">
+                <button class="btn" onclick="document.getElementById('fileInput').click()" style="width:55px; margin:0; background:#111; border:1px solid #FFD700;"><i class="fas fa-camera"></i></button>
             </div>
             <input type="file" id="fileInput" accept="image/*" style="display:none">
-            <p id="uploadStatus" style="font-size:11px; color:#FFD700; text-align:center; margin-top:-10px; min-height:15px;"></p>
+            <p id="uploadStatus" style="font-size:11px; color:#FFD700; text-align:center; margin-top:-15px; margin-bottom:15px;"></p>
 
-            <label class="edit-label">Username</label>
-            <input type="text" id="editName" class="edit-input" placeholder="Enter Name">
+            <label class="edit-label">Gamer Name</label>
+            <input type="text" id="editName" class="edit-input" placeholder="Display Name">
 
-            <label class="edit-label">Bio</label>
-            <textarea id="editBio" class="edit-input" style="height:80px; resize:none;" placeholder="Write bio..."></textarea>
+            <label class="edit-label">Gamer Bio</label>
+            <textarea id="editBio" class="edit-input" style="height:90px; resize:none;" placeholder="Tell them who you are..."></textarea>
 
-            <button class="btn btn-follow" id="saveProfileBtn">Save Changes</button>
-            <button class="btn" onclick="closeModal()" style="background:transparent; color:#888;">Cancel</button>
+            <button class="btn btn-follow" id="saveProfileBtn">Save to Engine</button>
+            <button class="btn" onclick="closeModal()" style="background:transparent; color:#555;">Dismiss</button>
         </div>
     </div>
 
@@ -119,15 +118,7 @@
         import { getDatabase, ref, onValue, update, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", 
-            authDomain: "paravideo-1ac3b.firebaseapp.com", 
-            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", 
-            projectId: "paravideo-1ac3b", 
-            storageBucket: "paravideo-1ac3b.firebasestorage.app", 
-            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" 
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
@@ -148,17 +139,18 @@
             onValue(ref(db, 'users/' + profileUID), snap => {
                 if(!snap.exists()) return;
                 userData = snap.val();
-                const isOwner = (profileUID === myUID ? user.email : userData.email || "").toLowerCase() === ADMIN_EMAIL;
+                const isAdmin = (userData.email || "").toLowerCase() === ADMIN_EMAIL;
                 if(profileUID === myUID) document.getElementById('logoutBtn').style.display = 'block';
                 
-                document.getElementById('pName').innerHTML = `${userData.username || "User"} ${isOwner ? '<i class="fas fa-check-circle blue-tick"></i>' : ''}`;
-                document.getElementById('pBio').innerText = userData.bio || "No bio yet";
+                document.getElementById('navUsername').innerText = `@${userData.username || "User"}`;
+                document.getElementById('pName').innerHTML = `${userData.username || "User"} ${isAdmin ? '<i class="fas fa-circle-check blue-tick"></i>' : ''}`;
+                document.getElementById('pBio').innerText = userData.bio || "No bio yet.";
                 document.getElementById('pPic').src = userData.photo || "icon.png";
 
                 const badgeBox = document.getElementById('badge-display');
                 if(userData.customBadge) {
                     badgeBox.style.display = 'flex';
-                    badgeBox.innerHTML = userData.customBadge.image ? `<img src="${userData.customBadge.image}" class="badge-image">` : `<span class="badge-text">${userData.customBadge.text}</span>`;
+                    badgeBox.innerHTML = userData.customBadge.image ? `<img src="${userData.customBadge.image}" class="badge-image">` : userData.customBadge.text;
                 } else { badgeBox.style.display = 'none'; }
             });
             
@@ -173,58 +165,50 @@
             listenForVideos();
         }
 
-        // --- GHOST SAVE SYSTEM ---
         window.openEditModal = () => {
             document.getElementById('editModal').classList.add('active');
             document.getElementById('editName').value = userData.username || "";
             document.getElementById('editBio').value = userData.bio || "";
             document.getElementById('editPhotoURL').value = (userData.photo && userData.photo.startsWith('http')) ? userData.photo : "";
-        }
+        };
         window.closeModal = () => document.getElementById('editModal').classList.remove('active');
 
+        // --- THE SAVE SYSTEM (B2 IMAGE + DB SYNC) ---
         document.getElementById('saveProfileBtn').onclick = async () => {
-            const newName = document.getElementById('editName').value;
-            const newBio = document.getElementById('editBio').value;
-            const manualURL = document.getElementById('editPhotoURL').value;
-            const file = document.getElementById('fileInput').files[0];
             const btn = document.getElementById('saveProfileBtn');
             const status = document.getElementById('uploadStatus');
-
-            if(!newName.trim()) { alert("Name missing!"); return; }
-
+            const file = document.getElementById('fileInput').files[0];
+            
             btn.disabled = true;
             btn.innerText = "Processing...";
+            status.innerText = "Syncing with Engine...";
             
-            let finalPhoto = userData.photo || "icon.png";
+            let finalPhoto = document.getElementById('editPhotoURL').value || userData.photo || "icon.png";
 
-            // 1. Storage Upload (Priority)
-            if(file) {
-                status.innerText = "Uploading to Firebase Storage...";
-                try {
-                    const storageRef = sRef(storage, `profile_pics/${myUID}`);
+            try {
+                if(file) {
+                    status.innerText = "Uploading Logo to Blackblaze...";
+                    const storageRef = sRef(storage, `profile_pics/${myUID}_${Date.now()}`);
                     await uploadBytes(storageRef, file);
                     finalPhoto = await getDownloadURL(storageRef);
-                    status.innerText = "Upload Success!";
-                } catch (e) {
-                    alert("Storage Error: Check Firebase Rules!");
+                    status.innerText = "Upload Complete!";
                 }
-            } else if(manualURL.trim() !== "") {
-                finalPhoto = manualURL;
-            }
 
-            // 2. Fix in RTDB
-            try {
                 await update(ref(db, 'users/' + myUID), {
-                    username: newName,
-                    bio: newBio,
+                    username: document.getElementById('editName').value,
+                    bio: document.getElementById('editBio').value,
                     photo: finalPhoto
                 });
-                status.innerText = "Database Updated!";
-                setTimeout(closeModal, 800);
-            } catch(e) { alert("Database Error!"); }
 
-            btn.disabled = false;
-            btn.innerText = "Save Changes";
+                status.innerText = "Profile Locked & Saved! 🔥";
+                setTimeout(closeModal, 1000);
+            } catch (e) {
+                alert("Error saving data!");
+                status.innerText = "Retry Failed.";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Save to Engine";
+            }
         };
 
         function setupFollow(btn) {
@@ -234,7 +218,7 @@
                     btn.onclick=()=> { remove(ref(db,`followers/${profileUID}/${myUID}`)); remove(ref(db,`following/${myUID}/${profileUID}`)); } 
                 }
                 else { 
-                    btn.innerText="Follow"; btn.className="btn btn-follow"; 
+                    btn.innerText="Follow Gamer"; btn.className="btn btn-follow"; 
                     btn.onclick=()=> { set(ref(db,`followers/${profileUID}/${myUID}`), true); set(ref(db,`following/${myUID}/${profileUID}`), true); } 
                 }
             });
@@ -253,6 +237,7 @@
                 grid.innerHTML = "";
                 const data = snap.val();
                 if(!data) { document.getElementById('sVideos').innerText = 0; return; }
+                
                 let vids = Object.entries(data);
                 if(currentTab === 'public') vids = vids.filter(([k,v]) => v.uid === profileUID && v.privacy !== 'private');
                 else if(currentTab === 'private') vids = vids.filter(([k,v]) => v.uid === profileUID && v.privacy === 'private');
@@ -261,12 +246,13 @@
                 vids.reverse().forEach(([k, vid]) => {
                     const div = document.createElement('div');
                     div.className = 'thumb';
-                    div.innerHTML = `<video src="${vid.videoUrl}"></video>`;
+                    div.innerHTML = `<video src="${vid.videoUrl}#t=0.5"></video>`;
                     div.onclick = () => window.location.href = `index?v=${k}`;
                     grid.appendChild(div);
                 });
             });
         }
+        
         window.handleLogout = () => signOut(auth).then(()=> window.location.href='login');
     </script>
 </body>
