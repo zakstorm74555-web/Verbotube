@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Verbotube - Home</title>
+    <title>Verbotube - Home Feed</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -35,13 +35,13 @@
         .liked { color: #FFD700 !important; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)) !important; }
         .action-btn span { font-size: 12px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
-        /* Spinning Disc (Music) */
-        .music-disc { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(45deg, #222, #444, #222); border: 8px solid #1a1a1a; display: flex; justify-content: center; align-items: center; animation: rotateDisc 4s linear infinite; animation-play-state: paused; box-shadow: 0 0 10px rgba(0,0,0,0.5); position: relative; }
-        .music-disc::after { content: '🎵'; font-size: 14px; }
+        /* Spinning Disc (Music) - BLACKBLAZE SYNCED */
+        .music-disc { width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(45deg, #222, #444, #222); border: 8px solid #1a1a1a; display: flex; justify-content: center; align-items: center; animation: rotateDisc 4s linear infinite; animation-play-state: paused; box-shadow: 0 0 15px rgba(0,0,0,0.8); position: relative; }
+        .music-disc::after { content: '🎵'; font-size: 14px; filter: drop-shadow(0 0 5px #FFD700); }
         .playing .music-disc { animation-play-state: running; }
         @keyframes rotateDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* Info Glass UI */
+        /* Info UI */
         .video-info { position: absolute; bottom: 100px; left: 15px; width: 75%; z-index: 30; pointer-events: none; }
         .username { font-weight: 800; font-size: 17px; color: #FFD700; margin-bottom: 6px; pointer-events: auto; display: inline-block; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .caption { font-size: 14px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); line-height: 1.4; }
@@ -50,7 +50,7 @@
         .prog-bar { height: 100%; background: #FFD700; width: 0%; box-shadow: 0 0 10px #FFD700; transition: width 0.1s linear; }
 
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0.95); border-top: 0.5px solid #1a1a1a; display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #888; transition: 0.3s; }
+        .nav-item { color: #888; font-size: 22px; transition: 0.3s; cursor: pointer; }
         .nav-item.active { color: #FFD700; }
         
         .loading-spinner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 215, 0, 0.1); border-top: 3px solid #FFD700; border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; display: none; z-index: 50; }
@@ -72,16 +72,16 @@
         <div class="prog-container"><div class="prog-bar" id="prog-master"></div></div>
 
         <div class="bottom-nav">
-            <div class="nav-item active"><i class="fas fa-home" style="font-size:22px;"></i></div>
-            <div class="nav-item" onclick="window.location.href='friends'"><i class="fas fa-user-friends" style="font-size:22px;"></i></div>
+            <i class="fas fa-home nav-item active"></i>
+            <i class="fas fa-user-friends nav-item" onclick="window.location.href='friends'"></i>
             
             <div style="width:46px; height:32px; position:relative; cursor:pointer;" onclick="window.location.href='upload'">
                 <div style="position:absolute; width:100%; height:100%; background:linear-gradient(to right, #00f2ea, #ff0050); border-radius:10px; left:0; top:0;"></div>
                 <div style="position:absolute; background:#fff; width:38px; height:100%; border-radius:8px; left:4px; top:0; display:flex; justify-content:center; align-items:center;"><i class="fas fa-plus" style="color:#000; font-size:16px;"></i></div>
             </div>
 
-            <div class="nav-item" onclick="window.location.href='friends'"><i class="fas fa-comment-alt" style="font-size:22px;"></i></div>
-            <div class="nav-item" onclick="window.location.href='profile'"><i class="fas fa-user" style="font-size:22px;"></i></div>
+            <i class="fas fa-comment-alt nav-item" onclick="window.location.href='friends'"></i>
+            <i class="fas fa-user nav-item" onclick="window.location.href='profile'"></i>
         </div>
     </div>
 
@@ -90,18 +90,11 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Firebase Config
+        // Firebase Config (Syncing with Blackblaze via Gameplay Clips node)
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-
-        // Blackblaze B2 Config Context (For reference in upload logic)
-        const B2_CONFIG = {
-            bucketId: "95a4a3b621680bb892ef0e11",
-            keyID: "543618b82fe1",
-            applicationKey: "003b55a458955b4cdc955b65b63c644c71a72f321c"
-        };
 
         let currentUser = null;
 
@@ -116,18 +109,18 @@
 
         function loadVideos() {
             const feed = document.getElementById('feed');
+            // Fetching clips which now contain Blackblaze URLs
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 feed.innerHTML = "";
                 if(!snap.exists()) {
-                    feed.innerHTML = "<div style='text-align:center; margin-top:50svh; color:#555;'>No gameplay found. Start the game!</div>";
+                    feed.innerHTML = "<div style='text-align:center; margin-top:50svh; color:#555;'>No transmissions found on the network.</div>";
                     return;
                 }
                 
                 let data = Object.entries(snap.val()).map(([k,v]) => ({key:k, ...v}));
                 data.sort((a,b)=> b.timestamp - a.timestamp).forEach(item => {
                     const card = document.createElement('div');
-                    card.className = "video-card"; 
-                    card.id = `card-${item.key}`;
+                    card.className = "video-card"; card.id = `card-${item.key}`;
                     
                     const isRemix = (item.remixUrl && item.remixUrl !== "");
 
@@ -137,8 +130,8 @@
                         ${isRemix ? `<audio src="${item.remixUrl}" id="aud-${item.key}" loop></audio>` : ''}
                         
                         <div class="video-info">
-                            <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader}</div>
-                            <div class="caption">${item.caption || 'New Gameplay Clip #Verbotube'}</div>
+                            <div class="username" onclick="window.location.href='profile?uid=${item.uid}'">@${item.uploader} ${item.email === 'elitegamer859650@gmail.com' ? '<i class="fas fa-check-circle" style="font-size:12px;"></i>' : ''}</div>
+                            <div class="caption">${item.caption || 'New Verbo Transmission #Blackblaze'}</div>
                         </div>
 
                         <div class="sidebar">
@@ -146,25 +139,19 @@
                                 <img src="icon.png" class="sidebar-pic" id="upic-${item.key}" onclick="window.location.href='profile?uid=${item.uid}'">
                                 <div class="follow-plus"><i class="fas fa-plus"></i></div>
                             </div>
-                            
                             <div class="action-btn" onclick="handleLike('${item.key}')">
                                 <i class="fas fa-heart" id="hrt-${item.key}"></i>
                                 <span id="lcnt-${item.key}">0</span>
                             </div>
-                            
-                            <div class="action-btn" onclick="window.location.href='index?v=${item.key}'">
+                            <div class="action-btn" onclick="window.location.href='chat?uid=${item.uid}&name=${item.uploader}'">
                                 <i class="fas fa-comment-dots"></i>
                                 <span id="ccnt-${item.key}">0</span>
                             </div>
-                            
                             <div class="action-btn" onclick="window.location.href='upload?remix=${encodeURIComponent(item.videoUrl)}'">
                                 <i class="fas fa-share"></i>
                                 <span>Share</span>
                             </div>
-
-                            <div class="music-disc-wrapper">
-                                <div class="music-disc" id="disc-${item.key}"></div>
-                            </div>
+                            <div class="music-disc-wrapper"><div class="music-disc"></div></div>
                         </div>`;
 
                     const v = card.querySelector('video'), a = card.querySelector('audio'), ldr = card.querySelector('.loading-spinner');
@@ -198,14 +185,12 @@
             onValue(ref(db, 'users/'+item.uid), s => { 
                 if(s.exists()) document.getElementById(`upic-${item.key}`).src = s.val().photo || 'icon.png';
             });
-
             onValue(ref(db, `gameplay_likes/${item.key}`), s => { 
                 const count = s.exists() ? Object.keys(s.val()).length : 0;
                 document.getElementById(`lcnt-${item.key}`).innerText = count;
                 if(currentUser && s.hasChild(currentUser.uid)) document.getElementById(`hrt-${item.key}`).classList.add('liked');
                 else document.getElementById(`hrt-${item.key}`).classList.remove('liked');
             });
-
             onValue(ref(db, `gameplay_clips/${item.key}/comments`), s => {
                 const count = s.exists() ? Object.keys(s.val()).length : 0;
                 document.getElementById(`ccnt-${item.key}`).innerText = count;
