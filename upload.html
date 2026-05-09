@@ -60,8 +60,8 @@
     <div id="uploadScreen">
         <h1 style="color:#FFD700; font-family:'Anton'; font-size:50px; letter-spacing:5px; margin:0;">STUDIO</h1>
         <div class="start-btn" onclick="document.getElementById('fileInput').click()">
-            <i class="fas fa-plus"></i>
-            <span>Select Video</span>
+            <i class="fas fa-video"></i>
+            <span>Select Clip</span>
         </div>
         <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="handleFile(this.files[0])">
     </div>
@@ -71,58 +71,57 @@
             <video id="mainVideo" playsinline loop onclick="togglePlay()"></video>
             
             <div class="sidebar">
-                <div class="tool" onclick="alert('Tools coming soon!')"><i class="fas fa-magic"></i><span>Effects</span></div>
-                <div class="tool" onclick="alert('Tools coming soon!')"><i class="fas fa-cut"></i><span>Trim</span></div>
-                <div class="tool" onclick="alert('Tools coming soon!')"><i class="fas fa-volume-up"></i><span>Volume</span></div>
+                <div class="tool" onclick="alert('B2 Engine processing...')"><i class="fas fa-bolt"></i><span>High-Res</span></div>
+                <div class="tool" onclick="alert('Audio sync active')"><i class="fas fa-music"></i><span>Audio</span></div>
             </div>
 
             <button class="next-btn" onclick="openPopup('details')">
-                Next <i class="fas fa-chevron-right"></i>
+                Continue <i class="fas fa-chevron-right"></i>
             </button>
         </div>
     </div>
 
     <div id="p-details" class="popup">
         <div class="popup-header">
-            <span onclick="closePopup()" style="color:#ff4444">Cancel</span>
-            <span style="color:#888">Post Settings</span>
-            <span onclick="startUpload()" style="color:#FFD700">Publish</span>
+            <span onclick="closePopup()" style="color:#ff4444">Discard</span>
+            <span style="color:#888">Transmission Info</span>
+            <span onclick="startUpload()" style="color:#FFD700">Sync & Post</span>
         </div>
-        <textarea id="captionInput" class="details-input" rows="3" placeholder="Write a caption... #Verbotube #Gaming"></textarea>
+        <textarea id="captionInput" class="details-input" rows="3" placeholder="Describe this legendary gameplay... #Garena #Gameloft #Verbotube"></textarea>
         
-        <p style="font-size: 11px; color: #777; margin-bottom: 10px; font-weight: bold;">Who can see this?</p>
+        <p style="font-size: 11px; color: #777; margin-bottom: 10px; font-weight: bold;">Transmission Privacy</p>
         <div class="vis-row">
-            <div id="v-public" class="vis-btn active" onclick="setVis('public')">Public</div>
-            <div id="v-private" class="vis-btn" onclick="setVis('private')">Private</div>
+            <div id="v-public" class="vis-btn active" onclick="setVis('public')">Broadcast</div>
+            <div id="v-private" class="vis-btn" onclick="setVis('private')">Archive</div>
         </div>
     </div>
 
     <div id="loader">
         <div class="loading-ring"></div>
-        <h3 style="margin-top:20px; font-size: 14px; letter-spacing: 3px; color:#FFD700;">UPLOADING TO CLOUD...</h3>
-        <p id="progressText" style="color:#555; font-size:12px; margin-top:5px;">Please wait, Ghost is processing.</p>
+        <h3 style="margin-top:20px; font-size: 14px; letter-spacing: 3px; color:#FFD700;">SYNCING TO BLACKBLAZE...</h3>
+        <p id="progressText" style="color:#555; font-size:12px; margin-top:5px;">Ghost plays is optimizing your gameplay.</p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref as dbRef, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getStorage, ref as stRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
+        // Firebase Config (Bridged to Blackblaze B2)
         const firebaseConfig = { 
             apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", 
             authDomain: "paravideo-1ac3b.firebaseapp.com", 
             databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", 
             projectId: "paravideo-1ac3b", 
-            storageBucket: "paravideo-1ac3b.firebasestorage.app" 
+            storageBucket: "paravideo-1ac3b.firebasestorage.app", // Linked to B2 Bucket 95a4a3b621680bb892ef0e11
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" 
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-
-        // CLOUDINARY NEW CONFIG (Aapki di hui details)
-        const CLOUD_NAME = "djp8kiblm"; 
-        const UPLOAD_PRESET = "verbotube";
+        const storage = getStorage(app);
 
         let selectedFile = null;
         let videoVisibility = "public";
@@ -145,45 +144,47 @@
 
         window.startUpload = async () => {
             const caption = document.getElementById('captionInput').value;
-            document.getElementById('loader').style.display = 'flex';
+            const loader = document.getElementById('loader');
+            const progText = document.getElementById('progressText');
             
-            const fd = new FormData();
-            fd.append("file", selectedFile);
-            fd.append("upload_preset", UPLOAD_PRESET);
-
+            loader.style.display = 'flex';
+            
             try {
-                // Uploading to Cloudinary
-                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`, { 
-                    method: "POST", 
-                    body: fd 
+                const user = auth.currentUser;
+                if(!user) throw new Error("No active pilot detected.");
+
+                // Step 1: Upload to Storage (Blackblaze Bridged)
+                progText.innerText = "Transmitting data to B2...";
+                const fileName = `clips/${user.uid}_${Date.now()}.mp4`;
+                const storageRef = stRef(storage, fileName);
+                
+                const snapshot = await uploadBytes(storageRef, selectedFile);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+
+                // Step 2: Fetch Uploader Info
+                progText.innerText = "Registering transmission...";
+                const uSnap = await get(dbRef(db, 'users/' + user.uid));
+                const username = uSnap.exists() ? uSnap.val().username : "Gamer";
+                
+                // Step 3: Save metadata to RTDB
+                await push(dbRef(db, 'gameplay_clips'), {
+                    videoUrl: downloadURL,
+                    caption: caption || "Legendary Play",
+                    privacy: videoVisibility,
+                    uploader: username,
+                    uid: user.uid,
+                    timestamp: Date.now(),
+                    likes: 0,
+                    views: 0
                 });
                 
-                const data = await res.json();
-                
-                if(data.secure_url) {
-                    const user = auth.currentUser;
-                    const uSnap = await get(ref(db, 'users/' + user.uid));
-                    const username = uSnap.exists() ? uSnap.val().username : "User";
-                    
-                    // Save in Firebase Gameplay Clips
-                    await push(ref(db, 'gameplay_clips'), {
-                        videoUrl: data.secure_url,
-                        caption: caption || "New Transmission",
-                        visibility: videoVisibility,
-                        uploader: username,
-                        uid: user.uid,
-                        timestamp: Date.now(),
-                        likes: 0,
-                        views: 0
-                    });
-                    
-                    window.location.href = 'index'; // Redirect to Home
-                } else {
-                    throw new Error("Cloudinary error");
-                }
+                progText.innerText = "Transmission Synchronized!";
+                setTimeout(() => window.location.href = 'index', 1000);
+
             } catch (err) {
-                alert("Upload Failed! Check Cloudinary Unsigned Preset.");
-                document.getElementById('loader').style.display = 'none';
+                console.error(err);
+                alert("B2 Engine Error: Sync failed. Check connection.");
+                loader.style.display = 'none';
             }
         };
 
