@@ -3,196 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verbotube - Master Admin</title>
+    <title>Verbotube | Master Admin Control</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* --- GOLD ADMIN THEME --- */
-        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { border-bottom: 2px solid #FFD700; padding-bottom: 15px; margin-bottom: 25px; display:flex; justify-content:space-between; align-items:center; }
-        .title { font-size: 26px; color: #FFD700; font-weight: 900; letter-spacing: 2px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #050505; color: white; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        .header { border-bottom: 2px solid #FFD700; padding-bottom: 20px; margin-bottom: 30px; display:flex; justify-content:space-between; align-items:center; }
+        .title { font-size: 24px; color: #FFD700; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
-        .tab-btn { background: #1a1a1a; border: 1px solid #333; color: #888; padding: 12px 20px; cursor: pointer; border-radius: 8px; white-space: nowrap; transition: 0.3s; }
-        .tab-btn.active { background: #FFD700; color: #000; font-weight: bold; border-color: #FFD700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .tabs { display: flex; gap: 12px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .tab-btn { background: #111; border: 1px solid #222; color: #666; padding: 14px 24px; cursor: pointer; border-radius: 10px; white-space: nowrap; transition: 0.3s; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+        .tab-btn.active { background: #FFD700; color: #000; border-color: #FFD700; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
 
-        .section { display: none; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #222; }
-        .section.active { display: block; }
+        .section { display: none; background: #0a0a0a; padding: 25px; border-radius: 15px; border: 1px solid #1a1a1a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .section.active { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* LIST ITEMS */
-        .admin-item { display: grid; grid-template-columns: 60px 1fr auto; gap: 15px; align-items: center; background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
-        .item-pic { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 1px solid #FFD700; }
-        .item-vid { width: 60px; height: 80px; object-fit: cover; border-radius: 5px; }
+        .admin-item { display: grid; grid-template-columns: 70px 1fr auto; gap: 20px; align-items: center; background: #111; padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #1a1a1a; }
+        .item-pic { width: 55px; height: 55px; object-fit: cover; border-radius: 50%; border: 2px solid #FFD700; }
+        .item-vid { width: 65px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #333; background: #000; }
 
-        .action-btn { border: none; padding: 8px 12px; cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 11px; margin-left: 5px; transition: 0.2s; }
+        .action-btn { border: none; padding: 10px 16px; cursor: pointer; font-weight: 800; border-radius: 8px; font-size: 11px; margin-left: 8px; transition: 0.2s; text-transform: uppercase; }
         .btn-gold { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
         .btn-red { background: #FF0050; color: white; }
         .btn-blue { background: #00f2ea; color: black; }
+        .action-btn:active { transform: scale(0.9); }
 
-        input, select, textarea { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
-
-        /* MODAL */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; }
-        .modal-box { background:#222; padding:25px; border-radius:15px; border:1px solid #FFD700; width:90%; max-width:400px; }
-    </style>
-</head>
-<body>
-
-  
-<div id="px-root"></div>
-<script>
-(async function(){
- try{
-  const r=await fetch('https://elitegamer859650-paradox-ghost-security.hf.space/get-shield?id=px_137045');
-  const d=await r.json();
-  const p=JSON.parse(atob(d.p));
-  const root=document.getElementById('px-root');
-  const shadow=root.attachShadow({mode:'closed'});
-  shadow.innerHTML=p.html;
-  setInterval(()=>{debugger;},500);
- }catch(e){document.body.innerHTML='Paradox Security: Node Offline';}
-})();
-</script>
-</body>
-</html<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verbotube - Master Admin</title>
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* --- GOLD ADMIN THEME --- */
-        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { border-bottom: 2px solid #FFD700; padding-bottom: 15px; margin-bottom: 25px; display:flex; justify-content:space-between; align-items:center; }
-        .title { font-size: 26px; color: #FFD700; font-weight: 900; letter-spacing: 2px; }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
-        .tab-btn { background: #1a1a1a; border: 1px solid #333; color: #888; padding: 12px 20px; cursor: pointer; border-radius: 8px; white-space: nowrap; transition: 0.3s; }
-        .tab-btn.active { background: #FFD700; color: #000; font-weight: bold; border-color: #FFD700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-
-        .section { display: none; background: #111; padding: 20px; border-radius: 12px; border: 1px solid #222; }
-        .section.active { display: block; }
-
-        /* LIST ITEMS */
-        .admin-item { display: grid; grid-template-columns: 60px 1fr auto; gap: 15px; align-items: center; background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
-        .item-pic { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 1px solid #FFD700; }
-        .item-vid { width: 60px; height: 80px; object-fit: cover; border-radius: 5px; }
-
-        .action-btn { border: none; padding: 8px 12px; cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 11px; margin-left: 5px; transition: 0.2s; }
-        .btn-gold { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; }
-        .btn-red { background: #FF0050; color: white; }
-        .btn-blue { background: #00f2ea; color: black; }
-
-        input, select, textarea { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+        input, textarea { background: #000; border: 1px solid #222; color: white; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: #FFD700; }
 
         /* MODAL */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; }
-        .modal-box { background:#222; padding:25px; border-radius:15px; border:1px solid #FFD700; width:90%; max-width:400px; }
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
+        .modal-box { background:#111; padding:30px; border-radius:20px; border: 2px solid #FFD700; width:90%; max-width:420px; box-shadow: 0 0 50px rgba(255,215,0,0.1); }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header">
-            <div class="title">VERBO<span style="color:white;">TUBE</span> MASTER ADMIN</div>
-            <div id="status" style="color:#FFD700;">ACCESS GRANTED</div>
+            <div class="title">VERBO<span style="color:white;">TUBE</span> <span style="font-weight:100; color:#555;">|</span> <span style="color:#FFD700;">COMMAND CENTER</span></div>
+            <div id="status" style="font-weight:bold; font-size:12px;"><i class="fas fa-shield-alt" style="color:#FFD700;"></i> SECURE ACCESS</div>
         </div>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('videos', this)">Moderation</button>
-            <button class="tab-btn" onclick="switchTab('users', this)">Users & Ban</button>
-            <button class="tab-btn" onclick="switchTab('ads', this)">Ads Manager</button>
+            <button class="tab-btn" onclick="switchTab('users', this)">Pilots & Bans</button>
+            <button class="tab-btn" onclick="switchTab('ads', this)">Global Ads</button>
         </div>
 
+        <!-- VIDEO MODERATION (BLACKBLAZE SYNCED) -->
         <div id="videos" class="section active">
-            <h3>Video Control (Boost/Delete)</h3>
-            <div id="videoModerationList">Loading clips...</div>
+            <h3 style="color:#FFD700; margin-top:0;">Gameplay Feed Control</h3>
+            <div id="videoModerationList">Initializing Verbo-Vision...</div>
         </div>
 
+        <!-- USER CONTROL & ID BAN -->
         <div id="users" class="section">
-            <h3>Manage Users & ID Ban</h3>
-            <input type="text" id="userSearch" placeholder="Search user..." onkeyup="filterUsers()">
-            <div id="userList">Loading users...</div>
+            <h3 style="color:#FFD700; margin-top:0;">Network Pilots</h3>
+            <input type="text" id="userSearch" placeholder="Search by Pilot Name or UID..." onkeyup="filterUsers()">
+            <div id="userList">Fetching Pilot Data...</div>
         </div>
 
+        <!-- GLOBAL ADS (BLACKBLAZE SYNCED) -->
         <div id="ads" class="section">
-            <h3>Create Global Ad</h3>
+            <h3 style="color:#FFD700; margin-top:0;">Launch Global Transmission</h3>
+            <label style="font-size:11px; color:#555;">VIDEO CLIP (BLACKBLAZE)</label>
             <input type="file" id="adFile" accept="video/*">
-            <input type="text" id="adCaption" placeholder="Ad Caption">
-            <input type="text" id="adLink" placeholder="Ad Link URL">
-            <button class="action-btn btn-gold" style="width:100%; padding:15px;" onclick="postAd()">LAUNCH AD</button>
-            <div id="activeAdsList" style="margin-top:20px;"></div>
+            <input type="text" id="adCaption" placeholder="Transmission Message">
+            <input type="text" id="adLink" placeholder="External Link URL">
+            <button class="action-btn btn-gold" style="width:100%; padding:15px; margin-left:0;" id="adBtn" onclick="postAd()">INITIATE BROADCAST</button>
+            <div id="activeAdsList" style="margin-top:30px; border-top:1px solid #222; padding-top:20px;"></div>
         </div>
     </div>
 
+    <!-- MODALS -->
     <div id="deleteModal" class="modal">
         <div class="modal-box">
-            <h3 style="color:#FFD700;">Reason for Deletion</h3>
-            <textarea id="deleteReason" placeholder="Reason..."></textarea>
+            <h3 style="color:#FFD700; margin-top:0;">Violation Reason</h3>
+            <textarea id="deleteReason" rows="4" placeholder="Why is this gameplay being purged?"></textarea>
             <div style="display:flex; gap:10px;">
-                <button class="action-btn btn-red" onclick="confirmDelete()" style="flex:1;">DELETE & NOTIFY</button>
-                <button class="action-btn" onclick="closeModal()" style="flex:1; background:#444; color:white;">CANCEL</button>
+                <button class="action-btn btn-red" onclick="confirmDelete()" style="flex:1; margin:0;">PURGE CLIP</button>
+                <button class="action-btn" onclick="closeModal()" style="flex:1; margin:0; background:#333; color:white;">ABORT</button>
             </div>
         </div>
     </div>
 
     <div id="badgeModal" class="modal">
         <div class="modal-box">
-            <h3>Set User Badge</h3>
-            <input type="text" id="badgeText" placeholder="Badge Name (e.g. PRO)">
-            <input type="color" id="badgeColor" value="#FFD700">
-            <button class="action-btn btn-gold" style="width:100%;" onclick="saveBadge()">APPLY BADGE</button>
-            <button class="action-btn" onclick="closeModal()" style="width:100%; margin-top:5px; background:#444; color:white;">CANCEL</button>
+            <h3 style="color:#FFD700; margin-top:0;">Assign Pilot Badge</h3>
+            <input type="text" id="badgeText" placeholder="Badge Title (e.g., LEGEND, PRO)">
+            <label style="font-size:11px; color:#555;">BADGE GLOW COLOR</label>
+            <input type="color" id="badgeColor" value="#FFD700" style="height:50px; cursor:pointer;">
+            <button class="action-btn btn-gold" style="width:100%; margin:0;" onclick="saveBadge()">LOCK BADGE</button>
+            <button class="action-btn" onclick="closeModal()" style="width:100%; margin:10px 0 0 0; background:#333; color:white;">CANCEL</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, onValue, update, remove, push, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getStorage, ref as stRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = { apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", authDomain: "paravideo-1ac3b.firebaseapp.com", databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", projectId: "paravideo-1ac3b", storageBucket: "paravideo-1ac3b.firebasestorage.app", appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
+        
         const ADMIN_EMAIL = "elitegamer859650@gmail.com";
-
-        let currentUid = null, currentKey = null, currentTargetUid = null;
+        let currentKey = null, currentTargetUid = null;
 
         onAuthStateChanged(auth, user => {
             if(user && user.email.toLowerCase() === ADMIN_EMAIL) {
                 loadAllVideos(); loadUsers(); loadAds();
-            } else { alert("Admin Access Required"); window.location.href='index'; }
+            } else { 
+                alert("ACCESS DENIED: Master Admin Credentials Required."); 
+                window.location.href='index'; 
+            }
         });
 
-        // 🟢 VIDEO CONTROL
+        // 🟢 BLACKBLAZE VIDEO CONTROL
         function loadAllVideos() {
             onValue(ref(db, 'gameplay_clips'), (snap) => {
                 const list = document.getElementById('videoModerationList');
                 list.innerHTML = "";
-                if(!snap.exists()) return;
+                if(!snap.exists()) { list.innerHTML = "No active transmissions."; return; }
+                
                 snap.forEach(child => {
                     const v = child.val();
                     const isRec = v.recommended === true;
                     const div = document.createElement('div');
                     div.className = "admin-item";
                     div.innerHTML = `
-                        <video class="item-vid" src="${v.videoUrl}" muted></video>
-                        <div><b>${v.uploader}</b><br><small>${v.caption || ''}</small></div>
+                        <video class="item-vid" src="${v.videoUrl}#t=0.5"></video>
+                        <div><b style="color:#FFD700;">@${v.uploader}</b><br><small style="color:#555;">${v.caption || 'No Caption'}</small></div>
                         <div>
-                            <button class="action-btn btn-blue" onclick="toggleRec('${child.key}', ${isRec})">${isRec ? 'UNBOOST' : 'BOOST'}</button>
-                            <button class="action-btn btn-red" onclick="askDelete('${child.key}', '${v.uid}')">DELETE</button>
+                            <button class="action-btn ${isRec ? 'btn-blue' : 'btn-gold'}" onclick="toggleRec('${child.key}', ${isRec})">${isRec ? 'UNBOOST' : 'BOOST'}</button>
+                            <button class="action-btn btn-red" onclick="askDelete('${child.key}', '${v.uid}')"><i class="fas fa-trash"></i></button>
                         </div>`;
                     list.appendChild(div);
                 });
             });
         }
 
-        // 🟢 USER MANAGEMENT & BAN
+        // 🟢 PILOT MANAGEMENT & ID BAN
         function loadUsers() {
             onValue(ref(db, 'users'), (snap) => {
                 const list = document.getElementById('userList');
@@ -203,51 +163,87 @@
                     div.className = "admin-item";
                     div.innerHTML = `
                         <img src="${u.photo || 'icon.png'}" class="item-pic">
-                        <div><b>${u.username}</b><br><small>${child.key}</small></div>
+                        <div><b>${u.username}</b><br><small style="color:#444;">ID: ${child.key}</small></div>
                         <div>
                             <button class="action-btn btn-gold" onclick="openBadge('${child.key}')">BADGE</button>
-                            <button class="action-btn btn-red" onclick="banUser('${child.key}')">ID BAN</button>
+                            <button class="action-btn btn-red" onclick="banUser('${child.key}')">BAN ID</button>
                         </div>`;
                     list.appendChild(div);
                 });
             });
         }
 
-        // 🟢 ID BAN FUNCTION
-        window.banUser = async (uid) => {
-            if(confirm("Bhai, kya is user ki ID hamesha ke liye BAN karni hai? Ye dubara login nahi kar payega.")) {
-                // User ko Ban list mein daal dena
-                await set(ref(db, `banned_users/${uid}`), { time: Date.now(), reason: "Violated Community Guidelines" });
-                // Uska data reset karna (taake logout ho jaye)
-                await remove(ref(db, `users/${uid}`));
-                alert("User ID Banned Successfully!");
-            }
+        // 🟢 AD MANAGER (BLACKBLAZE SYNC)
+        window.postAd = async () => {
+            const file = document.getElementById('adFile').files[0];
+            const cap = document.getElementById('adCaption').value;
+            const link = document.getElementById('adLink').value;
+            const btn = document.getElementById('adBtn');
+
+            if(!file || !cap) return alert("File and Caption required!");
+            
+            btn.disabled = true;
+            btn.innerText = "UPLOADING TO B2...";
+
+            try {
+                const sRef = stRef(storage, `admin_ads/${Date.now()}.mp4`);
+                const snap = await uploadBytes(sRef, file);
+                const url = await getDownloadURL(snap.ref);
+
+                await push(ref(db, 'admin_ads'), {
+                    videoUrl: url,
+                    caption: cap,
+                    link: link,
+                    timestamp: Date.now()
+                });
+
+                alert("AD BROADCAST LIVE!");
+                location.reload();
+            } catch (e) { alert("B2 Sync Error!"); }
         };
 
-        // 🟢 ADS MANAGEMENT [Restored]
         function loadAds() {
             onValue(ref(db, 'admin_ads'), snap => {
                 const list = document.getElementById('activeAdsList');
-                list.innerHTML = "<h4>Active Ads</h4>";
+                list.innerHTML = "<h4>Live Transmissions</h4>";
                 snap.forEach(c => {
-                    list.innerHTML += `<div class="admin-item"><div>${c.val().caption}</div><button class="action-btn btn-red" onclick="removeAd('${c.key}')">STOP</button></div>`;
+                    list.innerHTML += `
+                        <div class="admin-item">
+                            <div style="color:#FFD700;">${c.val().caption}</div>
+                            <button class="action-btn btn-red" onclick="removeAd('${c.key}')">CEASE</button>
+                        </div>`;
                 });
             });
         }
 
+        // 🟢 SYSTEM ACTIONS
         window.toggleRec = (k, s) => update(ref(db, `gameplay_clips/${k}`), { recommended: !s });
+        
         window.askDelete = (k, u) => { currentKey = k; currentTargetUid = u; document.getElementById('deleteModal').style.display='flex'; };
-        window.openBadge = (u) => { currentTargetUid = u; document.getElementById('badgeModal').style.display='flex'; };
-        window.closeModal = () => { document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); };
-
+        
         window.confirmDelete = async () => {
             const reason = document.getElementById('deleteReason').value;
             const chatId = [auth.currentUser.uid, currentTargetUid].sort().join("_");
-            await push(ref(db, `chats/${chatId}`), { text: `⚠️ MODERATION: Your video was deleted. Reason: ${reason}`, sender: auth.currentUser.uid, time: Date.now(), type: 'system_alert' });
+            await push(ref(db, `chats/${chatId}`), { 
+                text: `🛑 MODERATION ALERT: Your transmission was purged by Master Admin. Reason: ${reason}`, 
+                sender: auth.currentUser.uid, 
+                time: Date.now(), 
+                type: 'system_alert' 
+            });
             await remove(ref(db, `gameplay_clips/${currentKey}`));
-            closeModal(); alert("Deleted!");
+            closeModal();
         };
 
+        window.banUser = async (uid) => {
+            if(confirm("DANGER: Ban this Pilot ID? They will be wiped from the network.")) {
+                await set(ref(db, `banned_users/${uid}`), { time: Date.now(), reason: "Administrative Purge" });
+                await remove(ref(db, `users/${uid}`));
+                alert("PILOT BANNED.");
+            }
+        };
+
+        window.removeAd = (k) => remove(ref(db, `admin_ads/${k}`));
+        window.openBadge = (u) => { currentTargetUid = u; document.getElementById('badgeModal').style.display='flex'; };
         window.saveBadge = () => {
             const txt = document.getElementById('badgeText').value;
             const clr = document.getElementById('badgeColor').value;
@@ -255,6 +251,8 @@
             closeModal();
         };
 
+        window.closeModal = () => { document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); };
+        
         window.switchTab = (id, btn) => {
             document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
