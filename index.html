@@ -120,11 +120,11 @@
         .video-card { cursor: pointer; display: flex; flex-direction: column; gap: 14px; border-radius: 16px; transition: 0.3s ease; padding-bottom: 10px; }
         .video-card:hover { transform: translateY(-4px); }
         
-        .thumbnail-container { width: 100%; aspect-ratio: 16/9; background: #222; border-radius: 16px; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); }
-        .thumbnail-container img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .video-card:hover .thumbnail-container img { transform: scale(1.08); }
+        .thumbnail-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); }
+        .thumbnail-container video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .video-card:hover .thumbnail-container video { transform: scale(1.05); }
         
-        .duration-badge { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.85); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(4px); }
+        .duration-badge { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.85); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; backdrop-filter: blur(4px); pointer-events: none; }
 
         .video-info { display: flex; gap: 14px; align-items: flex-start; padding: 0 4px; }
         .channel-avatar { width: 40px; height: 40px; border-radius: 50%; background: #444; object-fit: cover; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -133,21 +133,9 @@
         .channel-name { font-size: 14px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 4px; }
         .video-stats { font-size: 13px; color: var(--text-muted); }
 
-        /* --- SHORTS SHELF --- */
-        .shelf-header { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; margin: 35px 0 20px 0; padding-left: 4px; }
-        .shelf-header i { color: var(--danger); font-size: 26px; filter: drop-shadow(0 2px 4px rgba(255,0,0,0.3)); }
-        
-        .shorts-shelf { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 20px; scrollbar-width: none; }
-        .shorts-shelf::-webkit-scrollbar { display: none; }
-        
-        .short-card { min-width: 180px; max-width: 180px; aspect-ratio: 9/16; background: #222; border-radius: 16px; position: relative; cursor: pointer; overflow: hidden; box-shadow: var(--shadow-sm); transition: 0.3s; }
-        .short-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-        .short-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-        .short-card:hover img { transform: scale(1.05); }
-        
-        .short-overlay { position: absolute; bottom: 0; left: 0; width: 100%; padding: 50px 12px 12px 12px; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4), transparent); color: #fff; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
-        .short-title { font-size: 15px; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
-        .short-views { font-size: 13px; color: #ddd; font-weight: 500; }
+        /* Loading Spinner */
+        .loading-state { width: 100%; padding: 50px; text-align: center; color: var(--text-muted); font-weight: bold; grid-column: 1 / -1; }
+        .fa-spin { color: var(--accent); font-size: 24px; margin-bottom: 10px; }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
@@ -159,7 +147,7 @@
                 position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
                 flex-direction: row; justify-content: space-around; align-items: center;
                 padding: 0 10px; border-right: none; border-top: 1px solid var(--glass-border);
-                z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); overflow-y: hidden;
+                z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(20px); overflow-y: hidden;
                 padding-bottom: env(safe-area-inset-bottom);
             }
             .nav-item { flex-direction: column; gap: 4px; padding: 8px; margin: 0; border-radius: 8px; width: 60px; }
@@ -170,7 +158,6 @@
             .nav-divider { display: none; }
             
             .page-view { padding: 16px; padding-bottom: 90px; }
-            .short-card { min-width: 150px; }
             .video-grid { grid-template-columns: 1fr; gap: 24px; }
         }
     </style>
@@ -178,21 +165,21 @@
 <body>
 
     <header class="top-header">
-        <div class="logo-area">
+        <div class="logo-area" onclick="window.location.reload()">
             <img src="icon.png" alt="Logo">
             <span>Verbotube</span>
         </div>
 
         <div class="search-bar">
-            <input type="text" placeholder="Search Verbotube...">
-            <button><i class="fas fa-search"></i></button>
+            <input type="text" id="mainSearchInput" placeholder="Search Verbotube...">
+            <button id="mainSearchBtn"><i class="fas fa-search"></i></button>
         </div>
 
         <div class="header-actions">
-            <i class="fas fa-search header-icon" style="display: none;" id="mobileSearchIcon"></i>
+            <i class="fas fa-search header-icon" style="display: none;" id="mobileSearchIcon" onclick="window.location.href='search.html'"></i>
             <i class="fas fa-video header-icon" onclick="window.location.href='upload.html'" title="Create"></i>
             <i class="fas fa-bell header-icon"></i>
-            <img src="icon.png" class="profile-pic" onclick="window.location.href='profile.html'" alt="Profile" title="My Profile">
+            <img src="icon.png" class="profile-pic" id="myProfilePic" onclick="window.location.href='profile.html'" alt="Profile">
         </div>
     </header>
 
@@ -219,7 +206,6 @@
         <main class="vb-content">
             
             <div id="view-home" class="page-view active">
-                
                 <div class="filter-chips">
                     <button class="chip active">All</button>
                     <button class="chip">Gaming</button>
@@ -229,71 +215,16 @@
                 </div>
 
                 <div class="video-grid" id="realtime-videos">
-                    <div class="video-card" onclick="window.location.href='video-player.html'">
-                        <div class="thumbnail-container">
-                            <img src="https://via.placeholder.com/640x360/333/fff?text=Bucket+Thumb+1" alt="Thumbnail">
-                            <div class="duration-badge">14:05</div>
-                        </div>
-                        <div class="video-info">
-                            <img src="icon.png" class="channel-avatar">
-                            <div class="video-text">
-                                <h3 class="video-title">Project I.G.I 2 Browser Port - Devlog 1 | WebAssembly</h3>
-                                <div class="channel-name">Paradox Studio <i class="fas fa-check-circle" style="font-size:12px; color:var(--accent);"></i></div>
-                                <div class="video-stats">1.2M views • 2 days ago</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="video-card" onclick="window.location.href='video-player.html'">
-                        <div class="thumbnail-container">
-                            <img src="https://via.placeholder.com/640x360/333/fff?text=Bucket+Thumb+2" alt="Thumbnail">
-                            <div class="duration-badge">22:10</div>
-                        </div>
-                        <div class="video-info">
-                            <img src="icon.png" class="channel-avatar">
-                            <div class="video-text">
-                                <h3 class="video-title">United SMP Lifesteal Season 1 - The Betrayal</h3>
-                                <div class="channel-name">Mohsin Ilyas</div>
-                                <div class="video-stats">850K views • 5 hours ago</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="shelf-header">
-                    <i class="fas fa-bolt"></i> Shorts
-                </div>
-                
-                <div class="shorts-shelf" id="realtime-shorts">
-                    <div class="short-card" onclick="window.location.href='short-player.html'">
-                        <img src="https://via.placeholder.com/360x640/444/fff?text=Short+Thumb" alt="Short">
-                        <div class="short-overlay">
-                            <div class="short-title">Deadly Ghost Editz - High Bass Phonk 💀🔥</div>
-                            <div class="short-views">2.5M views</div>
-                        </div>
-                    </div>
-
-                    <div class="short-card" onclick="window.location.href='short-player.html'">
-                        <img src="https://via.placeholder.com/360x640/222/fff?text=Short+Thumb" alt="Short">
-                        <div class="short-overlay">
-                            <div class="short-title">FatahCraft Sentinel Client Release!</div>
-                            <div class="short-views">800K views</div>
-                        </div>
-                    </div>
-
-                    <div class="short-card" onclick="window.location.href='short-player.html'">
-                        <img src="https://via.placeholder.com/360x640/555/fff?text=Short+Thumb" alt="Short">
-                        <div class="short-overlay">
-                            <div class="short-title">Epic Bhalwal Vlog - Setup Tour</div>
-                            <div class="short-views">120K views</div>
-                        </div>
+                    <div class="loading-state">
+                        <i class="fas fa-circle-notch fa-spin"></i><br>
+                        Loading Transmissions...
                     </div>
                 </div>
             </div>
 
             <div id="view-shorts" class="page-view">
                 <h2 style="margin-bottom: 20px;">Shorts Library</h2>
-                <p style="color: var(--text-muted);">Dedicated fullscreen shorts feed will load here via Engine.</p>
+                <p style="color: var(--text-muted);">Shorts functionality will be linked to short-player.html.</p>
             </div>
 
             <div id="view-history" class="page-view">
@@ -306,9 +237,8 @@
 
             <div id="view-settings" class="page-view">
                 <h2 style="margin-bottom: 30px;">Settings</h2>
-                
                 <div style="background: var(--card-bg); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border); margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-weight:600; font-size:16px;"><i class="fas fa-moon" style="width: 30px;"></i> Dark Theme</span>
                         <div class="vb-toggle" id="themeToggleBtn" onclick="toggleTheme()" style="width: 50px; height: 26px; background: var(--text-muted); border-radius: 15px; position: relative; cursor: pointer; transition: 0.3s;">
                             <div class="toggle-circle" style="position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.3s;"></div>
@@ -320,40 +250,119 @@
         </main>
     </div>
 
-    <script>
-        // Adjust UI for mobile search
-        if (window.innerWidth <= 768) {
-            document.getElementById('mobileSearchIcon').style.display = 'block';
-        }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Main Navigation SPA Logic
-        function switchView(viewId, navElement) {
-            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
+        const firebaseConfig = { 
+            apiKey: "AIzaSyA8IpSQ9yy6W09rQjptJAqMePPpR4Zf3Kc", 
+            authDomain: "paravideo-1ac3b.firebaseapp.com", 
+            databaseURL: "https://paravideo-1ac3b-default-rtdb.firebaseio.com", 
+            projectId: "paravideo-1ac3b", 
+            storageBucket: "paravideo-1ac3b.firebasestorage.app", 
+            appId: "1:384549024202:web:6e05fd017b7aa84e7a1f33" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
-            document.querySelectorAll('.vb-nav .nav-item').forEach(nav => nav.classList.remove('active'));
-            if(navElement) navElement.classList.add('active');
-        }
+        // Update Profile Pic if logged in
+        onAuthStateChanged(auth, user => {
+            if(user) {
+                get(ref(db, 'users/' + user.uid)).then(snap => {
+                    if(snap.exists() && snap.val().photo) {
+                        document.getElementById('myProfilePic').src = snap.val().photo;
+                    }
+                });
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
 
-        // Filter Chips Logic
-        document.querySelectorAll('.chip').forEach(chip => {
-            chip.addEventListener('click', function() {
-                document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
+        // Search Connection Logic
+        const executeSearch = () => {
+            let q = document.getElementById('mainSearchInput').value.trim();
+            if(q !== "") {
+                window.location.href = 'search.html?q=' + encodeURIComponent(q);
+            }
+        };
+        document.getElementById('mainSearchBtn').onclick = executeSearch;
+        document.getElementById('mainSearchInput').onkeypress = (e) => {
+            if(e.key === 'Enter') executeSearch();
+        };
+
+        // Realtime Video Fetching
+        onValue(ref(db, 'gameplay_clips'), (snap) => {
+            const videoGrid = document.getElementById('realtime-videos');
+            videoGrid.innerHTML = "";
+
+            if(!snap.exists()) {
+                videoGrid.innerHTML = "<div class='loading-state'>No clips found on network.</div>";
+                return;
+            }
+
+            let data = Object.entries(snap.val()).map(([k,v]) => ({key:k, ...v}));
+            data.sort((a,b) => b.timestamp - a.timestamp); // Newest first
+
+            data.forEach((item) => {
+                let userHTML = `<div class="channel-name">${item.uploader || 'User'}</div>`;
+                if(item.email === 'elitegamer859650@gmail.com') {
+                    userHTML = `<div class="channel-name">${item.uploader} <i class="fas fa-check-circle" style="font-size:12px; color:var(--accent);"></i></div>`;
+                }
+
+                let card = document.createElement('div');
+                card.className = "video-card";
+                card.onclick = () => window.location.href = `video-player.html?v=${item.key}`;
+                
+                // Using video tag directly for auto-play on hover
+                card.innerHTML = `
+                    <div class="thumbnail-container">
+                        <video src="${item.videoUrl}#t=0.1" muted onmouseover="this.play()" onmouseout="this.pause()" playsinline loop></video>
+                        <div class="duration-badge">HD</div>
+                    </div>
+                    <div class="video-info">
+                        <img src="icon.png" class="channel-avatar" id="avatar-${item.key}" onclick="event.stopPropagation(); window.location.href='profile.html?uid=${item.uid}'">
+                        <div class="video-text">
+                            <h3 class="video-title">${item.caption || 'Verbotube Transmission'}</h3>
+                            ${userHTML}
+                            <div class="video-stats">Verbotube Network</div>
+                        </div>
+                    </div>
+                `;
+                videoGrid.appendChild(card);
+
+                // Fetch Uploader Profile Pic Realtime
+                if(item.uid) {
+                    get(ref(db, 'users/' + item.uid)).then(uSnap => {
+                        if(uSnap.exists() && uSnap.val().photo) {
+                            document.getElementById(`avatar-${item.key}`).src = uSnap.val().photo;
+                        }
+                    });
+                }
             });
         });
 
-        // Theme Toggle Logic
+        // Standard UI Scripts (Mobile Search, Tabs, Theme)
+        if (window.innerWidth <= 768) { document.getElementById('mobileSearchIcon').style.display = 'block'; }
+
+        window.switchView = (viewId, navElement) => {
+            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.querySelectorAll('.vb-nav .nav-item').forEach(nav => nav.classList.remove('active'));
+            if(navElement) navElement.classList.add('active');
+        };
+
         let currentTheme = localStorage.getItem('verbo-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateToggleUI();
 
-        function toggleTheme() {
+        window.toggleTheme = () => {
             currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', currentTheme);
             localStorage.setItem('verbo-theme', currentTheme);
             updateToggleUI();
-        }
+        };
 
         function updateToggleUI() {
             const toggle = document.getElementById('themeToggleBtn');
